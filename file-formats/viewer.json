@@ -1,0 +1,78 @@
+{
+	// meta information about the file
+	"meta": {
+		"version": "1.0.0"
+	},
+	// the information about the show
+	"show": {
+		// dot labels in this show
+		"dot_labels": [
+			"A1",
+			"A2",
+			"A3",
+			// ...
+		],
+		// list of stuntsheets
+		"sheets": [
+			{
+				// label of the stuntsheet, for display only
+				"label": "1",
+				// identifiers for the types of dots on this sheet
+				// actual strings (e.g. "solid") should be consistent with
+				// those in "continuities", and are significant - the program
+				// that interprets this file should know how to render different
+				// dot types
+				"dot_types": [
+					"solid",
+					"open",
+					"solid-backslash",
+					"open-backslash",
+					"solid-forwardslash",
+					"open-forwardslash"
+				],
+				"label_types": {
+					"A1": "solid",
+					"A2": "solid-backslash"
+					// ... rest of the label label types
+				},
+				// dict mapping dot type to array of contiuity strings for this sheet
+				// actual strings for display only (we don't parse these)
+				"continuities": {
+					"solid": ["MT 12 E", "FMHS to SS 2"],
+					"open": ["FMHS to SS 2"],
+					"solid-backslash": ["Execute viewer file continuity 24 west"]
+					// ... rest of the continuities per type
+				},
+				// the initial positions in this stuntsheet for each dot
+				"initial_positions": {
+					// a dict containing coordinates, in steps, from the top left of the field
+					"A1": {
+						"x": 320,
+						"y": 32
+					},
+					// ... rest of the initial positions (~250)
+				},
+				// how long the sheet is, in number of beats
+				"beats": 24,
+				// movements per beat, per dot. the length of this array and
+				// "beats" should be equal
+				"movements": [
+					// for every beat, we have a dict mapping a dot label to the
+					// movement. these strings, such as "west" and "mark" are important.
+					// the program that interprets this file must know how to animate
+					// each dot based on its movement here.
+					{
+						"A1": "west",
+						"A2": "mark"
+						// ... rest of the movments for all of the dot labels (~200)
+					},
+					{
+						// ... movements for the second beat (~200)
+					}
+					// ... movements for the reat of the beats in this sheet (~64)
+				]
+			}
+			// ... rest of the stuntsheet dicts (~20)
+		]
+	} // end "show"
+} // end file
