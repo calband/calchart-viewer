@@ -17,6 +17,8 @@
 			{
 				// label of the stuntsheet, for display only
 				"label": "1",
+				// type of field this stuntsheet is on
+				"field_type": "college",
 				// identifiers for the types of dots on this sheet
 				// actual strings (e.g. "solid") should be consistent with
 				// those in "continuities", and are significant - the program
@@ -30,10 +32,10 @@
 					"solid-forwardslash",
 					"open-forwardslash"
 				],
-				"label_types": {
+				"dot_labels": {
 					"A1": "solid",
 					"A2": "solid-backslash"
-					// ... rest of the label label types
+					// ... rest of the dot labels (~240)
 				},
 				// dict mapping dot type to array of contiuity strings for this sheet
 				// actual strings for display only (we don't parse these)
@@ -56,21 +58,21 @@
 				"beats": 24,
 				// movements per beat, per dot. the length of this array and
 				// "beats" should be equal
-				"movements": [
+				"movements": {
 					// for every beat, we have a dict mapping a dot label to the
 					// movement. these strings, such as "west" and "mark" are important.
 					// the program that interprets this file must know how to animate
 					// each dot based on its movement here.
-					{
-						"A1": "west",
-						"A2": "mark"
-						// ... rest of the movments for all of the dot labels (~200)
-					},
-					{
-						// ... movements for the second beat (~200)
-					}
-					// ... movements for the reat of the beats in this sheet (~64)
-				]
+					"A1": [
+						{"type": "mark", "beats": 12},
+						{"type": "west", "beats": 12}
+						// ... rest of the movments (~4 per sheet)
+					],
+					"A2": [
+						// ... movements for A2
+					]
+					// ... movements for the rest of the dots (~240)
+				}
 			}
 			// ... rest of the stuntsheet dicts (~20)
 		]
