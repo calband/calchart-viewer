@@ -56,16 +56,58 @@
 				},
 				// how long the sheet is, in number of beats
 				"beats": 24,
-				// movements per beat, per dot. the length of this array and
-				// "beats" should be equal
+				// movements for each dot in this sheet
 				"movements": {
-					// for every beat, we have a dict mapping a dot label to the
-					// movement. these strings, such as "west" and "mark" are important.
-					// the program that interprets this file must know how to animate
-					// each dot based on its movement here.
+					// each dot maps to an array of movements for this stuntsheet.
+					// the "type" of the movement is significant and represents what kind
+					// of movement it is. all the "type"s are noted here:
 					"A1": [
-						{"type": "mark", "beats": 12},
-						{"type": "west", "beats": 12}
+						// don't move, facing east, for 12 beats
+						{
+							"type": "mark",
+							"beats": 12,
+							"facing": "east"
+						},
+						// move west, facing east, for 12 beats, one step every 1 beats
+						{
+							"type": "move",
+							"beats": 12,
+							"beats_per_step": 1,
+							"direction": "west",
+							"facing": "east"
+						},
+						// every beat, automatically goto the given coordinate, in steps, given from the
+						// top left of the field. if the dot is already at this position, do
+						// nothing
+						{
+							"type": "goto",
+							"beats": 1,
+							"x": 320,
+							"y": 50
+						},
+						// move in an arc for 12 beats, facing east, in a radius from current position
+						// to the specified center, in the given cw/ccw direction, one step every 1 beats
+						{
+							"type": "arc",
+							"beats": 12,
+							"beats_per_step": 1,
+							"center_x": 300,
+							"center_y": 32,
+							"direction": "ccw",
+							"facing": "east"
+						},
+						// take 12 beats to get from one specified coordianate to the other, taking one
+						// step every 1 beats, facing east
+						{
+							"type": "even",
+							"beats": 12,
+							"beats_per_step": 1,
+							"x1": 300,
+							"y1": 32,
+							"x1": 300,
+							"y1": 36,
+							"facing": "east"
+						}
 						// ... rest of the movments (~4 per sheet)
 					],
 					"A2": [
