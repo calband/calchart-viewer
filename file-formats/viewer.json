@@ -5,6 +5,8 @@
 	},
 	// the information about the show
 	"show": {
+		// description of the show, for display only
+		"description": "A string description of the show",
 		// dot labels in this show
 		"dot_labels": [
 			"A1",
@@ -64,6 +66,12 @@
 					"A1": [
 						// don't move, facing east, for 12 beats
 						{
+							"type": "stand",
+							"beats": 12,
+							"facing": "east"
+						},
+						// mark time, facing east, for 12 beats
+						{
 							"type": "mark",
 							"beats": 12,
 							"facing": "east"
@@ -88,14 +96,16 @@
 							"to_y": 60
 						},
 						// move in an arc for 12 beats, facing east, in a radius from current position
-						// to the specified center, in the given cw/ccw direction, one step every 1 beats
+						// to the specified center, in the given cw/ccw direction, one step every 1 beats,
+						// over the specified angle in degrees
 						{
 							"type": "arc",
-							"beats": 12,
-							"beats_per_step": 1,
 							"center_x": 300,
 							"center_y": 32,
+							"angle": 240,
 							"direction": "ccw",
+							"beats": 12,
+							"beats_per_step": 1,
 							"facing": "east"
 						},
 						// take 12 beats to get from one specified coordianate to the other, taking one
