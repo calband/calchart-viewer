@@ -59,13 +59,17 @@
 						{
 							"type": "stand",
 							"beats": 12,
-							"facing": "east"
+							"facing": "east",
+							"x": 12,
+							"y": 14
 						},
 						// mark time, facing east, for 12 beats
 						{
 							"type": "mark",
 							"beats": 12,
-							"facing": "east"
+							"facing": "east",
+							"x": 12,
+							"y": 14
 						},
 						// move west, facing east, for 12 beats, one step every 1 beats
 						{
@@ -73,6 +77,8 @@
 							"beats": 12,
 							"beats_per_step": 1,
 							"direction": "west",
+							"start_x": 12,
+							"start_y": 14,
 							"facing": "east"
 						},
 						// move in an arc for 12 beats in a radius from current position
