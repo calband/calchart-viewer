@@ -47,15 +47,6 @@
 					"solid-backslash": ["Execute viewer file continuity 24 west"]
 					// ... rest of the continuities per type
 				},
-				// the initial positions in this stuntsheet for each dot
-				"initial_positions": {
-					// a dict containing coordinates, in steps, from the top left of the field
-					"A1": {
-						"x": 320,
-						"y": 32
-					},
-					// ... rest of the initial positions (~250)
-				},
 				// how long the sheet is, in number of beats
 				"beats": 24,
 				// movements for each dot in this sheet
@@ -84,29 +75,22 @@
 							"direction": "west",
 							"facing": "east"
 						},
-						// every beat, automatically goto the given coordinate, in steps, given from the
-						// top left of the field. if the dot is already at this position, do
-						// nothing
-						{
-							"type": "goto",
-							"beats": 1,
-							"from_x": 320,
-							"from_y": 50,
-							"to_x": 320,
-							"to_y": 60
-						},
-						// move in an arc for 12 beats, facing east, in a radius from current position
+						// move in an arc for 12 beats in a radius from current position
 						// to the specified center, in the given cw/ccw direction, one step every 1 beats,
-						// over the specified angle in degrees
+						// over the specified angle in degrees, while facing away from the direction of travel
+						// by an offset of 90 degrees in the given cw/ccw direction
 						{
 							"type": "arc",
+							"start_x": 40,
+							"start_y": 50,
 							"center_x": 300,
 							"center_y": 32,
 							"angle": 240,
 							"direction": "ccw",
 							"beats": 12,
 							"beats_per_step": 1,
-							"facing": "east"
+							"facing_offset": 90,
+							"face_offset_direction": "ccw"
 						},
 						// take 12 beats to get from one specified coordianate to the other, taking one
 						// step every 1 beats, facing east
