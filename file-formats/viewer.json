@@ -81,6 +81,18 @@
 							"start_y": 14,
 							"facing": "east"
 						},
+						// every beat, automatically goto the given coordinate, in steps, given from the
+						// top left of the field. if the dot is already at this position, do
+						// nothing
+						{
+							"type": "goto",
+							"beats": 1,
+							"from_x": 320,
+							"from_y": 50,
+							"to_x": 320,
+							"to_y": 60
+							"facing": "east"
+						},
 						// move in an arc for 12 beats in a radius from current position
 						// to the specified center, in the given cw/ccw direction, one step every 1 beats,
 						// over the specified angle in degrees, while facing away from the direction of travel
