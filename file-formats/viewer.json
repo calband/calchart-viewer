@@ -47,15 +47,6 @@
 					"solid-backslash": ["Execute viewer file continuity 24 west"]
 					// ... rest of the continuities per type
 				},
-				// the initial positions in this stuntsheet for each dot
-				"initial_positions": {
-					// a dict containing coordinates, in steps, from the top left of the field
-					"A1": {
-						"x": 320,
-						"y": 32
-					},
-					// ... rest of the initial positions (~250)
-				},
 				// how long the sheet is, in number of beats
 				"beats": 24,
 				// movements for each dot in this sheet
@@ -65,28 +56,45 @@
 					// of movement it is. all the "type"s are noted here:
 					"A1": [
 						// don't move, facing east, for 12 beats
+						// stand at the given x and y coordinates (measured in number of steps from
+						// the upper left corner of the field). the x and y coordinates may have
+						// float values
 						{
 							"type": "stand",
 							"beats": 12,
-							"facing": "east"
+							"facing": "east",
+							"x": 12,
+							"y": 14
 						},
 						// mark time, facing east, for 12 beats
+						// mark time at the given x and y coordinates (measured in number of steps from
+						// the upper left corner of the field). the x and y coordinates may have
+						// float values
 						{
 							"type": "mark",
 							"beats": 12,
-							"facing": "east"
+							"facing": "east",
+							"x": 12,
+							"y": 14
 						},
 						// move west, facing east, for 12 beats, one step every 1 beats
+						// start the movement at the given x and y coordinates (measured in number of
+						// steps from the upper left corner of the field). the x and y coordinates may
+						// have float values.
 						{
 							"type": "move",
 							"beats": 12,
 							"beats_per_step": 1,
 							"direction": "west",
+							"start_x": 12,
+							"start_y": 14,
 							"facing": "east"
 						},
 						// every beat, automatically goto the given coordinate, in steps, given from the
 						// top left of the field. if the dot is already at this position, do
 						// nothing
+						// the start and end coordinates are measured in number of steps from the upper left
+						// corner of the field. these coordinates may have float values.
 						{
 							"type": "goto",
 							"beats": 1,
@@ -94,22 +102,31 @@
 							"from_y": 50,
 							"to_x": 320,
 							"to_y": 60
+							"facing": "east"
 						},
-						// move in an arc for 12 beats, facing east, in a radius from current position
+						// move in an arc for 12 beats in a radius from current position
 						// to the specified center, in the given cw/ccw direction, one step every 1 beats,
-						// over the specified angle in degrees
+						// over the specified angle in degrees, while facing away from the direction of travel
+						// by an offset of 90 degrees in the given cw/ccw direction
+						// the start coordinates and arc center coordinates are measured in number of steps from
+						// the upper left corner of the field. these coordinates can have float values.
 						{
 							"type": "arc",
+							"start_x": 40,
+							"start_y": 50,
 							"center_x": 300,
 							"center_y": 32,
 							"angle": 240,
 							"direction": "ccw",
 							"beats": 12,
 							"beats_per_step": 1,
-							"facing": "east"
+							"facing_offset": 90,
+							"face_offset_direction": "ccw"
 						},
 						// take 12 beats to get from one specified coordianate to the other, taking one
 						// step every 1 beats, facing east
+						// the start and end coordinates are measured in steps from the upper left corner of
+						// the field. they may have float values.
 						{
 							"type": "even",
 							"beats": 12,
