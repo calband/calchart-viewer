@@ -56,6 +56,9 @@
 					// of movement it is. all the "type"s are noted here:
 					"A1": [
 						// don't move, facing east, for 12 beats
+						// stand at the given x and y coordinates (measured in number of steps from
+						// the upper left corner of the field). the x and y coordinates may have
+						// float values
 						{
 							"type": "stand",
 							"beats": 12,
@@ -64,6 +67,9 @@
 							"y": 14
 						},
 						// mark time, facing east, for 12 beats
+						// mark time at the given x and y coordinates (measured in number of steps from
+						// the upper left corner of the field). the x and y coordinates may have
+						// float values
 						{
 							"type": "mark",
 							"beats": 12,
@@ -72,6 +78,9 @@
 							"y": 14
 						},
 						// move west, facing east, for 12 beats, one step every 1 beats
+						// start the movement at the given x and y coordinates (measured in number of
+						// steps from the upper left corner of the field). the x and y coordinates may
+						// have float values.
 						{
 							"type": "move",
 							"beats": 12,
@@ -84,6 +93,8 @@
 						// every beat, automatically goto the given coordinate, in steps, given from the
 						// top left of the field. if the dot is already at this position, do
 						// nothing
+						// the start and end coordinates are measured in number of steps from the upper left
+						// corner of the field. these coordinates may have float values.
 						{
 							"type": "goto",
 							"beats": 1,
@@ -97,6 +108,8 @@
 						// to the specified center, in the given cw/ccw direction, one step every 1 beats,
 						// over the specified angle in degrees, while facing away from the direction of travel
 						// by an offset of 90 degrees in the given cw/ccw direction
+						// the start coordinates and arc center coordinates are measured in number of steps from
+						// the upper left corner of the field. these coordinates can have float values.
 						{
 							"type": "arc",
 							"start_x": 40,
@@ -112,6 +125,8 @@
 						},
 						// take 12 beats to get from one specified coordianate to the other, taking one
 						// step every 1 beats, facing east
+						// the start and end coordinates are measured in steps from the upper left corner of
+						// the field. they may have float values.
 						{
 							"type": "even",
 							"beats": 12,
