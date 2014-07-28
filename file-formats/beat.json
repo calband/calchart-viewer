@@ -1,0 +1,14 @@
+{
+	"meta": {
+		"version": "1.0.0"
+	},
+	// array of beat transitions, in milliseconds from the start of the music
+	// file, or from the last transition
+	"beats": [
+		100,
+		100,
+		100,
+		200,
+		// ...
+	]
+}
