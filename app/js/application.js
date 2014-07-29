@@ -1,4 +1,4 @@
-var ApplicationController = require("viewer/ApplicationController");
+var ApplicationController = require("./viewer/ApplicationController");
 
 $(document).ready(function () {
     var applicationController = ApplicationController.getInstance();
