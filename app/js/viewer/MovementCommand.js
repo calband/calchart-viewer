@@ -48,7 +48,7 @@ var MovementCommand = function(startX, startY, endX, endY, numBeats) {
 	 * getAnimationState(beatNum) method
 	 * Returns an AnimationState describing a marcher
 	 * who is executing this movement.
-	 * @param beatNum The beat of this movement that
+	 * @param {Number} beatNum The beat of this movement that
 	 * the marcher is currently executing (relative
 	 * to the start of the movement).
 	 * @returns {AnimationState} An AnimationState describing
