@@ -1,4 +1,5 @@
 var ApplicationController = function () {
+    console.log("ApplicationController loaded.");
     this.applicationStateDelegate = null;
     this.show = null;
 };
