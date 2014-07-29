@@ -9,7 +9,7 @@ The goal of Calchart Viewer is to provide an easy way for Cal Band members to pr
 
 ### Installing and building
 
-1. Install [nodejs](http://nodejs.org/). They come packaged together on windows and mac. For linux, please see [this post](https://www.npmjs.org/doc/README.html).
+1. Install [nodejs](http://nodejs.org/). Node comes packaged together with npm ("node package manager") on windows and mac. For linux, please see [this post](https://www.npmjs.org/doc/README.html).
 2. Navigate to the project root in your terminal of choice.
 3. `npm install`: this will install all the dependencies needed to compile the javascript in this project.
 4. `npm install -g grunt-cli`: this will allow you to run grunt commands.
