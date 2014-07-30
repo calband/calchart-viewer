@@ -20,40 +20,39 @@ var Coordinate = require("./Coordinate");
  * @param {int} numBeats The duration of the movement, in beats. 
  **/
 var MovementCommand = function(startX, startY, endX, endY, numBeats) {
-	/**
-	 * The x component of the movement's start position.
-	 *
-	 * @type {float}
-	 */
-	this._startX = startX;
-	
-	/**
-	 * The y component of the movement's start position.
-	 *
-	 * @type {float}
-	 */
-	this._startY = startY;
-	
-	/**
-	 * The x component of the movement's end position.
-	 *
-	 * @type {float}
-	 */
-	this._endX = endX;
-	
-	/**
-	 * The y component of the movement's end position.
-	 *
-	 * @type {float}
-	 */
-	this._endY = endY;
-	
-	/**
-	 * The duration of the command, in beats.
-	 *
-	 * @type {int}
-	 */
-	this._numBeats = numBeats;
+    /**
+     * The x component of the movement's start position, measured in
+     * steps from the upper left corner of the field.
+     * @type {float}
+     */
+    this._startX = startX;
+    
+    /**
+     * The y component of the movement's start position, measured in
+     * steps from the upper left corner of the field.
+     * @type {float}
+     */
+    this._startY = startY;
+    
+    /**
+     * The x component of the movement's end position, measured in
+     * steps from the upper left corner of the field.
+     * @type {float}
+     */
+    this._endX = endX;
+    
+    /**
+     * The y component of the movement's end position, measured in
+     * steps from the upper left corner of the field.
+     * @type {float}
+     */
+    this._endY = endY;
+    
+    /**
+     * The duration of the command, in beats.
+     * @type {int}
+     */
+    this._numBeats = numBeats;
 }
 
 /**
@@ -62,17 +61,7 @@ var MovementCommand = function(startX, startY, endX, endY, numBeats) {
  * @return {Coordinate} The position where the movement begins.
  */
 MovementCommand.prototype.getStartPosition = function() {
-		return new Coordinate(this._startX, this._startY);
-}
-	
-
-/**
- * Returns the position at which this movement starts.
- *
- * @return {Coordinate} The position where the movement begins.
- */
-MovementCommand.prototype.getStartPosition = function() {
-	return new Coordinate(this._startX, this._startY);
+        return new Coordinate(this._startX, this._startY);
 }
 
 /**
@@ -81,7 +70,7 @@ MovementCommand.prototype.getStartPosition = function() {
  * @return {Coordinate} The position where the movement ends.
  */
 MovementCommand.prototype.getEndPosition = function() {
-	return new Coordinate(this._endX, this._endY);
+    return new Coordinate(this._endX, this._endY);
 }
 
 /**
@@ -91,7 +80,7 @@ MovementCommand.prototype.getEndPosition = function() {
  * @return {int} The duration of this command, in beats.
  */
 MovementCommand.prototype.getBeatDuration = function() {
-	return this._numBeats;
+    return this._numBeats;
 }
 
 /**
@@ -105,7 +94,7 @@ MovementCommand.prototype.getBeatDuration = function() {
  * a marcher who is executing this movement.
  */
 MovementCommand.prototype.getAnimationState = function(beatNum) {
-	console.log("getAnimationState called");
+    console.log("getAnimationState called");
 }
 
 
