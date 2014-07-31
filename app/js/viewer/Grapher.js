@@ -22,7 +22,7 @@ var Grapher = function(fieldType, drawTarget) {
     
     /**
      * The HTML element to which the Grapher is draw.
-     * @type {object}
+     * @type {jQuery}
      */
     this._drawTarget = drawTarget;
 }
