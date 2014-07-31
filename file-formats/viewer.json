@@ -1,10 +1,13 @@
 {
 	// meta information about the file
 	"meta": {
-		"version": "1.0.0"
+		"version": "1.0.0",
+               "index_name": "2013-pixar-show"
 	},
 	// the information about the show
 	"show": {
+               "title": "The Pixar Show",
+               "year": "2013",
 		// description of the show, for display only
 		"description": "A string description of the show",
 		// dot labels in this show
