@@ -19,3 +19,7 @@ The goal of Calchart Viewer is to provide an easy way for Cal Band members to pr
 ### Developing
 
 When you change a javascript file, you will have to compile `build/js/application.js` again by running `grunt webpack:build`. You should run `grunt watch` from the project root: this will start a task that listens for changes to the javascript files and autocompiles `build/js/application.js` on every change.
+
+#### Architecture Diagram
+
+You can find a very high level overview of how the code architecture should work and interact with the UI [here](http://imgur.com/yw7FbWL.png).
