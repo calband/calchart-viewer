@@ -22,4 +22,4 @@ When you change a javascript file, you will have to compile `build/js/applicatio
 
 #### Architecture Diagram
 
-You can find a very high level overview of how the code architecture should work and interact with the UI [here](http://i.imgur.com/QcHpxAU.png).
+You can find a very high level overview of how the code architecture should work and interact with the UI [here](http://imgur.com/yw7FbWL.png).
