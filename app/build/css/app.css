@@ -2,9 +2,12 @@
   width: 960px;
   margin: 0 auto;
 }
+.header,
+.main {
+  font-size: 0;
+}
 .header {
   margin-top: 20px;
-  font-size: 0;
   border-bottom: 1px solid #fdb515;
   padding-bottom: 20px;
 }
@@ -53,4 +56,44 @@
 }
 .header .header-files .files .file-input {
   display: block;
+}
+.main .graph-container,
+.main .controls-container {
+  display: inline-block;
+  margin-top: 20px;
+}
+.main .graph-container {
+  width: 576px;
+}
+.main .controls-container {
+  width: 384px;
+}
+.main .controls-container .show-title,
+.main .controls-container .stuntsheet,
+.main .controls-container .beats {
+  color: #193460;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+}
+.main .controls-container .show-title {
+  height: 25px;
+  line-height: 25px;
+  font-size: 18px;
+  width: 100%;
+  border-bottom: 1px solid #193460;
+}
+.main .controls-container .animation-state {
+  margin-top: 5px;
+}
+.main .controls-container .stuntsheet,
+.main .controls-container .beats {
+  display: block;
+  height: 30px;
+  line-height: 30px;
+  font-size: 20px;
+}
+.main .controls-container .stuntsheet {
+  float: left;
+}
+.main .controls-container .beats {
+  float: right;
 }

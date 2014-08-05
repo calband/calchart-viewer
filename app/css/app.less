@@ -9,9 +9,12 @@
     margin: 0 auto;
 }
 
+.header, .main {
+    font-size: 0; // to mitigate inline-block spacing issues
+}
+
 .header {
     margin-top: 20px;
-    font-size: 0; // to mitigate inline-block spacing issues
     border-bottom: 1px solid @calband-gold;
     padding-bottom: 20px;
     .header-image, .header-title, .header-files {
@@ -64,6 +67,54 @@
             .file-input {
                 display: block;
             }
+        }
+    }
+}
+
+.main {
+    .graph-container, .controls-container {
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+    .graph-container {
+        width: @main-width * 0.6;
+    }
+
+    .controls-container {
+        width: @main-width * 0.4;
+
+        .show-title, .stuntsheet, .beats {
+            color: @calband-blue;
+            font-family: @sans;
+        }
+
+        .show-title {
+            height: 25px;
+            line-height: 25px;
+            font-size: 18px;
+            width: 100%;
+
+            border-bottom: 1px solid @calband-blue;
+        }
+
+        .animation-state {
+            margin-top: 5px;
+        }
+
+        .stuntsheet, .beats {
+            display: block;
+            height: 30px;
+            line-height: 30px;
+            font-size: 20px;
+        }
+
+        .stuntsheet {
+            float: left;
+        }
+
+        .beats {
+            float: right;
         }
     }
 }
