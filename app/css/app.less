@@ -21,22 +21,41 @@
         margin-right: 20px;
     }
 
-    .header-title {
+    .header-title .title, .header-files .files-description {
+        border-bottom: 1px solid @calband-gold;
+        height: 40px;
+        line-height: 40px;
+    }
+
+    .header-title, .header-files {
         font-family: @sans;
         color: @calband-blue;
-        width: @main-width * 0.3;
+    }
 
+    .header-title {
         .title {
-            border-bottom: 1px solid @calband-gold;
-            height: 40px;
-            line-height: 40px;
             font-size: 30px;
+            width: @main-width * 0.4;
         }
 
         .version {
             height: 30px;
             line-height: 30px;
             font-size: 14px;
+        }
+    }
+
+    .header-files {
+        label {
+            font-size: 14px;
+            color: @calband-blue;
+        }
+        .files-description {
+            font-size: 20px;
+            width: @main-width * 0.3;
+        }
+        .files {
+            margin-top: 10px;
         }
     }
 }
