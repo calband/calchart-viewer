@@ -1,3 +1,7 @@
+.clearfix {
+  display: block;
+  clear: both;
+}
 .container {
   width: 960px;
   margin: 0 auto;
@@ -70,7 +74,8 @@
 }
 .main .controls-container .show-title,
 .main .controls-container .stuntsheet,
-.main .controls-container .beats {
+.main .controls-container .beats,
+.main .controls-container .next-prev-control {
   color: #193460;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
 }
@@ -84,6 +89,11 @@
 .main .controls-container .animation-state {
   margin-top: 5px;
 }
+.main .controls-container .animation-state:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 .main .controls-container .stuntsheet,
 .main .controls-container .beats {
   display: block;
@@ -96,4 +106,25 @@
 }
 .main .controls-container .beats {
   float: right;
+}
+.main .controls-container .increment-control {
+  display: inline-block;
+  width: 187px;
+  border: 1px solid #193460;
+  box-sizing: border-box;
+  padding-left: 5px;
+  margin-top: 10px;
+  cursor: pointer;
+  height: 30px;
+  line-height: 30px;
+  font-size: 15px;
+}
+.main .controls-container .increment-control.next {
+  border-right: 25px solid #193460;
+}
+.main .controls-container .increment-control.prev {
+  border-left: 25px solid #193460;
+}
+.main .controls-container .increment-control:first-child {
+  margin-right: 10px;
 }
