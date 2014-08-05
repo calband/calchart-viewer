@@ -2,3 +2,32 @@
   width: 960px;
   margin: 0 auto;
 }
+.header {
+  margin-top: 20px;
+  font-size: 0;
+}
+.header .header-image,
+.header .header-title,
+.header .header-files {
+  display: inline-block;
+  vertical-align: top;
+}
+.header .header-image {
+  margin-right: 20px;
+}
+.header .header-title {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  color: #193460;
+  width: 288px;
+}
+.header .header-title .title {
+  border-bottom: 1px solid #fdb515;
+  height: 40px;
+  line-height: 40px;
+  font-size: 30px;
+}
+.header .header-title .version {
+  height: 30px;
+  line-height: 30px;
+  font-size: 14px;
+}

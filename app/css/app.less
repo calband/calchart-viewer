@@ -1,5 +1,42 @@
+@calband-blue: #193460;
+@calband-gold: #FDB515;
+
+@sans: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+
 @main-width: 960px;
 .container {
-	width: @main-width;
-	margin: 0 auto;
+    width: @main-width;
+    margin: 0 auto;
+}
+
+.header {
+    margin-top: 20px;
+    font-size: 0; // to mitigate inline-block spacing issues
+    .header-image, .header-title, .header-files {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .header-image {
+        margin-right: 20px;
+    }
+
+    .header-title {
+        font-family: @sans;
+        color: @calband-blue;
+        width: @main-width * 0.3;
+
+        .title {
+            border-bottom: 1px solid @calband-gold;
+            height: 40px;
+            line-height: 40px;
+            font-size: 30px;
+        }
+
+        .version {
+            height: 30px;
+            line-height: 30px;
+            font-size: 14px;
+        }
+    }
 }
