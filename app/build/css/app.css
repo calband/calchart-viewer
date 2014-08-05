@@ -75,7 +75,8 @@
 .main .controls-container .show-title,
 .main .controls-container .stuntsheet,
 .main .controls-container .beats,
-.main .controls-container .next-prev-control {
+.main .controls-container .next-prev-control,
+.main .controls-container .control-button {
   color: #193460;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
 }
@@ -107,17 +108,29 @@
 .main .controls-container .beats {
   float: right;
 }
+.main .controls-container .increment-control,
+.main .controls-container .control-button {
+  height: 30px;
+  line-height: 30px;
+  font-size: 13px;
+  margin-top: 10px;
+  cursor: pointer;
+}
 .main .controls-container .increment-control {
   display: inline-block;
   width: 187px;
   border: 1px solid #193460;
   box-sizing: border-box;
   padding-left: 5px;
-  margin-top: 10px;
-  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: moz-none;
+  -ms-user-select: none;
+  user-select: none;
   height: 30px;
   line-height: 30px;
-  font-size: 15px;
+  font-size: 13px;
 }
 .main .controls-container .increment-control.next {
   border-right: 25px solid #193460;
@@ -127,4 +140,14 @@
 }
 .main .controls-container .increment-control:first-child {
   margin-right: 10px;
+}
+.main .controls-container .control-button {
+  width: 382px;
+  border: 1px solid #193460;
+  text-align: center;
+}
+.main .controls-container .control-button.disabled {
+  color: #999;
+  text-decoration: line-through;
+  border-color: #999;
 }

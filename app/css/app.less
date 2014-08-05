@@ -1,3 +1,12 @@
+.unselectable() {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: moz-none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 @calband-blue: #193460;
 @calband-gold: #FDB515;
 
@@ -90,7 +99,7 @@
     .controls-container {
         width: @controls-width;
 
-        .show-title, .stuntsheet, .beats, .next-prev-control {
+        .show-title, .stuntsheet, .beats, .next-prev-control, .control-button {
             color: @calband-blue;
             font-family: @sans;
         }
@@ -128,6 +137,14 @@
             float: right;
         }
 
+        .increment-control, .control-button {
+            height: 30px;
+            line-height: 30px;
+            font-size: 13px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
         @increment-button-margin: 10px;
         @increment-button-highlight-width: 25px;
         @increment-button-width: (@controls-width - @increment-button-margin) / 2;
@@ -137,8 +154,7 @@
             border: 1px solid @calband-blue;
             box-sizing: border-box;
             padding-left: 5px;
-            margin-top: 10px;
-            cursor: pointer;
+            .unselectable();
 
             &.next {
                 border-right: @increment-button-highlight-width solid @calband-blue;
@@ -152,7 +168,19 @@
 
             height: 30px;
             line-height: 30px;
-            font-size: 15px;
+            font-size: 13px;
+        }
+
+        .control-button {
+            width: @controls-width - 2px;
+            border: 1px solid @calband-blue;
+            text-align: center;
+
+            &.disabled {
+                color: #999;
+                text-decoration: line-through;
+                border-color: #999;
+            }
         }
     }
 }
