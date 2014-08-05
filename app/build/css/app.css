@@ -76,7 +76,8 @@
 .main .controls-container .stuntsheet,
 .main .controls-container .beats,
 .main .controls-container .next-prev-control,
-.main .controls-container .control-button {
+.main .controls-container .control-button,
+.main .controls-container .control-container {
   color: #193460;
   font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
 }
@@ -89,6 +90,7 @@
 }
 .main .controls-container .animation-state {
   margin-top: 5px;
+  margin-bottom: 100px;
 }
 .main .controls-container .animation-state:after {
   content: "";
@@ -109,11 +111,15 @@
   float: right;
 }
 .main .controls-container .increment-control,
-.main .controls-container .control-button {
+.main .controls-container .control-button,
+.main .controls-container .control-container {
   height: 30px;
   line-height: 30px;
   font-size: 13px;
   margin-top: 10px;
+}
+.main .controls-container .increment-control,
+.main .controls-container .control-button {
   cursor: pointer;
 }
 .main .controls-container .increment-control {
@@ -150,4 +156,5 @@
   color: #999;
   text-decoration: line-through;
   border-color: #999;
+  cursor: inherit;
 }
