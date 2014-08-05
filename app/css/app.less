@@ -1,0 +1,191 @@
+.unselectable() {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: moz-none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+@calband-blue: #193460;
+@calband-gold: #FDB515;
+
+@sans: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+
+.clearfix {
+    display: block;
+    clear: both;
+}
+
+@main-width: 960px;
+.container {
+    width: @main-width;
+    margin: 0 auto;
+}
+
+.header, .main {
+    font-size: 0; // to mitigate inline-block spacing issues
+}
+
+.header {
+    margin-top: 20px;
+    border-bottom: 1px solid @calband-gold;
+    padding-bottom: 20px;
+    .header-image, .header-title, .header-files {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .header-image {
+        margin-right: 20px;
+    }
+
+    .header-title .title, .header-files .files-description {
+        border-bottom: 1px solid @calband-gold;
+        height: 40px;
+        line-height: 40px;
+    }
+
+    .header-title, .header-files {
+        font-family: @sans;
+        color: @calband-blue;
+    }
+
+    .header-title {
+        .title {
+            font-size: 30px;
+            width: @main-width * 0.4;
+        }
+
+        .version {
+            height: 30px;
+            line-height: 30px;
+            font-size: 14px;
+        }
+    }
+
+    .header-files {
+        label {
+            font-size: 14px;
+            color: @calband-blue;
+            margin-right: 5px;
+            display: inline-block;
+            min-width: 75px;
+        }
+        .files-description {
+            font-size: 20px;
+            width: @main-width * 0.3;
+        }
+        .files {
+            margin-top: 10px;
+            .file-input {
+                display: block;
+            }
+        }
+    }
+}
+
+.main {
+    .graph-container, .controls-container {
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+    .graph-container {
+        width: @main-width * 0.6;
+    }
+
+    @controls-width: @main-width * 0.4;
+    .controls-container {
+        width: @controls-width;
+
+        .show-title, .stuntsheet, .beats, .next-prev-control, .control-button, .control-container {
+            color: @calband-blue;
+            font-family: @sans;
+        }
+
+        .show-title {
+            height: 25px;
+            line-height: 25px;
+            font-size: 18px;
+            width: 100%;
+
+            border-bottom: 1px solid @calband-blue;
+        }
+
+        .animation-state {
+            margin-top: 5px;
+            margin-bottom: 100px;
+            &:after {
+                content: "";
+                display: table;
+                clear: both;
+            }
+        }
+
+        .stuntsheet, .beats {
+            display: block;
+            height: 30px;
+            line-height: 30px;
+            font-size: 20px;
+        }
+
+        .stuntsheet {
+            float: left;
+        }
+
+        .beats {
+            float: right;
+        }
+
+        .increment-control, .control-button, .control-container {
+            height: 30px;
+            line-height: 30px;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .increment-control, .control-button {
+            cursor: pointer;
+        }
+
+        @increment-button-margin: 10px;
+        @increment-button-highlight-width: 25px;
+        @increment-button-width: (@controls-width - @increment-button-margin) / 2;
+        .increment-control {
+            display: inline-block;
+            width: @increment-button-width;
+            border: 1px solid @calband-blue;
+            box-sizing: border-box;
+            padding-left: 5px;
+            .unselectable();
+
+            &.next {
+                border-right: @increment-button-highlight-width solid @calband-blue;
+            }
+            &.prev {
+                border-left: @increment-button-highlight-width solid @calband-blue;
+            }
+            &:first-child {
+                margin-right: @increment-button-margin;
+            }
+
+            height: 30px;
+            line-height: 30px;
+            font-size: 13px;
+        }
+
+        .control-button {
+            width: @controls-width - 2px;
+            border: 1px solid @calband-blue;
+            text-align: center;
+
+            &.disabled {
+                color: #999;
+                text-decoration: line-through;
+                border-color: #999;
+                cursor: inherit;
+            }
+        }
+    }
+}

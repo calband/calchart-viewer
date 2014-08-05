@@ -1,0 +1,53 @@
+.container {
+  width: 960px;
+  margin: 0 auto;
+}
+.header {
+  margin-top: 20px;
+  font-size: 0;
+}
+.header .header-image,
+.header .header-title,
+.header .header-files {
+  display: inline-block;
+  vertical-align: top;
+}
+.header .header-image {
+  margin-right: 20px;
+}
+.header .header-title .title,
+.header .header-files .files-description {
+  border-bottom: 1px solid #fdb515;
+  height: 40px;
+  line-height: 40px;
+}
+.header .header-title,
+.header .header-files {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  color: #193460;
+}
+.header .header-title .title {
+  font-size: 30px;
+  width: 384px;
+}
+.header .header-title .version {
+  height: 30px;
+  line-height: 30px;
+  font-size: 14px;
+}
+.header .header-files label {
+  font-size: 14px;
+  color: #193460;
+  margin-right: 5px;
+  min-width: 60px;
+}
+.header .header-files .files-description {
+  font-size: 20px;
+  width: 288px;
+}
+.header .header-files .files {
+  margin-top: 10px;
+}
+.header .header-files .files .file-input {
+  display: block;
+}

@@ -1,10 +1,63 @@
 <html>
 <head>
-	<title>Calchart Viewer</title>
-	<script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
-	<script type="text/javascript" src="build/js/application.js"></script>
+    <title>Calchart Viewer</title>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="build/css/app.css">
+    <script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="build/js/application.js"></script>
 </head>
 <body>
-	<p>Hello world</p>
+    <div class="container">
+        <div class="header">
+            <div class="header-image">
+                <img src="img/calchart-viewer-highstepper.png">
+            </div>
+            <div class="header-title">
+                <div class="title">Calchart Viewer</div>
+                <div class="version">Version 1.0.0</div>
+            </div>
+            <div class="header-files">
+                <div class="files-description">Files</div>
+                <div class="files">
+                    <div class="file-input"><label for="viewer-file">Viewer file:</label><input type="file" id="viewer-file" class='js-viewer-file'></div>
+                    <div class="file-input"><label for="beats-file">Beats file:</label><input type="file" id="beats-file" class='js-beats-file'></div>
+                    <div class="file-input"><label for="mp3-file">mp3 file:</label><input type="file" id="mp3-file" class='js-mp3-file'></div>
+                </div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="graph-container">
+                <div class="graph"></div>
+            </div>
+            <div class="controls-container">
+                <div class="show-title">The Relationship Show</div>
+                <div class="animation-state">
+                    <div class="stuntsheet">Stuntsheet: <span class="js-stuntsheet-number">3</span></div>
+                    <div class="beats">Beat: <span class="js-beat-number">24</span>/<span class="js-stuntsheet-total">48</span></div>
+                </div>
+                <div class="next-prev-control">
+                    <div class="increment-control prev js-prev-beat">Previous beat</div>
+                    <div class="increment-control next js-next-beat">Next beat</div>
+                </div>
+                <div class="next-prev-control">
+                    <div class="increment-control prev js-prev-stuntsheet">Previous stuntsheet</div>
+                    <div class="increment-control next js-next-stuntsheet">Next stuntsheet</div>
+                </div>
+                <div class="control-button js-animate disabled">
+                    Animate with music
+                </div>
+                <div class="control-container">
+                    <input type="checkbox" class="js-show-selected-dot"><label>Show my dot:</label>
+                    <select class="js-dot-labels">
+                        <option value="A1">A1</option>
+                        <option value="A2">A2</option>
+                    </select>
+                </div>
+                <div class="control-button js-generate-continuity">
+                    Generate continuity for <span class="js-selected-dot-label">A1</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
