@@ -5,8 +5,6 @@
 .header {
   margin-top: 20px;
   font-size: 0;
-  border-bottom: 1px solid #fdb515;
-  padding-bottom: 20px;
 }
 .header .header-image,
 .header .header-title,
@@ -41,8 +39,7 @@
   font-size: 14px;
   color: #193460;
   margin-right: 5px;
-  display: inline-block;
-  min-width: 75px;
+  min-width: 60px;
 }
 .header .header-files .files-description {
   font-size: 20px;
