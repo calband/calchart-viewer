@@ -59,6 +59,16 @@ Grapher.prototype.getFieldType = function() {
  *   dot, or undefined if no dot is selected.
  */
 Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
+    // if we don't have d3 loaded globally, then we can't do anything.
+    if (d3 === undefined) {
+        return;
+    }
+    if (this._fieldType === "college") {
+        this._drawCollegeField();
+    }
+};
+
+Grapher.prototype._drawCollegeField = function() {
 
 };
 
