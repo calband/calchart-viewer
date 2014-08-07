@@ -25,7 +25,7 @@ var Grapher = function(fieldType, drawTarget) {
      * @type {jQuery}
      */
     this._drawTarget = drawTarget;
-}
+};
 
 /**
  * Sets the type of field that the show will be performed on.
@@ -36,7 +36,7 @@ var Grapher = function(fieldType, drawTarget) {
  */
 Grapher.prototype.setFieldType = function(fieldType) {
     this._fieldType = fieldType;
-}
+};
 
 /**
  * Returns the type of field that the show will be performed on.
@@ -46,7 +46,7 @@ Grapher.prototype.setFieldType = function(fieldType) {
  */
 Grapher.prototype.getFieldType = function() {
     return this._fieldType;
-}
+};
 
 /**
  * Draws a moment in a field show. The moment is given as a beat of a
@@ -60,7 +60,7 @@ Grapher.prototype.getFieldType = function() {
  */
 Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
     console.log("Grapher.draw(...) called");
-}
+};
 
 
 module.exports = Grapher;

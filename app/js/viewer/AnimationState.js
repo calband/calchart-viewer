@@ -15,6 +15,6 @@ var AnimationState = function(posX, posY, facingAngle) {
     this.x = posX;
     this.y = posY;
     this.angle = facingAngle;
-}
+};
 
 module.exports = AnimationState;
