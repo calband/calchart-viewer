@@ -59,7 +59,7 @@ Grapher.prototype.getFieldType = function() {
  *   dot, or undefined if no dot is selected.
  */
 Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
-    console.log("Grapher.draw(...) called");
+
 };
 
 
