@@ -60,7 +60,7 @@ Grapher.prototype.getFieldType = function() {
  */
 Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
     // if we don't have d3 loaded globally, then we can't do anything.
-    if (d3 === undefined) {
+    if (!d3) {
         return;
     }
     if (this._fieldType === "college") {
@@ -69,7 +69,15 @@ Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
 };
 
 Grapher.prototype._drawCollegeField = function() {
-
+    // remove any preexsing svgs
+    this._drawTarget.find("svg").remove();
+    var svgWidth = parseInt(this._drawTarget.css("width"), 10); // outer width
+    var svgHeight = parseInt(this._drawTarget.css("height"), 10); // outer height
+    // since d3 requires a node, and not a jquery, we need to do .get(0)
+    var svg = d3.select(this._drawTarget.get(0))
+        .append("svg")
+        .attr("width", svgWidth)
+        .attr("height", svgHeight);
 };
 
 
