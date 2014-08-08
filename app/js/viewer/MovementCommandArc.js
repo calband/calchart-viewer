@@ -2,6 +2,7 @@
  * @fileOverview Defines the MovementCommandArc class.
  */
 
+var ClassUtils = require("./ClassUtils");
 var MathUtils = require("./MathUtils");
 var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
@@ -37,9 +38,9 @@ var MovementCommandArc = function(startX, startY, centerX, centerY, angleToRotat
     this._orientationOffset = MathUtils.toRadians(facingOffset);
     var finalAnimState = this.getAnimationState(beats);
     MovementCommand.apply(this, [startX, startY, finalAnimState.x, finalAnimState.y, beats]);
-}
+};
 
-MovementCommandArc.prototype = new MovementCommand();
+ClassUtils.extends(MovementCommandArc, MovementCommand);
 
 MovementCommandArc.prototype.getAnimationState = function(beatNum) {
     var numSteps = Math.floor(beatNum / this._beatsPerStep);
@@ -47,7 +48,7 @@ MovementCommandArc.prototype.getAnimationState = function(beatNum) {
     var finalX = this._radius * MathUtils.calcRotatedXPos(finalAngle) + this._centerX;
     var finalY = this._radius * MathUtils.calcRotatedYPos(finalAngle) + this._centerY;
     var finalOrientation = MathUtils.quarterTurn(finalAngle, this._movementIsCW) + this._orientationOffset;
-    return new AnimationState(finalX, finalY, MathUtils.toDegrees(MathUtils.toGrapherStandard(finalOrientation)));
-}
+    return new AnimationState(finalX, finalY, MathUtils.toDegrees(finalOrientation));
+};
 
 module.exports = MovementCommandArc;

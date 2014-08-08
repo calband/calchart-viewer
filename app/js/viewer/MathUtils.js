@@ -9,15 +9,10 @@
  * x-axis points rightward.
  
  * NOTES ABOUT ANGLE MEASUREMENT:
- * Unless otherwise specified, angles are NOT measured in the same way
- * as they are measured for the Grapher; instead, they are measured
- * clockwise from the positive x-axis. Throughout this file, such a
- * measurement scheme will be referred to as being relative to "reflected
- * standard position" (since it is the same as traditional standard position,
- * but reflected across the x-axis). Additionally, the angle measurement
- * scheme used by the Grapher, which measures angles clockwise from the
- * positive y-xis, will be referred to as being relative to "Grapher standard
- * position".
+ * Unless otherwise specified, angles are measured in the same way
+ * as they are measured for the Grapher: clockwise from the positive
+ * y-axis. Thoughout this file, this angle measurement scheme will be
+ * referred to as being relative to "Grapher standard position."
  */
 
  
@@ -26,7 +21,7 @@
  * file.
  * @type {object}
  */
-MathUtils = new Object();
+MathUtils = {};
 
  
 //=============================================
@@ -79,7 +74,7 @@ MathUtils.calcSquaredDistance = function(fromX, fromY, toX, toY) {
     var deltaX = toX - fromX;
     var deltaY = toY - fromY;
     return (deltaX * deltaX) + (deltaY * deltaY);
-}
+};
 
 /**
  * Calculates the distance between two points.
@@ -93,11 +88,11 @@ MathUtils.calcSquaredDistance = function(fromX, fromY, toX, toY) {
  */
 MathUtils.calcDistance = function(fromX, fromY, toX, toY) {
     return Math.sqrt(this.calcSquaredDistance(fromX, fromY, toX, toY));
-}
+};
 
 /**
  * Calculates the angle toward which a vector is facing, in radians.
- * The angle is measured relative to reflected standard position.
+ * The angle is measured relative to Grapher standard position.
  *
  * @param {float} vectorX The x component of the vector.
  * @param {float} vectorY The y component of the vector.
@@ -105,12 +100,12 @@ MathUtils.calcDistance = function(fromX, fromY, toX, toY) {
  * radians.
  */
 MathUtils.calcAngle = function(vectorX, vectorY) {
-    var angle = Math.atan(vectorY / vectorX);
-    if (vectorX < 0) {
+    var angle = Math.atan(-vectorX / vectorY);
+    if (vectorY < 0) {
         angle += Math.PI;
     }
     return angle;
-}
+};
 
 /**
  * Returns the angle to which a point has been rotated
@@ -122,39 +117,39 @@ MathUtils.calcAngle = function(vectorX, vectorY) {
  * @param {float} centerY The y coordinate of the center.
  * @return {float} The angle to which a point has been rotated
  *   around a center. The angle is measured in radians,
- *   relative to reflected standard position.
+ *   relative to Grapher standard position.
  */
 MathUtils.calcAngleAbout = function(pointX, pointY, centerX, centerY) {
     return this.calcAngle(pointX - centerX, pointY - centerY);
-}
+};
 
 /**
  * Calculates the x position of a point rotated along the unit
- * circle by an angle measured relative to reflected standard
+ * circle by an angle measured relative to Grapher standard
  * position.
  *
  * @param {float} angle The angle by which to rotate the point,
- *   measured in radians relative to reflected standard position.
+ *   measured in radians relative to Grapher standard position.
  * @return {float} The final x position of the point, rotated along the
  *   unit circle.
  */
 MathUtils.calcRotatedXPos = function(angle) {
-    return Math.cos(angle);
-}
+    return -Math.sin(angle);
+};
 
 /**
  * Calculates the y position of a point rotated along the unit
- * circle by an angle measured relative to reflected standard
+ * circle by an angle measured relative to Grapher standard
  * position.
  *
  * @param {float} angle The angle by which to rotate the point,
- *   measured in radians relative to reflected standard position.
+ *   measured in radians relative to Grapher standard position.
  * @return {float} The final y position of the point, rotated along the
  *   unit circle.
  */
 MathUtils.calcRotatedYPos = function(angle) {
-    return Math.sin(angle);
-}
+    return Math.cos(angle);
+};
 
 /**
  * Rotates an angle by a quarter-turn in
@@ -164,10 +159,12 @@ MathUtils.calcRotatedYPos = function(angle) {
  * @param {bool} isCW True if the angle should be
  *   rotated clockwise; false if the angle should 
  *   be rotated counter-clockwise.
+ * @return The angle, rotated by a quarter turn.
+ *   This angle is measured in radians.
  */
 MathUtils.quarterTurn = function(angle, isCW) {
     return angle + ((isCW * 2 - 1) * this.PI_OVER_TWO);
-}
+};
 
 /**
  * For an angle measured in degrees, will
@@ -186,7 +183,7 @@ MathUtils.wrapAngleDegrees = function(angle) {
         angle += 360;
     }
     return angle;
-}
+};
 
 /**
  * For an angle measured in radians, will
@@ -205,7 +202,7 @@ MathUtils.wrapAngleRadians = function(angle) {
         angle += this.TWO_PI;
     }
     return angle;
-}
+};
 
 /**
  * Converts an angle measured in degrees to one
@@ -216,7 +213,7 @@ MathUtils.wrapAngleRadians = function(angle) {
  */
 MathUtils.toRadians = function(angle) {
     return angle * this.DEGREES_TO_RADIANS_CONV_FACTOR;
-}
+};
 
 /**
  * Converts an angle measured in radians to one
@@ -227,36 +224,6 @@ MathUtils.toRadians = function(angle) {
  */
 MathUtils.toDegrees = function(angle) {
     return angle * this.RADIANS_TO_DEGREES_CONV_FACTOR;
-}
-
-/**
- * Converts an angle that is measured in radians,
- * relative to reflected standard position, into 
- * one that is measured in radians relative to
- * Grapher standard position.
- *
- * @param {float} angle An angle measured in radians
- *   relative to reflected standard position.
- * @return {float} An equivalent angle, measured in
- *   radians relative to Grapher standard position.
- */
-MathUtils.toGrapherStandard = function(angle) {
-    return angle - this.PI_OVER_TWO;
-}
-
-/**
- * Converts an angle, measured in radians relative to
- * the grapher standard position, into one that is
- * measured in radians relative to reflected standard
- * position.
- *
- * @param {float} angle An angle measured in radians
- *   relative to the grapher standard position.
- * @return {float} An equivalent angle, measured in
- *   radians relative to the reflected standard position.
- */
-MathUtils.toReflectedStandard = function(angle) {
-    return angle + this.PI_OVER_TWO;
-}
+};
 
 module.exports = MathUtils;
