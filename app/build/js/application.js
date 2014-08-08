@@ -183,6 +183,25 @@
 	};
 
 	/**
+	 * The aspect ratio of a college football field, given in height/width.
+	 * @type {float}
+	 */
+	Grapher.COLLEGE_FIELD_ASPECT_RATIO = 0.5333;
+
+	/**
+	 * How many steps there are horizontally across a regular college football
+	 * field.
+	 * @type {int}
+	 */
+	Grapher.COLLEGE_FIELD_STEPS_HORIZONTAL = 84;
+
+	/**
+	 * How many steps there are vertically across a regular college football field.
+	 * @type {int}
+	 */
+	Grapher.COLLEGE_FIELD_STEPS_VERTICAL = 160;
+
+	/**
 	 * Sets the type of field that the show will be performed on.
 	 *
 	 * @param {string} fieldType The type of field that the show will
@@ -223,8 +242,61 @@
 	    }
 	};
 
+	/**
+	 * Return a d3 scale which maps an integer number of steps from the top of a
+	 * college field to the pixel value, offset from the top of the svg whose
+	 * height is the provided svgHeight, where a dot that many steps from the top
+	 * should be rendered. This is the y scale for mapping steps to pixel
+	 * coordinates in the svg.
+	 *
+	 * Note: a d3 scale is just a function that takes the input and return the
+	 * output. for example, if I have scale = _getVerticalStepScale(...), I can
+	 * call scale(50) to find the pixel y-offset that a dot 50 steps from the top
+	 * of the field should be placed at.
+	 *
+	 * Note: this scale takes padding into account: its output is relative to the entire
+	 * svg container, not just the field area of the svg.
+	 *
+	 * @param  {Number} fieldWidth the width of the field, in pixels: we need this
+	 *   in order to preserve the football field aspect ratio.
+	 * @param  {Number} svgHeight the total height of the svg container which
+	 *   this scale will be relevant to.
+	 * @return {function(int):Number} the scale
+	 */
+	Grapher.prototype._getVerticalStepScale = function (fieldWidth, svgHeight) {
+	    var fieldHeight = fieldWidth * Grapher.COLLEGE_FIELD_ASPECT_RATIO;
+	    var fieldVerticalPadding = (svgHeight - fieldHeight) / 2;
+	    var top = fieldVerticalPadding;
+	    var bottom = svgHeight - fieldVerticalPadding;
+	    return d3.scale.linear()
+	        .domain([0, Grapher.COLLEGE_FIELD_STEPS_VERTICAL]) // 84 8-per-5 steps vertically in a field
+	        .range([top, bottom]);
+	};
+
+	/**
+	 * Return a d3 scale which maps an integer number of steps from the left
+	 * endzone (the 0 yardline) of a college field to a pixel value for what x
+	 * coordinate a dot should have, in the svg container specified by svgWidth,
+	 * if that dot is that many steps from the left 0 yardline. This is the x scale
+	 * for mapping steps to pixel coordinates in the svg.
+	 *
+	 * Note: this scale takes padding into account: its output is relative to the entire
+	 * svg container, not just the field area of the svg.
+	 * 
+	 * @param  {Number} svgWidth the total width of the svg container
+	 * @param  {object} fieldPadding a dict with "left" and "right" keys,
+	 *   specifying the space that should be between the edges of the svg
+	 *   container and the edges of the left and right 0 yardlines, respectively.
+	 * @return {function(int):Number} the x scale
+	 */
+	Grapher.prototype._getHorizontalStepScale = function (svgWidth, fieldPadding) {
+	    return d3.scale.linear()
+	        .domain([0, Grapher.COLLEGE_FIELD_STEPS_HORIZONTAL]) // 160 8-per-5 steps from field end to end
+	        .range([fieldPadding.left, svgWidth - fieldPadding.right]);
+	};
+
 	Grapher.prototype._drawCollegeField = function() {
-	    // remove any preexsing svgs
+	    // remove any preexisting svgs
 	    this._drawTarget.find("svg").remove();
 	    var svgWidth = parseInt(this._drawTarget.css("width"), 10); // outer width
 	    var svgHeight = parseInt(this._drawTarget.css("height"), 10); // outer height
@@ -233,6 +305,50 @@
 	        .append("svg")
 	        .attr("width", svgWidth)
 	        .attr("height", svgHeight);
+
+	    // the space inside the green area, but outside the white field lines
+	    var fieldPadding = {
+	        left: 10, // pixels
+	        right: 10
+	    };
+
+	    // append the field background (green part)
+	    svg.append("g")
+	        .attr("class", "field-wrap")
+	        .append("rect")
+	        .attr("class", "field")
+	        .attr("width", svgWidth)
+	        .attr("height", svgHeight);
+
+	    var svgContentWidth = svgWidth - fieldPadding.left - fieldPadding.right;
+	    var yScale = this._getVerticalStepScale(svgContentWidth, svgHeight);
+	    var xScale = this._getHorizontalStepScale(svgWidth, fieldPadding);
+
+	    // append the field lines
+	    var endLinesGroup = svg.append("g")
+	        .attr("class", "end-lines-wrap");
+
+	    // endzone lines
+	    endLinesGroup.selectAll("line.endline.vertical")
+	        .data([0, Grapher.COLLEGE_FIELD_STEPS_HORIZONTAL])
+	        .enter()
+	        .append("line")
+	        .attr("class", "endline vertical")
+	        .attr("x1", xScale)
+	        .attr("x2", xScale)
+	        .attr("y1", yScale(0))
+	        .attr("y2", yScale(Grapher.COLLEGE_FIELD_STEPS_VERTICAL));
+
+	    // top lines
+	    endLinesGroup.selectAll("line.endline.horizontal")
+	        .data([0, Grapher.COLLEGE_FIELD_STEPS_VERTICAL])
+	        .enter()
+	        .append("line")
+	        .attr("class", "endline horizontal")
+	        .attr("y1", yScale)
+	        .attr("y2", yScale)
+	        .attr("x1", xScale(0))
+	        .attr("x2", xScale(Grapher.COLLEGE_FIELD_STEPS_HORIZONTAL));
 	};
 
 
