@@ -53,7 +53,7 @@ var MovementCommand = function(startX, startY, endX, endY, numBeats) {
      * @type {int}
      */
     this._numBeats = numBeats;
-}
+};
 
 /**
  * Returns the position at which this movement starts.
@@ -62,7 +62,7 @@ var MovementCommand = function(startX, startY, endX, endY, numBeats) {
  */
 MovementCommand.prototype.getStartPosition = function() {
         return new Coordinate(this._startX, this._startY);
-}
+};
 
 /**
  * Returns the position at which this movement ends.
@@ -71,7 +71,7 @@ MovementCommand.prototype.getStartPosition = function() {
  */
 MovementCommand.prototype.getEndPosition = function() {
     return new Coordinate(this._endX, this._endY);
-}
+};
 
 /**
  * Returns the number of beats required to complete this
@@ -81,7 +81,7 @@ MovementCommand.prototype.getEndPosition = function() {
  */
 MovementCommand.prototype.getBeatDuration = function() {
     return this._numBeats;
-}
+};
 
 /**
  * Returns an AnimationState describing a marcher
@@ -95,7 +95,7 @@ MovementCommand.prototype.getBeatDuration = function() {
  */
 MovementCommand.prototype.getAnimationState = function(beatNum) {
     console.log("getAnimationState called");
-}
+};
 
 
 module.exports = MovementCommand;
