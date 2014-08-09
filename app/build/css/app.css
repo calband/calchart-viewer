@@ -3,7 +3,7 @@
   clear: both;
 }
 .container {
-  width: 960px;
+  width: 1040px;
   margin: 0 auto;
 }
 .header,
@@ -37,7 +37,7 @@
 }
 .header .header-title .title {
   font-size: 30px;
-  width: 384px;
+  width: 416px;
 }
 .header .header-title .version {
   height: 30px;
@@ -53,7 +53,7 @@
 }
 .header .header-files .files-description {
   font-size: 20px;
-  width: 288px;
+  width: 312px;
 }
 .header .header-files .files {
   margin-top: 10px;
@@ -68,7 +68,7 @@
   vertical-align: top;
 }
 .main .graph-container {
-  width: 556px;
+  width: 604px;
   margin-right: 20px;
 }
 .main .graph {
@@ -76,7 +76,7 @@
   height: 400px;
 }
 .main .controls-container {
-  width: 384px;
+  width: 416px;
 }
 .main .controls-container .show-title,
 .main .controls-container .stuntsheet,
@@ -130,7 +130,7 @@
 }
 .main .controls-container .increment-control {
   display: inline-block;
-  width: 187px;
+  width: 203px;
   border: 1px solid #193460;
   box-sizing: border-box;
   padding-left: 5px;
@@ -154,7 +154,7 @@
   margin-right: 10px;
 }
 .main .controls-container .control-button {
-  width: 382px;
+  width: 414px;
   border: 1px solid #193460;
   text-align: center;
 }

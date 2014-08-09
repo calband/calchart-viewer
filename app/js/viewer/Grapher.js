@@ -38,13 +38,13 @@ Grapher.COLLEGE_FIELD_ASPECT_RATIO = 0.5333;
  * field.
  * @type {int}
  */
-Grapher.COLLEGE_FIELD_STEPS_HORIZONTAL = 84;
+Grapher.COLLEGE_FIELD_STEPS_HORIZONTAL = 160;
 
 /**
  * How many steps there are vertically across a regular college football field.
  * @type {int}
  */
-Grapher.COLLEGE_FIELD_STEPS_VERTICAL = 160;
+Grapher.COLLEGE_FIELD_STEPS_VERTICAL = 84;
 
 /**
  * Sets the type of field that the show will be performed on.
@@ -141,6 +141,27 @@ Grapher.prototype._getHorizontalStepScale = function (svgWidth, fieldPadding) {
         .range([fieldPadding.left, svgWidth - fieldPadding.right]);
 };
 
+/**
+ * Return an array which contains the number of steps from the left side of a
+ * college football field for each yardline in [5, 10, ... 50, 45, ... 10, 5].
+ * For example, if we wanted to know how many steps from the left side of the
+ * field the left 10 yardline was, then we would look at the second value in
+ * the returned array of ints.
+ * @return {Array<int>} the array of step offsets.
+ */
+Grapher.prototype._generateYardlineSteps = function () {
+    var rtn = [];
+    for (var i = 8; i < 160; i += 8) {
+        rtn.push(i);
+    }
+    return rtn;
+};
+
+/**
+ * Draw, on this Grapher's draw target, an svg containing a representation of
+ * a college football field, with a background, borders, yardlines (without
+ * numbers) and hash marks.
+ */
 Grapher.prototype._drawCollegeField = function() {
     // remove any preexisting svgs
     this._drawTarget.find("svg").remove();
@@ -162,9 +183,9 @@ Grapher.prototype._drawCollegeField = function() {
     svg.append("g")
         .attr("class", "field-wrap")
         .append("rect")
-        .attr("class", "field")
-        .attr("width", svgWidth)
-        .attr("height", svgHeight);
+            .attr("class", "field")
+            .attr("width", svgWidth)
+            .attr("height", svgHeight);
 
     var svgContentWidth = svgWidth - fieldPadding.left - fieldPadding.right;
     var yScale = this._getVerticalStepScale(svgContentWidth, svgHeight);
@@ -199,6 +220,43 @@ Grapher.prototype._drawCollegeField = function() {
         // and the x coords are the edges of the x scale
         .attr("x1", xScale(0))
         .attr("x2", xScale(Grapher.COLLEGE_FIELD_STEPS_HORIZONTAL));
+
+    // append the yardlines
+    var yardLineSteps = this._generateYardlineSteps();
+    console.log(yardLineSteps);
+    svg.append("g")
+        .attr("class", "yardlines-wrap")
+        .selectAll("line.yardline")
+        .data(yardLineSteps)
+        .enter()
+        .append("line")
+            .attr("class", "yardline")
+            .attr("x1", xScale)
+            .attr("x2", xScale)
+            .attr("y1", yScale(0))
+            .attr("y2", yScale(Grapher.COLLEGE_FIELD_STEPS_VERTICAL));
+
+    /**
+     * How wide, in pixels, a hashmark is.
+     * @type {int}
+     */
+    var hashWidth = 10; // pixels
+
+    // draw hash marks
+    var hashSteps = [32, 52];
+    hashSteps.forEach(function (value) {
+        svg.append("g")
+            .attr("class", "hashes-wrap")
+            .selectAll("line.hash")
+            .data(yardLineSteps)
+            .enter()
+            .append("line")
+                .attr("class", "hash")
+                .attr("y1", yScale(value))
+                .attr("y2", yScale(value))
+                .attr("x1", function (d) { return xScale(d) - (hashWidth / 2); })
+                .attr("x2", function (d) { return xScale(d) + (hashWidth / 2); });
+    });
 };
 
 
