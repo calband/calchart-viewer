@@ -2,6 +2,8 @@
  * @fileOverview The ApplicationController singleton class is defined here.
  */
 
+var Grapher = require("./Grapher");
+
 /**
  * The ApplicationController is the backbone of how functional components
  * communicate with each other in the Calchart Viewer. It knows about the
@@ -18,8 +20,8 @@
  * if needed when this function is called.
  */
 var ApplicationController = function () {
-    console.log("ApplicationController loaded.");
     this.applicationStateDelegate = null;
+    this.grapher = null;
     this.show = null;
 };
 
@@ -50,7 +52,9 @@ ApplicationController.getInstance = function () {
  * @param  {ApplicationStateDelegate} applicationStateDelegate
  * @param  {Grapher} grapher
  */
-ApplicationController.prototype.init = function (applicationStateDelegate, grapher) {
-    /* Your code here */
+ApplicationController.prototype.init = function () {
+    this.grapher = new Grapher("college", $(".js-grapher-draw-target"));
+    this.grapher.draw(null, null, null);
 };
+
 module.exports = ApplicationController;

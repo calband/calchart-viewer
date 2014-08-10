@@ -9,6 +9,7 @@ var ApplicationController = require("./viewer/ApplicationController");
  */
 $(document).ready(function () {
     var applicationController = ApplicationController.getInstance();
+    applicationController.init();
 
     // bindings for user interface components
     $(".js-prev-beat").click(function () {

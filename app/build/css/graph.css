@@ -1,0 +1,8 @@
+.field {
+  fill: #269C2E;
+}
+.endline,
+.yardline,
+.hash {
+  stroke: white;
+}

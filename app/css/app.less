@@ -17,7 +17,7 @@
     clear: both;
 }
 
-@main-width: 960px;
+@main-width: 1040px;
 .container {
     width: @main-width;
     margin: 0 auto;
@@ -86,13 +86,22 @@
 }
 
 .main {
+    @graph-height: 400px;
+    @graph-margin: 20px;
     .graph-container, .controls-container {
         display: inline-block;
         margin-top: 20px;
+        vertical-align: top;
     }
 
     .graph-container {
-        width: @main-width * 0.6;
+        width: @main-width * 0.6 - @graph-margin;
+        margin-right: @graph-margin;
+    }
+
+    .graph {
+        width: 100%;
+        height: @graph-height;
     }
 
     @controls-width: @main-width * 0.4;
