@@ -13,8 +13,8 @@
  *
  * @param {string} label The dot's label. This is also the label of
  *   the marcher associated with this dot.
- * @param {array} movementCommands All of the MovementCommand objects
- *   that this Dot will execute. The commands must be sorted in the
+ * @param {Array<MovmenetCommand>} movementCommands All of the MovementCommand
+ *   objects that this Dot will execute. The commands must be sorted in the
  *   order in which they will be executed.
  */ 
 var Dot = function(label, movementCommands) {
@@ -37,19 +37,18 @@ Dot.prototype.getLabel = function() {
  *
  * @param {int} beatNum The Dot's AnimationState will be
  *   relevant to the beat indicated by this value. The beat
- *   is relative to the start of the stuntshee.
+ *   is relative to the start of the stuntsheet.
  * @return {AnimationState} An AnimationState that
- *   describes the Dot at a moment of the show.
+ *   describes the Dot at a moment of the show,. If the Dot
+ *   has no movement at the specified beat, returns undefined.
  */
 Dot.prototype.getAnimationState = function(beatNum) {
-    var commandIndex;
-    for (commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
+    for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
         if (beatNum < this._movements[commandIndex].getDuration()) {
-            break;
+            return this._movements[commandIndex].getAnimationState(beatNum);
         }
         beatNum -= this._movements[commandIndex].getDuration();
     }
-    return this._movements[commandIndex].getAnimationState(beatNum);
 };
 
 module.exports = Dot;

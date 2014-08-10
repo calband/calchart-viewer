@@ -11,13 +11,13 @@
  * @param {string} label The label/name for the sheet.
  * @param {string} fieldType A string that indicates the type of field that this sheet
  *   is performed on.
- * @param {array} dotTypes An array of all dot types used in this sheet.
+ * @param {Array<string>} dotTypes An array of all dot types used in this sheet.
  * @param {object} dotTypeAssignments An object that maps each dot label to the dot type
  *   associated with that dot.
  * @param {object} continuityTexts An object that maps each dot type to an array
  *   containing all of the continuity instructions associated with that dot type.
  * @param {int} duration The duration of the sheet, in beats.
- * @param {array} dots An array of all dots involved in this sheet's
+ * @param {Array<Dot>} dots An array of all dots involved in this sheet's
  *   movements. Note that all of these dots already have their
  *   MovementCommands before the Sheet is constructed.
  */
@@ -54,7 +54,7 @@ Sheet.prototype.getFieldType = function() {
  * Returns an array of all dot types involved with this
  * sheet.
  *
- * @return {array} An array of all dot types involved in
+ * @return {Array<string>} An array of all dot types involved in
  *   this sheet. Dot types are given as strings.
  */
 Sheet.prototype.getAllDotTypes = function() {
@@ -79,7 +79,7 @@ Sheet.prototype.getDotType = function(dotLabel) {
  * instruction as would appear on a printed version of a stuntsheet.
  *
  * @param {string} dotType The dot type to retrieve continuities for.
- * @return {array} An array containing all continuities associated
+ * @return {Array<string>} An array containing all continuities associated
  *   with the specified dot type. Each continuity is a human-readable
  *   text instruction.
  */
@@ -90,7 +90,7 @@ Sheet.prototype.getContinuityTexts = function(dotType) {
 /**
  * Returns an array of all dots involved in this sheet's movements.
  *
- * @return {array} An array of all dots involved in this sheet's
+ * @return {Array<Dot>} An array of all dots involved in this sheet's
  *   movements.
  */
 Sheet.prototype.getDots = function() {

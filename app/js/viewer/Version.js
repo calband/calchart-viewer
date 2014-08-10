@@ -40,7 +40,7 @@ Version.prototype.stringify = function() {
  *   if this version is later than the other one;
  *   zero if the versions are identical.
  */
-Version.prototype.compare = function(otherVersion) {
+Version.prototype.compareTo = function(otherVersion) {
     var delta = this._major - otherVersion._major;
     if (delta != 0) {
         return delta;
