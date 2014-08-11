@@ -223,7 +223,6 @@ Grapher.prototype._drawCollegeField = function() {
 
     // append the yardlines
     var yardLineSteps = this._generateYardlineSteps();
-    console.log(yardLineSteps);
     svg.append("g")
         .attr("class", "yardlines-wrap")
         .selectAll("line.yardline")
