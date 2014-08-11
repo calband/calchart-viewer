@@ -57,6 +57,27 @@ ApplicationController.prototype.init = function () {
     this.grapher.draw(null, null, null);
 };
 
+/**
+ * Given a callback function which expects to process the contents of a file
+ * as UTF-8 encoded text, return a function which takes an event (an event
+ * handler, to be used with the jquery change function) and reads the files
+ * for that event's current target (a file input). The returned function then
+ * passes the file's contents to the provided callback.
+ *
+ * Note: this handler function that this method generates will return undefined
+ * if there have been no files uploaded to the input, of if the input accepts
+ * multiple files and has more than one.
+ *
+ * Example useage of this:
+ *
+ * $(".my-input-target").change(_createFileHandler(function (contents) {
+ *     console.log(contents);
+ * }));
+ * @param  {Function(string)} callback a callback which accepts the file
+ *   contents
+ * @return {Function(jQuery.Event)} event handler function which reads the file
+ *   and passes its contents to the callback
+ */
 ApplicationController.prototype._createFileHandler = function (callback) {
     return function (event) {
         var files = event.currentTarget.files;
@@ -71,6 +92,11 @@ ApplicationController.prototype._createFileHandler = function (callback) {
     };
 };
 
+/**
+ * Return an event handler function which reads the beats file and operates on
+ * it.
+ * @return {Function(jQuery.Event)} the event handler
+ */
 ApplicationController.prototype.getBeatsFileHandler = function () {
     return this._createFileHandler(function (fileContentsAsText) {
         console.log("Beats file found with the following content:");
@@ -78,6 +104,11 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
     });
 };
 
+/**
+ * Return an event handler function which reads the viewer file and operates on
+ * it.
+ * @return {Function(jQuery.Event)} the event handler
+ */
 ApplicationController.prototype.getViewerFileHandler = function () {
     return this._createFileHandler(function (fileContentsAsText) {
         console.log("Viewer file found with the following content:");
