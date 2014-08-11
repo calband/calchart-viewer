@@ -1,8 +1,11 @@
 {
 	"meta": {
-		"version": "1.0.0"
+		"version": "1.0.0",
+        "index-name": "00-modern-art"
 	},
 	"show": {
+        "title": "Modern Art",
+        "year": "0000",
 		"description": "",
 		"labels": [
 			"0",
