@@ -6,14 +6,9 @@
  *   loading a particular viewer file, you first need to fetch
  *   a loader object that can load your particular viewer file. To do this,
  *   you need to call the getAppropriateLoader(version) method
- *   on the global instance of the ViewerFileLoadSelector.
- *   From within this file, this would be done with:
+ *   on the singleton instance of ViewerFileLoadSelector.
+ *   This would be done with:
  *   ViewerFileLoadSelector.getViewerFileLoadSelector().getAppropriateLoaderVersion(viewerFileVersion);
- *   From outside of this file, since this file exports the
- *   getViewerFileLoadSelector() static method, this will
- *   be done like this:
- *   getViewerFileLoadSelector = require("./ViewerFileLoad");
- *   getViewerFileLoadSelector().getAppropriateLoaderVersion(viewerFileVersion);
  *   Once you have the appropriate loader for your file version, you
  *   can call its loadViewerFile(...) method to load the file.
  *
@@ -32,7 +27,7 @@
  *   file version 1.0.0; it may then change only a few of the original
  *   methods to accomodate for the file changes).
  *   After you make a new ViewerFileLoader, you need to register it
- *   with the ViewerFileLoadSelecto. To do that, add the following line
+ *   with the ViewerFileLoadSelector. To do that, add the following line
  *   to the ViewerFileLoadSelector._setupInstance static method:
  *   instance.registerLoader(fileVersionHere, new YourViewerFileLoaderHere());
  *   In summary:
@@ -90,7 +85,7 @@ ViewerFileLoadSelector.prototype.registerLoader = function(version, loader) {
  */
 ViewerFileLoadSelector.prototype.getAppropriateLoader = function(version) {
     var targetIndex = ArraySearchUtils.binarySearchForClosestSmaller(this._loaders, version, ViewerFileLoadSelector._versionLocator);
-    return this._loaders[targetIndex]["loader"];
+    return this._loaders[targetIndex].loader;
 };
 
 /**
@@ -101,12 +96,12 @@ ViewerFileLoadSelector.prototype.getAppropriateLoader = function(version) {
 ViewerFileLoadSelector._instance = undefined;
 
 /**
- * Returns the ViewerFileLoadSelector global instance. If it doesn't exist,
+ * Returns the ViewerFileLoadSelector singleton instance. If it doesn't exist,
  * it is created and then returned.
  *
- * @return {ViewerFileLoadSelector} The ViewerFileLoadSelector global instance.
+ * @return {ViewerFileLoadSelector} The ViewerFileLoadSelector singleton instance.
  */
-ViewerFileLoadSelector.getViewerFileLoadSelector = function() {
+ViewerFileLoadSelector.getInstance = function() {
     if (ViewerFileLoadSelector._instance === undefined) {
         ViewerFileLoadSelector._instance = new ViewerFileLoadSelector();
         ViewerFileLoadSelector._setupInstance(ViewerFileLoadSelector._instance);
@@ -138,7 +133,7 @@ ViewerFileLoadSelector._setupInstance = function(instance) {
  *   have identical versions.
  */
 ViewerFileLoadSelector._versionLocator = function(versionToLocate, relativeTo) {
-    return versionToLocate.compareTo(relativeTo["version"]);
+    return versionToLocate.compareTo(relativeTo.version);
 };
  
  
@@ -381,4 +376,4 @@ ViewerFileLoad_1_0_0.prototype.buildEvenMovement = function(movementToBuild) {
     return new MovementCommandEven(movementToBuild.x1, movementToBuild.y1, movementToBuild.x2, movementToBuild.y2, movementToBuild.facing, movementToBuild.beats, movementToBuild.beats_per_step);
 };
 
-module.exports = ViewerFileLoadSelector.getViewerFileLoadSelector;
+module.exports = ViewerFileLoadSelector;

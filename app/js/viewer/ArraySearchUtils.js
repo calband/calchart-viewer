@@ -7,7 +7,7 @@
  * A collection of all of the array search functions.
  * @type {object}
  */
-var ArraySearchUtils = {};
+ArraySearchUtils = {};
 
 /**
  * A function that explores a sorted array using a binary search.
@@ -82,16 +82,16 @@ ArraySearchUtils.binarySearchBase = function(array, guideFunc) {
  *   no larger value is found.
  */
 ArraySearchUtils.binarySearchForClosestLarger = function(array, value, comparatorFunc) {
-    ArraySearchUtils.binarySearchForClosestLarger.searchResult = undefined;
+    var searchResult = undefined;
     var guideFunc = function(checkValue, index) {
         var compResult = comparatorFunc(value, checkValue);
         if (compResult <= 0) {
-            bArraySearchUtils.inarySearchForClosestLarger.searchResult = index;
+            searchResult = index;
         }
         return compResult;
     }
     ArraySearchUtils.binarySearchBase(array, guideFunc);
-    return ArraySearchUtils.binarySearchForClosestLarger.searchResult;
+    return searchResult;
 };
 
 /**
@@ -121,16 +121,16 @@ ArraySearchUtils.binarySearchForClosestLarger = function(array, value, comparato
  *   and no smaller value is found either.
  */
 ArraySearchUtils.binarySearchForClosestSmaller = function(array, value, comparatorFunc) {
-    ArraySearchUtils.binarySearchForClosestSmaller.searchResult = undefined;
+    var searchResult = undefined;
     guideFunc = function(checkValue, index) {
         var compResult = comparatorFunc(value, checkValue);
         if (compResult >= 0) {
-            ArraySearchUtils.binarySearchForClosestSmaller.searchResult = index;
+            searchResult = index;
         }
         return compResult;
     }
     ArraySearchUtils.binarySearchBase(array, guideFunc);
-    return ArraySearchUtils.binarySearchForClosestSmaller.searchResult; 
+    return searchResult; 
 };
 
 /**
@@ -155,16 +155,16 @@ ArraySearchUtils.binarySearchForClosestSmaller = function(array, value, comparat
  *   undefined otherwise.
  */
 ArraySearchUtils.binarySearch = function(array, value, comparatorFunc) {
-    ArraySearchUtils.binarySearch.searchResult = undefined;
+    var searchResult = undefined;
     guideFunc = function(checkValue, index) {
         var compResult = comparatorFunc(value, checkValue);
         if (compResult == 0) {
-            ArraySearchUtils.binarySearch.searchResult = index;
+            searchResult = index;
         }
         return compResult;
     }
     ArraySearchUtils.binarySearchBase(array, guideFunc);
-    return ArraySearchUtils.binarySearch.searchResult;
+    return searchResult;
 };
 
 module.exports = ArraySearchUtils;

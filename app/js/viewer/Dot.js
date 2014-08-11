@@ -13,7 +13,7 @@
  *
  * @param {string} label The dot's label. This is also the label of
  *   the marcher associated with this dot.
- * @param {Array<MovmenetCommand>} movementCommands All of the MovementCommand
+ * @param {Array<MovemenetCommand>} movementCommands All of the MovementCommand
  *   objects that this Dot will execute. The commands must be sorted in the
  *   order in which they will be executed.
  */ 

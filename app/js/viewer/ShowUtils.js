@@ -3,7 +3,7 @@
  *   used to create and manage Show objects.
  */
 
- var getViewerFileLoadSelector = require("./ViewerFileLoad");
+ var ViewerFileLoadSelector = require("./ViewerFileLoad");
  var Version = require("./Version");
  
  /**
@@ -24,7 +24,7 @@
 ShowUtils.fromJSON = function(fileContent) {
     var viewerFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
     var fileVersion = Version.parse(viewerFileMainObject.meta.version); //Get the version of the viewer file
-    return getViewerFileLoadSelector().getAppropriateLoader(fileVersion).loadViewerFile(viewerFileMainObject); //Get the appropriate ViewerLoader and use it to load the file
+    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadViewerFile(viewerFileMainObject); //Get the appropriate ViewerLoader and use it to load the file
 };
 
 module.exports = ShowUtils;
