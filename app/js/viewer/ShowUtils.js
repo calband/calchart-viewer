@@ -3,7 +3,7 @@
  *   used to create and manage Show objects.
  */
 
- var ViewerFileLoadSelector = require("./ViewerFileLoad");
+ var ViewerFileLoadSelector = require("./ViewerFileLoadSelector");
  var Version = require("./Version");
  
  /**
