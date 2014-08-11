@@ -7,7 +7,7 @@
  * A collection of all of the array search functions.
  * @type {object}
  */
-ArraySearchUtils = {};
+var ArraySearchUtils = {};
 
 /**
  * A function that explores a sorted array using a binary search.
