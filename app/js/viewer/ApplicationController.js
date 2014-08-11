@@ -57,4 +57,32 @@ ApplicationController.prototype.init = function () {
     this.grapher.draw(null, null, null);
 };
 
+ApplicationController.prototype._createFileHandler = function (callback) {
+    return function (event) {
+        var files = event.currentTarget.files;
+        if (!files || files.length !== 1) {
+            return;
+        }
+        var reader = new window.FileReader();
+        reader.onload = function () {
+            callback(reader.result);
+        };
+        reader.readAsText(files[0]);
+    };
+};
+
+ApplicationController.prototype.getBeatsFileHandler = function () {
+    return this._createFileHandler(function (fileContentsAsText) {
+        console.log("Beats file found with the following content:");
+        console.log(JSON.parse(fileContentsAsText));
+    });
+};
+
+ApplicationController.prototype.getViewerFileHandler = function () {
+    return this._createFileHandler(function (fileContentsAsText) {
+        console.log("Viewer file found with the following content:");
+        console.log(JSON.parse(fileContentsAsText));
+    });
+};
+
 module.exports = ApplicationController;

@@ -57,6 +57,10 @@
 	    var applicationController = ApplicationController.getInstance();
 	    applicationController.init();
 
+	    // bindings for file uploads
+	    $(".js-beats-file").change(applicationController.getBeatsFileHandler());
+	    $(".js-viewer-file").change(applicationController.getViewerFileHandler());
+
 	    // bindings for user interface components
 	    $(".js-prev-beat").click(function () {
 	        console.log("click received");
@@ -145,6 +149,34 @@
 	ApplicationController.prototype.init = function () {
 	    this.grapher = new Grapher("college", $(".js-grapher-draw-target"));
 	    this.grapher.draw(null, null, null);
+	};
+
+	ApplicationController.prototype._createFileHandler = function (callback) {
+	    return function (event) {
+	        var files = event.currentTarget.files;
+	        if (!files || files.length !== 1) {
+	            return;
+	        }
+	        var reader = new window.FileReader();
+	        reader.onload = function () {
+	            callback(reader.result);
+	        };
+	        reader.readAsText(files[0]);
+	    };
+	};
+
+	ApplicationController.prototype.getBeatsFileHandler = function () {
+	    return this._createFileHandler(function (fileContentsAsText) {
+	        console.log("Beats file found with the following content:");
+	        console.log(JSON.parse(fileContentsAsText));
+	    });
+	};
+
+	ApplicationController.prototype.getViewerFileHandler = function () {
+	    return this._createFileHandler(function (fileContentsAsText) {
+	        console.log("Viewer file found with the following content:");
+	        console.log(JSON.parse(fileContentsAsText));
+	    });
 	};
 
 	module.exports = ApplicationController;
@@ -343,8 +375,8 @@
 	            .attr("height", svgHeight);
 
 	    var svgContentWidth = svgWidth - fieldPadding.left - fieldPadding.right;
-	    var yScale = window.yScale = this._getVerticalStepScale(svgContentWidth, svgHeight);
-	    var xScale = window.xScale = this._getHorizontalStepScale(svgWidth, fieldPadding);
+	    var yScale = this._getVerticalStepScale(svgContentWidth, svgHeight);
+	    var xScale = this._getHorizontalStepScale(svgWidth, fieldPadding);
 
 	    // append the field lines
 	    var endLinesGroup = svg.append("g")
@@ -391,12 +423,13 @@
 	            .attr("y1", yScale(0))
 	            .attr("y2", yScale(Grapher.COLLEGE_FIELD_STEPS_VERTICAL));
 
-	    // draw hash marks
 	    /**
 	     * How wide, in pixels, a hashmark is.
 	     * @type {int}
 	     */
 	    var hashWidth = 10; // pixels
+
+	    // draw hash marks
 	    var hashSteps = [32, 52];
 	    hashSteps.forEach(function (value) {
 	        svg.append("g")

@@ -11,6 +11,10 @@ $(document).ready(function () {
     var applicationController = ApplicationController.getInstance();
     applicationController.init();
 
+    // bindings for file uploads
+    $(".js-beats-file").change(applicationController.getBeatsFileHandler());
+    $(".js-viewer-file").change(applicationController.getViewerFileHandler());
+
     // bindings for user interface components
     $(".js-prev-beat").click(function () {
         console.log("click received");
