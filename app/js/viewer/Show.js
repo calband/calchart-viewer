@@ -75,6 +75,30 @@ Show.prototype.getSheets = function() {
 };
 
 /**
+ * Returns a particular sheet from the show.
+ *
+ * @param {int} index The index of the sheet to retrieve.
+ *   This can be any integer in the range [0, num_sheets).
+ *   Notice that the upper bound of the range is exclusive.
+ *   To find the Nth sheet in a show, you need to request
+ *   the sheet with an index of N-1 (e.g. to retrive the 5th
+ *   sheet, you would call getSheet(4)).
+ * @return {Sheet} The stuntsheet with the specified index.
+ */
+Show.prototype.getSheet = function(index) {
+    return this._sheets[index];
+};
+
+/**
+ * Returns the number of sheets in the show.
+ *
+ * @return {int} The number of sheets in the show.
+ */
+Show.prototype.getNumSheets = function() {
+    return this._sheets.length;
+};
+
+/**
  * Adds a sheet to the back of the show.
  *
  * @param {Sheet} sheet The sheet to add to the
