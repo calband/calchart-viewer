@@ -20,7 +20,7 @@ var ShowUtils = require("./ShowUtils");
  * itself saves its instance and will automatically create an instance of itself
  * if needed when this function is called.
  */
-var ApplicationController = function () {
+var ApplicationController = window.ApplicationController = function () {
     this.applicationStateDelegate = null;
     this.grapher = null;
     this.show = null;
@@ -114,6 +114,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
     var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
         var show = ShowUtils.fromJSON(fileContentsAsText);
+        _this.show = show;
         _this.grapher.draw(show.getSheets()[0], 0, null);
     });
 };
