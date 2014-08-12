@@ -16,7 +16,7 @@
  * @param {Array<MovemenetCommand>} movementCommands All of the MovementCommand
  *   objects that this Dot will execute. The commands must be sorted in the
  *   order in which they will be executed.
- */ 
+ */
 var Dot = function(label, movementCommands) {
     this._label = label;
     this._movements = movementCommands;

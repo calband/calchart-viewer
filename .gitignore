@@ -1,3 +1,4 @@
 design
 node_modules
 .DS_Store
+app/build/*

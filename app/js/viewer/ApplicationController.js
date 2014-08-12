@@ -3,6 +3,7 @@
  */
 
 var Grapher = require("./Grapher");
+var ShowUtils = require("./ShowUtils");
 
 /**
  * The ApplicationController is the backbone of how functional components
@@ -110,9 +111,10 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
  * @return {Function(jQuery.Event)} the event handler
  */
 ApplicationController.prototype.getViewerFileHandler = function () {
+    var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
-        console.log("Viewer file found with the following content:");
-        console.log(JSON.parse(fileContentsAsText));
+        var show = ShowUtils.fromJSON(fileContentsAsText);
+        _this.grapher.draw(show.getSheets()[0], 0, null);
     });
 };
 
