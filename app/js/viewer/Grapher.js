@@ -12,6 +12,9 @@
  *   will draw to.
  */
 var Grapher = function(fieldType, drawTarget) {
+    if (!d3) {
+        throw new TypeError("Cannot load grapher because d3 was not found.");
+    }
 
     /**
      * A string representation of the field type. For a list of
@@ -25,6 +28,13 @@ var Grapher = function(fieldType, drawTarget) {
      * @type {jQuery}
      */
     this._drawTarget = drawTarget;
+    this._svgWidth = parseInt(this._drawTarget.css("width"), 10); // outer width
+    this._svgHeight = parseInt(this._drawTarget.css("height"), 10); // outer height
+
+    this._svg = d3.select(this._drawTarget.get(0))
+        .append("svg")
+        .attr("width", this._svgWidth)
+        .attr("height", this._svgHeight);
 };
 
 /**
@@ -78,10 +88,7 @@ Grapher.prototype.getFieldType = function() {
  *   dot, or undefined if no dot is selected.
  */
 Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
-    // if we don't have d3 loaded globally, then we can't do anything.
-    if (!d3) {
-        return;
-    }
+    this._clearSvg();
     if (this._fieldType === "college") {
         this._drawCollegeField();
     }
@@ -158,21 +165,20 @@ Grapher.prototype._generateYardlineSteps = function () {
 };
 
 /**
+ * Clear the grapher's svg context (remove all of the svg's children elements).
+ */
+Grapher.prototype._clearSvg = function () {
+    this._svg.empty();
+};
+
+/**
  * Draw, on this Grapher's draw target, an svg containing a representation of
  * a college football field, with a background, borders, yardlines (without
  * numbers) and hash marks.
  */
 Grapher.prototype._drawCollegeField = function() {
-    // remove any preexisting svgs
-    this._drawTarget.find("svg").remove();
-    var svgWidth = parseInt(this._drawTarget.css("width"), 10); // outer width
-    var svgHeight = parseInt(this._drawTarget.css("height"), 10); // outer height
-    // since d3 requires a node, and not a jquery, we need to do .get(0)
-    var svg = d3.select(this._drawTarget.get(0))
-        .append("svg")
-        .attr("width", svgWidth)
-        .attr("height", svgHeight);
-
+    // for referencing this grapher object inside of anonymous functions
+    var _this = this;
     // the space inside the green area, but outside the white field lines
     var fieldPadding = {
         left: 10, // pixels
@@ -180,19 +186,19 @@ Grapher.prototype._drawCollegeField = function() {
     };
 
     // append the field background (green part)
-    svg.append("g")
+    this._svg.append("g")
         .attr("class", "field-wrap")
         .append("rect")
             .attr("class", "field")
-            .attr("width", svgWidth)
-            .attr("height", svgHeight);
+            .attr("width", this._svgWidth)
+            .attr("height", this._svgHeight);
 
-    var svgContentWidth = svgWidth - fieldPadding.left - fieldPadding.right;
-    var yScale = this._getVerticalStepScale(svgContentWidth, svgHeight);
-    var xScale = this._getHorizontalStepScale(svgWidth, fieldPadding);
+    var svgContentWidth = this._svgWidth - fieldPadding.left - fieldPadding.right;
+    var yScale = this._getVerticalStepScale(svgContentWidth, this._svgHeight);
+    var xScale = this._getHorizontalStepScale(this._svgWidth, fieldPadding);
 
     // append the field lines
-    var endLinesGroup = svg.append("g")
+    var endLinesGroup = this._svg.append("g")
         .attr("class", "end-lines-wrap");
 
     // endzone lines
@@ -223,7 +229,7 @@ Grapher.prototype._drawCollegeField = function() {
 
     // append the yardlines
     var yardLineSteps = this._generateYardlineSteps();
-    svg.append("g")
+    this._svg.append("g")
         .attr("class", "yardlines-wrap")
         .selectAll("line.yardline")
         .data(yardLineSteps)
@@ -244,7 +250,7 @@ Grapher.prototype._drawCollegeField = function() {
     // draw hash marks
     var hashSteps = [32, 52];
     hashSteps.forEach(function (value) {
-        svg.append("g")
+        _this._svg.append("g")
             .attr("class", "hashes-wrap")
             .selectAll("line.hash")
             .data(yardLineSteps)
