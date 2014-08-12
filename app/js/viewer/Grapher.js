@@ -264,6 +264,15 @@ Grapher.prototype._drawCollegeField = function() {
     });
 };
 
+/**
+ * Given a stuntsheet, the currentBeat relative to the beginning of that sheet,
+ * and the dot label of a selected dot, draw the dots in this stuntsheet at
+ * that beat onto the svg context of this grapher.
+ *
+ * @param  {Sheet} sheet stuntsheet to draw
+ * @param  {int} currentBeat beat of stuntsheet to draw
+ * @param  {string} selectedDot label of selected dot, if any
+ */
 Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selectedDot) {
     var dots = sheet.getDots();
     var xScale = this._getHorizontalStepScale(Grapher.COLLEGE_FIELD_PADDING);

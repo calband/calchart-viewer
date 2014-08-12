@@ -45,6 +45,7 @@ Dot.prototype.getLabel = function() {
 Dot.prototype.getAnimationState = function(beatNum) {
     for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
         if (beatNum < this._movements[commandIndex].getBeatDuration()) {
+            console.log("Returning an animationState (from ", this._movements[commandIndex], "): ", this._movements[commandIndex].getAnimationState(beatNum));
             return this._movements[commandIndex].getAnimationState(beatNum);
         }
         beatNum -= this._movements[commandIndex].getDuration();

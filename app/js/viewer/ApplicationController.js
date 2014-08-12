@@ -27,6 +27,12 @@ var ApplicationController = window.ApplicationController = function () {
 };
 
 /**
+ * Return the currently loaded show, or null if one has not been set yet.
+ * @return {Show|null} the currently loaded show
+ */
+ApplicationController.prototype.getShow = function () { return this.show; };
+
+/**
  * The internal instance of the ApplicationController. Nothing outside of this
  * class hsould ever access this.
  * @type {ApplicationController|null}
