@@ -33,7 +33,7 @@ AnimationStateDelegate.prototype.setShow = function(show) {
     this._show = show;
     this._currSheet = 0;
     this._currBeat = 0;
-    this._selectedDot = undefined;
+    this._selectedDot = null;
 };
 
 /**
@@ -41,9 +41,9 @@ AnimationStateDelegate.prototype.setShow = function(show) {
  * stuntsheet if necessary.
  */
 AnimationStateDelegate.prototype.nextBeat = function() {
-    if (this.hasNextBeatInCurrentStuntsheet()) {
+    if (this.hasNextBeatInCurrentSheet()) {
         this._currBeat++;
-    } else if (this.hasNextStuntsheet()) {
+    } else if (this.hasNextSheet()) {
         this.nextSheet();
     }
 };
@@ -53,9 +53,9 @@ AnimationStateDelegate.prototype.nextBeat = function() {
  * previous stuntsheet if necessary.
  */
 AnimationStateDelegate.prototype.prevBeat = function() {
-    if (this.hasPrevBeatInCurrentStuntsheet()) {
+    if (this.hasPrevBeatInCurrentSheet()) {
         this._currBeat--;
-    } else if (this.hasPrevStuntsheet()) {
+    } else if (this.hasPrevSheet()) {
         this.prevSheet();
         this._currBeat = this.getCurrentSheet().getDuration() - 1;
     }
@@ -64,8 +64,8 @@ AnimationStateDelegate.prototype.prevBeat = function() {
 /**
  * Jumps to the zeroth beat of the next stuntsheet.
  */ 
-AnimationStateDelegate.prototype.nextStuntsheet = function() {
-    if (this.hasNextStuntsheet()) {
+AnimationStateDelegate.prototype.nextSheet = function() {
+    if (this.hasNextSheet()) {
         this._currSheet++;
         this._currBeat = 0;
     }
@@ -74,8 +74,8 @@ AnimationStateDelegate.prototype.nextStuntsheet = function() {
 /**
  * Jumps to the zeroth beat of the previous stuntsheet.
  */
-AnimationStateDelegate.prototype.prevStuntsheet = function() {
-    if (this.hasPrevStuntsheetheet()) {
+AnimationStateDelegate.prototype.prevSheet = function() {
+    if (this.hasPrevSheet()) {
         this._currSheet--;
         this._currBeat = 0;
     }
@@ -85,32 +85,32 @@ AnimationStateDelegate.prototype.prevStuntsheet = function() {
  * Returns whether or not there is another beat in the show
  * relative to the current one.
  *
- * @return {bool} True if there is another beat in the show;
+ * @return {boolean} True if there is another beat in the show;
  *   false otherwise.
  */
 AnimationStateDelegate.prototype.hasNextBeat = function() {
-    return (this.hasNextBeatInCurrentStuntsheet() || this.hasNextStuntsheet());
+    return (this.hasNextBeatInCurrentSheet() || this.hasNextSheet());
 };
 
 /**
  * Returns whether or not there is a previous beat in the show
  * relative to the current one.
  *
- * @return {bool} True if there is a previous beat in the show;
+ * @return {boolean} True if there is a previous beat in the show;
  *   false otherwise.
  */
 AnimationStateDelegate.prototype.hasPrevBeat = function() {
-    return (this.hasPrevBeatInCurrentStuntsheet() || this.hasPrevStuntsheet());
+    return (this.hasPrevBeatInCurrentSheet() || this.hasPrevSheet());
 };
 
 /**
  * Returns whether or not there is a next stuntsheet in the
  * show relative to the current one.
  *
- * @return {bool} True if there is a next stuntsheet in the
+ * @return {boolean} True if there is a next stuntsheet in the
  *   show; false otherwise.
  */
-AnimationStateDelegate.prototype.hasNextStuntsheet = function() {
+AnimationStateDelegate.prototype.hasNextSheet = function() {
     return (this._currSheet < this._show.getNumSheets() - 1);
 };
 
@@ -118,10 +118,10 @@ AnimationStateDelegate.prototype.hasNextStuntsheet = function() {
  * Returns whether or not there is a previous stuntsheet in the
  * show relative to the current one.
  *
- * @return {bool} True if there is a previous stuntsheet in the
+ * @return {boolean} True if there is a previous stuntsheet in the
  *   show; false otherwise.
  */
-AnimationStateDelegate.prototype.hasPrevStuntsheet = function() {
+AnimationStateDelegate.prototype.hasPrevSheet = function() {
     return (this._currSheet > 0);
 };
 
@@ -129,10 +129,10 @@ AnimationStateDelegate.prototype.hasPrevStuntsheet = function() {
  * Returns whether or not there is a next beat in the current
  * stuntsheet.
  *
- * @return {bool} True if there is another beat in the current
+ * @return {boolean} True if there is another beat in the current
  *   stuntsheet; false otherwise.
  */
-AnimationStateDelegate.prototype.hasNextBeatInCurrentStuntsheet = function() {
+AnimationStateDelegate.prototype.hasNextBeatInCurrentSheet = function() {
     return (this._currBeat < this.getCurrentSheet().getDuration() - 1);
 };
 
@@ -140,10 +140,10 @@ AnimationStateDelegate.prototype.hasNextBeatInCurrentStuntsheet = function() {
  * Returns whether or not there is a previous beat in the current
  * stuntsheet.
  *
- * @return {bool} True if there is a previous beat in the current
+ * @return {boolean} True if there is a previous beat in the current
  *   stuntsheet; false otherwise.
  */
-AnimationStateDelegate.prototype.hasPrevBeatInCurrentStuntsheet = function() {
+AnimationStateDelegate.prototype.hasPrevBeatInCurrentSheet = function() {
     return (this._currBeat > 0);
 };
 
@@ -189,6 +189,7 @@ AnimationStateDelegate.prototype.getShow = function() {
  * Returns the label of the selected dot.
  *
  * @return {string} The label of the currently-selected dot.
+ *   If no dot is selected, will return null.
  */
 AnimationStateDelegate.prototype.getSelectedDot = function() {
     return this._selectedDot;
@@ -207,7 +208,7 @@ AnimationStateDelegate.prototype.selectDot = function(dotLabel) {
  * Deselects the selected dot.
  */
 AnimationStateDelegate.prototype.clearSelectedDot = function() {
-    this._selectedDot = undefined;
+    this._selectedDot = null;
 };
 
 module.exports = AnimationStateDelegate;
