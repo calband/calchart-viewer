@@ -3,6 +3,7 @@
  */
 
 var Grapher = require("./Grapher");
+var ShowUtils = require("./ShowUtils");
 
 /**
  * The ApplicationController is the backbone of how functional components
@@ -19,11 +20,17 @@ var Grapher = require("./Grapher");
  * itself saves its instance and will automatically create an instance of itself
  * if needed when this function is called.
  */
-var ApplicationController = function () {
+var ApplicationController = window.ApplicationController = function () {
     this.applicationStateDelegate = null;
     this.grapher = null;
     this.show = null;
 };
+
+/**
+ * Return the currently loaded show, or null if one has not been set yet.
+ * @return {Show|null} the currently loaded show
+ */
+ApplicationController.prototype.getShow = function () { return this.show; };
 
 /**
  * The internal instance of the ApplicationController. Nothing outside of this
@@ -110,9 +117,11 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
  * @return {Function(jQuery.Event)} the event handler
  */
 ApplicationController.prototype.getViewerFileHandler = function () {
+    var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
-        console.log("Viewer file found with the following content:");
-        console.log(JSON.parse(fileContentsAsText));
+        var show = ShowUtils.fromJSON(fileContentsAsText);
+        _this.show = show;
+        _this.grapher.draw(show.getSheets()[0], 0, null);
     });
 };
 

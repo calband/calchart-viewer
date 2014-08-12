@@ -12,6 +12,9 @@
  *   will draw to.
  */
 var Grapher = function(fieldType, drawTarget) {
+    if (!d3) {
+        throw new TypeError("Cannot load grapher because d3 was not found.");
+    }
 
     /**
      * A string representation of the field type. For a list of
@@ -25,6 +28,13 @@ var Grapher = function(fieldType, drawTarget) {
      * @type {jQuery}
      */
     this._drawTarget = drawTarget;
+    this._svgWidth = parseInt(this._drawTarget.css("width"), 10); // outer width
+    this._svgHeight = parseInt(this._drawTarget.css("height"), 10); // outer height
+
+    this._svg = d3.select(this._drawTarget.get(0))
+        .append("svg")
+        .attr("width", this._svgWidth)
+        .attr("height", this._svgHeight);
 };
 
 /**
@@ -78,13 +88,18 @@ Grapher.prototype.getFieldType = function() {
  *   dot, or undefined if no dot is selected.
  */
 Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
-    // if we don't have d3 loaded globally, then we can't do anything.
-    if (!d3) {
-        return;
-    }
+    this._clearSvg();
     if (this._fieldType === "college") {
         this._drawCollegeField();
     }
+    if (sheet && (currentBeat >= 0)) {
+        this._drawStuntsheetAtBeat(sheet, currentBeat, selectedDot);
+    }
+};
+
+Grapher.COLLEGE_FIELD_PADDING = {
+    left: 10, // pixels
+    right: 10
 };
 
 /**
@@ -102,18 +117,17 @@ Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
  * Note: this scale takes padding into account: its output is relative to the entire
  * svg container, not just the field area of the svg.
  *
- * @param  {Number} fieldWidth the width of the field, in pixels: we need this
- *   in order to preserve the football field aspect ratio. Note: this is the
- *   width of the field portion of the svg, NOT the entire svg container.
- * @param  {Number} svgHeight the total height of the svg container which
- *   this scale will be relevant to.
+ * @param {object} fieldPadding a dict with "left" and "right" keys,
+ *   specifying the space that should be between the edges of the svg
+ *   container and the edges of the left and right 0 yardlines, respectively.
  * @return {function(int):Number} the scale
  */
-Grapher.prototype._getVerticalStepScale = function (fieldWidth, svgHeight) {
+Grapher.prototype._getVerticalStepScale = function (fieldPadding) {
+    var fieldWidth = this._svgWidth - fieldPadding.left - fieldPadding.right;
     var fieldHeight = fieldWidth * Grapher.COLLEGE_FIELD_ASPECT_RATIO;
-    var fieldVerticalPadding = (svgHeight - fieldHeight) / 2;
+    var fieldVerticalPadding = (this._svgHeight - fieldHeight) / 2;
     var top = fieldVerticalPadding;
-    var bottom = svgHeight - fieldVerticalPadding;
+    var bottom = this._svgHeight - fieldVerticalPadding;
     return d3.scale.linear()
         .domain([0, Grapher.COLLEGE_FIELD_STEPS_VERTICAL]) // 84 8-per-5 steps vertically in a field
         .range([top, bottom]);
@@ -129,16 +143,15 @@ Grapher.prototype._getVerticalStepScale = function (fieldWidth, svgHeight) {
  * Note: this scale takes padding into account: its output is relative to the entire
  * svg container, not just the field area of the svg.
  *
- * @param  {Number} svgWidth the total width of the svg container
  * @param  {object} fieldPadding a dict with "left" and "right" keys,
  *   specifying the space that should be between the edges of the svg
  *   container and the edges of the left and right 0 yardlines, respectively.
  * @return {function(int):Number} the x scale
  */
-Grapher.prototype._getHorizontalStepScale = function (svgWidth, fieldPadding) {
+Grapher.prototype._getHorizontalStepScale = function (fieldPadding) {
     return d3.scale.linear()
         .domain([0, Grapher.COLLEGE_FIELD_STEPS_HORIZONTAL]) // 160 8-per-5 steps from field end to end
-        .range([fieldPadding.left, svgWidth - fieldPadding.right]);
+        .range([fieldPadding.left, this._svgWidth - fieldPadding.right]);
 };
 
 /**
@@ -158,41 +171,34 @@ Grapher.prototype._generateYardlineSteps = function () {
 };
 
 /**
+ * Clear the grapher's svg context (remove all of the svg's children elements).
+ */
+Grapher.prototype._clearSvg = function () {
+    this._drawTarget.find("svg").empty();
+};
+
+/**
  * Draw, on this Grapher's draw target, an svg containing a representation of
  * a college football field, with a background, borders, yardlines (without
  * numbers) and hash marks.
  */
 Grapher.prototype._drawCollegeField = function() {
-    // remove any preexisting svgs
-    this._drawTarget.find("svg").remove();
-    var svgWidth = parseInt(this._drawTarget.css("width"), 10); // outer width
-    var svgHeight = parseInt(this._drawTarget.css("height"), 10); // outer height
-    // since d3 requires a node, and not a jquery, we need to do .get(0)
-    var svg = d3.select(this._drawTarget.get(0))
-        .append("svg")
-        .attr("width", svgWidth)
-        .attr("height", svgHeight);
-
-    // the space inside the green area, but outside the white field lines
-    var fieldPadding = {
-        left: 10, // pixels
-        right: 10
-    };
+    // for referencing this grapher object inside of anonymous functions
+    var _this = this;
 
     // append the field background (green part)
-    svg.append("g")
+    this._svg.append("g")
         .attr("class", "field-wrap")
         .append("rect")
             .attr("class", "field")
-            .attr("width", svgWidth)
-            .attr("height", svgHeight);
+            .attr("width", this._svgWidth)
+            .attr("height", this._svgHeight);
 
-    var svgContentWidth = svgWidth - fieldPadding.left - fieldPadding.right;
-    var yScale = this._getVerticalStepScale(svgContentWidth, svgHeight);
-    var xScale = this._getHorizontalStepScale(svgWidth, fieldPadding);
+    var yScale = this._getVerticalStepScale(Grapher.COLLEGE_FIELD_PADDING);
+    var xScale = this._getHorizontalStepScale(Grapher.COLLEGE_FIELD_PADDING);
 
     // append the field lines
-    var endLinesGroup = svg.append("g")
+    var endLinesGroup = this._svg.append("g")
         .attr("class", "end-lines-wrap");
 
     // endzone lines
@@ -223,7 +229,7 @@ Grapher.prototype._drawCollegeField = function() {
 
     // append the yardlines
     var yardLineSteps = this._generateYardlineSteps();
-    svg.append("g")
+    this._svg.append("g")
         .attr("class", "yardlines-wrap")
         .selectAll("line.yardline")
         .data(yardLineSteps)
@@ -244,7 +250,7 @@ Grapher.prototype._drawCollegeField = function() {
     // draw hash marks
     var hashSteps = [32, 52];
     hashSteps.forEach(function (value) {
-        svg.append("g")
+        _this._svg.append("g")
             .attr("class", "hashes-wrap")
             .selectAll("line.hash")
             .data(yardLineSteps)
@@ -256,6 +262,34 @@ Grapher.prototype._drawCollegeField = function() {
                 .attr("x1", function (d) { return xScale(d) - (hashWidth / 2); })
                 .attr("x2", function (d) { return xScale(d) + (hashWidth / 2); });
     });
+};
+
+/**
+ * Given a stuntsheet, the currentBeat relative to the beginning of that sheet,
+ * and the dot label of a selected dot, draw the dots in this stuntsheet at
+ * that beat onto the svg context of this grapher.
+ *
+ * @param  {Sheet} sheet stuntsheet to draw
+ * @param  {int} currentBeat beat of stuntsheet to draw
+ * @param  {string} selectedDot label of selected dot, if any
+ */
+Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selectedDot) {
+    var dots = sheet.getDots();
+    var xScale = this._getHorizontalStepScale(Grapher.COLLEGE_FIELD_PADDING);
+    var yScale = this._getVerticalStepScale(Grapher.COLLEGE_FIELD_PADDING);
+
+    // pixels, represents length and width since the dots are square
+    var dotRectSize = 5;
+
+    this._svg.selectAll("rect.dot")
+        .data(dots)
+        .enter()
+        .append("rect")
+            .attr("class", "dot")
+            .attr("x", function (dot) { return xScale(dot.getAnimationState(currentBeat).x) - dotRectSize / 2; })
+            .attr("y", function (dot) { return yScale(dot.getAnimationState(currentBeat).y) - dotRectSize / 2; })
+            .attr("width", dotRectSize)
+            .attr("height", dotRectSize);
 };
 
 

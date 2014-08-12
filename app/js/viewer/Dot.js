@@ -16,7 +16,7 @@
  * @param {Array<MovemenetCommand>} movementCommands All of the MovementCommand
  *   objects that this Dot will execute. The commands must be sorted in the
  *   order in which they will be executed.
- */ 
+ */
 var Dot = function(label, movementCommands) {
     this._label = label;
     this._movements = movementCommands;
@@ -44,7 +44,8 @@ Dot.prototype.getLabel = function() {
  */
 Dot.prototype.getAnimationState = function(beatNum) {
     for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
-        if (beatNum < this._movements[commandIndex].getDuration()) {
+        if (beatNum < this._movements[commandIndex].getBeatDuration()) {
+            console.log("Returning an animationState (from ", this._movements[commandIndex], "): ", this._movements[commandIndex].getAnimationState(beatNum));
             return this._movements[commandIndex].getAnimationState(beatNum);
         }
         beatNum -= this._movements[commandIndex].getDuration();
