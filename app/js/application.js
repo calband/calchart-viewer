@@ -14,6 +14,7 @@ $(document).ready(function () {
     // bindings for file uploads
     $(".js-beats-file").change(applicationController.getBeatsFileHandler());
     $(".js-viewer-file").change(applicationController.getViewerFileHandler());
+    $(".js-mp3-file").change(applicationController.getMusicFileHandler());
 
     // bindings for user interface components
     $(".js-prev-beat").click(function () {
