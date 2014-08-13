@@ -23,7 +23,9 @@ var SMMusicPlayer = function() {
         },
         ontimeout: function() {
             _this._error = true;
-        }
+        },
+		html5PollingInterval: 20,
+		flashPollingInterval: 20
     });
 };
 
