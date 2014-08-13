@@ -17,16 +17,16 @@ $(document).ready(function () {
 
     // bindings for user interface components
     $(".js-prev-beat").click(function () {
-        console.log("click received");
+        applicationController.applyAnimationAction("prevBeat");
     });
     $(".js-prev-stuntsheet").click(function () {
-        console.log("click received");
+        applicationController.applyAnimationAction("prevSheet");
     });
     $(".js-next-beat").click(function () {
-        console.log("click received");
+        applicationController.applyAnimationAction("nextBeat");
     });
     $(".js-next-stuntsheet").click(function () {
-        console.log("click received");
+        applicationController.applyAnimationAction("nextSheet");
     });
     $(".js-animate").click(function () {
         console.log("click received");

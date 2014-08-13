@@ -4,6 +4,7 @@
 
 var Grapher = require("./Grapher");
 var ShowUtils = require("./ShowUtils");
+var AnimationStateDelegate = require("./AnimationStateDelegate");
 
 /**
  * The ApplicationController is the backbone of how functional components
@@ -21,16 +22,55 @@ var ShowUtils = require("./ShowUtils");
  * if needed when this function is called.
  */
 var ApplicationController = window.ApplicationController = function () {
-    this.applicationStateDelegate = null;
-    this.grapher = null;
-    this.show = null;
+    this._animationStateDelegate = null;
+    this._grapher = null;
+    this._show = null;
 };
 
 /**
  * Return the currently loaded show, or null if one has not been set yet.
  * @return {Show|null} the currently loaded show
  */
-ApplicationController.prototype.getShow = function () { return this.show; };
+ApplicationController.prototype.getShow = function () { return this._show; };
+
+/**
+ * Set the show to the given Show and instantate a new AnimationStateDelegate
+ * to go with the selected show.
+ * @param {Show} show the show to set
+ */
+ApplicationController.prototype.setShow = function (show) {
+    this._show = show;
+    this._animationStateDelegate = new AnimationStateDelegate(this._show);
+    this._grapher.draw(show.getSheets()[0], 0, null);
+};
+
+/**
+ * Return the AnimationStateDelegate or null if one hasn't been instantiated.
+ * @return {AnimationStateDelegate|null} the delegate
+ */
+ApplicationController.prototype.getAnimationStateDelegate = function () {
+    return this._animationStateDelegate;
+};
+
+/**
+ * Given an action that is "{previous|next}{Sheet|Beat}", apply the correct
+ * action to the animation state delegate and redraw the graph, if possible.
+ * @param  {string} action action to the apply
+ */
+ApplicationController.prototype.applyAnimationAction = function(action) {
+    // if we don't have an animation state delegate or we dont recognize the
+    // action, just return without doing anything
+    var actions = ["prevSheet", "nextSheet", "prevBeat", "nextBeat"];
+    if (this._animationStateDelegate === null || actions.indexOf(action) === -1) {
+        return;
+    }
+    this._animationStateDelegate[action]();
+    this._grapher.draw(
+        this._animationStateDelegate.getCurrentSheet(),
+        this._animationStateDelegate.getCurrentBeatNum(),
+        this._animationStateDelegate.getSelectedDot()
+    );
+};
 
 /**
  * The internal instance of the ApplicationController. Nothing outside of this
@@ -60,8 +100,8 @@ ApplicationController.getInstance = function () {
  * @param  {Grapher} grapher
  */
 ApplicationController.prototype.init = function () {
-    this.grapher = new Grapher("college", $(".js-grapher-draw-target"));
-    this.grapher.draw(null, null, null);
+    this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
+    this._grapher.draw(null, null, null);
 };
 
 /**
@@ -120,8 +160,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
     var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
         var show = ShowUtils.fromJSON(fileContentsAsText);
-        _this.show = show;
-        _this.grapher.draw(show.getSheets()[0], 0, null);
+        _this.setShow(show);
     });
 };
 
