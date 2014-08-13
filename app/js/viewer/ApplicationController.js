@@ -41,6 +41,7 @@ ApplicationController.prototype.getShow = function () { return this._show; };
 ApplicationController.prototype.setShow = function (show) {
     this._show = show;
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
+    this._updateUIWithAnimationState();
     this._grapher.draw(show.getSheets()[0], 0, null);
 };
 
@@ -65,11 +66,25 @@ ApplicationController.prototype.applyAnimationAction = function(action) {
         return;
     }
     this._animationStateDelegate[action]();
+
+    this._updateUIWithAnimationState();
+
     this._grapher.draw(
         this._animationStateDelegate.getCurrentSheet(),
         this._animationStateDelegate.getCurrentBeatNum(),
         this._animationStateDelegate.getSelectedDot()
     );
+};
+
+/**
+ * Update the DOM with the correct stuntsheet number, beat number, and number
+ * of beats in teh current stuntsheet depending on the state of the
+ * animationStateDelegate.
+ */
+ApplicationController.prototype._updateUIWithAnimationState = function () {
+    $(".js-stuntsheet-total").text(this._animationStateDelegate.getCurrentSheet().getDuration());
+    $(".js-beat-number").text(this._animationStateDelegate.getCurrentBeatNum() + 1);
+    $(".js-stuntsheet-number").text(this._animationStateDelegate.getCurrentSheetNum() + 1);
 };
 
 /**
