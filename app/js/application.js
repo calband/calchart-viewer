@@ -28,6 +28,16 @@ $(document).ready(function () {
     $(".js-next-stuntsheet").click(function () {
         applicationController.applyAnimationAction("nextSheet");
     });
+
+    // global window actions for detecting arrow key presses
+    $(window).keydown(function (event) {
+        if (event.keyCode === 39) { // right arrow
+            applicationController.applyAnimationAction("nextBeat");
+        } else if (event.keyCode === 37) { // left arrow
+            applicationController.applyAnimationAction("prevBeat");
+        }
+    });
+
     $(".js-animate").click(function () {
         console.log("click received");
     });
