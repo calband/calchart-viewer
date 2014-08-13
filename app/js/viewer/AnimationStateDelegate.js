@@ -63,7 +63,7 @@ AnimationStateDelegate.prototype.prevBeat = function() {
 
 /**
  * Jumps to the zeroth beat of the next stuntsheet.
- */ 
+ */
 AnimationStateDelegate.prototype.nextSheet = function() {
     if (this.hasNextSheet()) {
         this._currSheet++;
