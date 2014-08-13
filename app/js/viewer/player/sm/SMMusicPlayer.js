@@ -1,16 +1,16 @@
 /**
- * @fileOverview Defines the SM_MusicPlayer class, a MusicPlayer
+ * @fileOverview Defines the SMMusicPlayer class, a MusicPlayer
  *   type that uses SoundManager2 to play audio.
  */
 
-var ClassUtils = require("./ClassUtils");
-var SM_Sound = require("./SM_Sound");
-var MusicPlayer = require("./MusicPlayer");
+var ClassUtils = require("../../ClassUtils");
+var SMSound = require("./SMSound");
+var MusicPlayer = require("../MusicPlayer");
  
 /**
  * A MusicPlayer that uses SoundManager2.
  */
-var SM_MusicPlayer = function() {
+var SMMusicPlayer = function() {
     this._onReadyHandler = null;
     this._isReady = false;
     this._error = false;
@@ -27,19 +27,19 @@ var SM_MusicPlayer = function() {
     });
 };
 
-ClassUtils.extends(SM_MusicPlayer, MusicPlayer);
+ClassUtils.extends(SMMusicPlayer, MusicPlayer);
 
 
-SM_MusicPlayer.prototype.createSound = function(musicURL) {
-    return new SM_Sound(musicURL);
+SMMusicPlayer.prototype.createSound = function(musicURL) {
+    return new SMSound(musicURL);
 };
 
 
-SM_MusicPlayer.prototype.isReady = function() {
+SMMusicPlayer.prototype.isReady = function() {
     this._isReady;
 };
 
-SM_MusicPlayer.prototype.onReady = function(eventHandler) {
+SMMusicPlayer.prototype.onReady = function(eventHandler) {
     this._onReadyHandler = eventHandler;
     if (this.isReady()) {
         this._informReadyEventHandler;
@@ -52,17 +52,17 @@ SM_MusicPlayer.prototype.onReady = function(eventHandler) {
  *
  * @return {boolean} True if an error was encountered; false otherwise.
  */
-SM_MusicPlayer.prototype.experiencedError = function() {
+SMMusicPlayer.prototype.experiencedError = function() {
     return this._error;
 };
 
 /**
  * Tells the event handler that the MusicPlayer is now ready.
  */
-SM_MusicPlayer.prototype._informReadyEventHandler = function() {
+SMMusicPlayer.prototype._informReadyEventHandler = function() {
     if (this._onReadyHandler != null) {
         this._onReadyHandler();
     }
 };
 
-module.exports = SM_MusicPlayer;
+module.exports = SMMusicPlayer;

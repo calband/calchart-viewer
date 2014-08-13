@@ -4,6 +4,8 @@
 
 var Grapher = require("./Grapher");
 var ShowUtils = require("./ShowUtils");
+var TimedBeatsUtils = require("./TimedBeatsUtils");
+var MusicAnimator = require("./player/MusicAnimator");
 var SMMusicPlayer = require("./player/sm/SMMusicPlayer");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
 
@@ -23,10 +25,11 @@ var AnimationStateDelegate = require("./AnimationStateDelegate");
  * if needed when this function is called.
  */
 var ApplicationController = window.ApplicationController = function () {
-    this.musicPlayer = null;
+    this._musicPlayer = null;
     this._animationStateDelegate = null;
     this._grapher = null;
     this._show = null;
+	this._animator = null;
 };
 
 /**
@@ -43,8 +46,10 @@ ApplicationController.prototype.getShow = function () { return this._show; };
 ApplicationController.prototype.setShow = function (show) {
     this._show = show;
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
-    this._updateUIWithAnimationState();
-    this._grapher.draw(show.getSheets()[0], 0, null);
+	this._animator = new MusicAnimator(this._animationStateDelegate, this._musicPlayer);
+	var _this = this;
+	this._animator.onBeat(function() {_this._syncWithDelegate();});
+    this._syncWithDelegate();
 };
 
 /**
@@ -57,7 +62,7 @@ ApplicationController.prototype.getAnimationStateDelegate = function () {
 
 /**
  * Given an action that is "{previous|next}{Sheet|Beat}", apply the correct
- * action to the animation state delegate and redraw the graph, if possible.
+ * action to the animation state delegate.
  * @param  {string} action action to the apply
  */
 ApplicationController.prototype.applyAnimationAction = function(action) {
@@ -68,8 +73,15 @@ ApplicationController.prototype.applyAnimationAction = function(action) {
         return;
     }
     this._animationStateDelegate[action]();
+	this._syncWithDelegate();
+};
 
-    this._updateUIWithAnimationState();
+/**
+ * When the AnimationStateDelegate changes, respond by redrawing
+ * the graph and updating the UI.
+ */
+ApplicationController.prototype._syncWithDelegate = function() {
+	this._updateUIWithAnimationState();
 
     this._grapher.draw(
         this._animationStateDelegate.getCurrentSheet(),
@@ -117,7 +129,7 @@ ApplicationController.getInstance = function () {
  * @param  {Grapher} grapher
  */
 ApplicationController.prototype.init = function () {
-    this.musicPlayer = new SMMusicPlayer();
+    this._musicPlayer = new SMMusicPlayer();
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
 };
@@ -193,9 +205,14 @@ ApplicationController.prototype._createFileURLHandler = function (callback) {
  * @return {Function(jQuery.Event)} the event handler
  */
 ApplicationController.prototype.getBeatsFileHandler = function () {
+	var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
-        console.log("Beats file found with the following content:");
-        console.log(JSON.parse(fileContentsAsText));
+        var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
+		console.log(beats);
+		_this._animator.setBeats(beats);
+		if (_this._animator.isReady()) {
+				_this._animator.play();
+		}
     });
 };
 
@@ -220,14 +237,12 @@ ApplicationController.prototype.getViewerFileHandler = function () {
 ApplicationController.prototype.getMusicFileHandler = function () {
     var _this = this;
     return this._createFileURLHandler(function (fileURL) {
-        console.log("Playing music and firing events...");
-        var sound = _this.musicPlayer.createSound();
-        sound.onPlay(function() {console.log("Playing...");});
-        sound.onFinished(function() {console.log("Finished!"); console.log(sound.encounteredError());});
-        sound.onStop(function() {console.log("Stopped.");});
-        sound.addTimedEvent(2000, function() {console.log("Time = 2 Seconds");});
-        sound.load(fileURL);
-        sound.play();
+		if (fileURL != undefined) {
+			_this._animator.setMusic(fileURL);
+			if (_this._animator.isReady()) {
+				_this._animator.start();
+			}
+		}
     });
 };
 
