@@ -43,11 +43,12 @@ Dot.prototype.getLabel = function() {
  *   has no movement at the specified beat, returns undefined.
  */
 Dot.prototype.getAnimationState = function(beatNum) {
+    console.log(beatNum, "/", this._movements.length);
     for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
         if (beatNum < this._movements[commandIndex].getBeatDuration()) {
             return this._movements[commandIndex].getAnimationState(beatNum);
         }
-        beatNum -= this._movements[commandIndex].getDuration();
+        beatNum -= this._movements[commandIndex].getBeatDuration();
     }
 };
 
