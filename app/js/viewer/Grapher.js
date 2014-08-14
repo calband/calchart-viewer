@@ -301,10 +301,20 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
     var yScale = this._getVerticalStepScale(Grapher.COLLEGE_FIELD_PADDING);
     var colorScale = this._getAngleColorScale();
 
+    var colorForDot = function (dot) {
+        if (dot.getLabel() === selectedDot) {
+            return "#8e44ad";
+        }
+        return  colorScale(dot.getAnimationState(currentBeat).angle);
+    };
+
     // pixels, represents length and width since the dots are square
     var dotRectSize = 5;
 
-    this._svg.selectAll("rect.dot")
+    var dotsGroup = this._svg.append("g")
+        .attr("class", "dots-wrap");
+
+    dotsGroup.selectAll("rect.dot")
         .data(dots)
         .enter()
         .append("rect")
@@ -313,7 +323,7 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
             .attr("y", function (dot) { return yScale(dot.getAnimationState(currentBeat).y) - dotRectSize / 2; })
             .attr("width", dotRectSize)
             .attr("height", dotRectSize)
-            .attr("fill", function (dot) { return colorScale(dot.getAnimationState(currentBeat).angle); });
+            .attr("fill", colorForDot);
 };
 
 
