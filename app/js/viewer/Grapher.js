@@ -293,17 +293,18 @@ Grapher.prototype._drawCollegeField = function() {
  *
  * @param  {Sheet} sheet stuntsheet to draw
  * @param  {int} currentBeat beat of stuntsheet to draw
- * @param  {string} selectedDot label of selected dot, if any
+ * @param  {string} selectedDotLabel label of selected dot, if any
  */
-Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selectedDot) {
+Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selectedDotLabel) {
     var dots = sheet.getDots();
     var xScale = this._getHorizontalStepScale(Grapher.COLLEGE_FIELD_PADDING);
     var yScale = this._getVerticalStepScale(Grapher.COLLEGE_FIELD_PADDING);
     var colorScale = this._getAngleColorScale();
+    var purple = "#F19DF5";
 
     var colorForDot = function (dot) {
-        if (dot.getLabel() === selectedDot) {
-            return "#8e44ad";
+        if (dot.getLabel() === selectedDotLabel) {
+            return purple;
         }
         return  colorScale(dot.getAnimationState(currentBeat).angle);
     };
@@ -324,6 +325,21 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
             .attr("width", dotRectSize)
             .attr("height", dotRectSize)
             .attr("fill", colorForDot);
+
+    var selectedDot = sheet.getDotByLabel(selectedDotLabel);
+    if (selectedDot) {
+        var circleSize = dotRectSize * 2;
+        var circleX = xScale(selectedDot.getAnimationState(currentBeat).x);
+        var circleY = yScale(selectedDot.getAnimationState(currentBeat).y);
+        dotsGroup.append("circle")
+            .attr("class", "selected-dot-highlight")
+            .attr("cx", circleX)
+            .attr("cy", circleY)
+            .attr("r", dotRectSize * 2)
+            .attr("stroke", purple)
+            .attr("stroke-width", "2px")
+            .attr("fill", "transparent");
+    }
 };
 
 
