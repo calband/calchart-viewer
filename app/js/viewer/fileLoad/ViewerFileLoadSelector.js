@@ -32,7 +32,7 @@ var MovementCommandEven = require("../MovementCommandEven");
  * object for loading a particular Viewer File version.
  */
 var ViewerFileLoadSelector = function() {
-	FileLoadSelector.apply(this, []);
+    FileLoadSelector.apply(this, []);
 };
 
 ClassUtils.extends(ViewerFileLoadSelector, FileLoadSelector);

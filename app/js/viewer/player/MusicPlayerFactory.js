@@ -20,7 +20,7 @@ var MusicPlayerFactory = function() {
  *   the application.
  */
 MusicPlayerFactory.prototype.createMusicPlayer = function() {
-	return new SMMusicPlayer();
+    return new SMMusicPlayer();
 };
 
 module.exports = MusicPlayerFactory;

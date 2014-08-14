@@ -86,7 +86,7 @@ Sound.prototype.isLoaded = function() {
  *   false otherwise.
  */
 Sound.prototype.isReady = function() {
-	console.log("Sound.isReady(...) called");
+    console.log("Sound.isReady(...) called");
 };
 
 /**
@@ -96,7 +96,7 @@ Sound.prototype.isReady = function() {
  *   otherwise.
  */
 Sound.prototype.errorFlag = function() {
-	console.log("Sound.errorFlag(...) called");
+    console.log("Sound.errorFlag(...) called");
 };
 
 /**
@@ -107,7 +107,7 @@ Sound.prototype.errorFlag = function() {
  *   If no error occurred, then returns null.
  */
 Sound.prototype.getError = function() {
-	console.log("Sound.getError(...) called");
+    console.log("Sound.getError(...) called");
 };
 
 /**
@@ -121,7 +121,7 @@ Sound.prototype.getError = function() {
  *   when the specified event occurs.
  */
 Sound.prototype.registerEventHandler = function(eventName, eventHandler) {
-	console.log("Sound.registerEventHandler(...) called");
+    console.log("Sound.registerEventHandler(...) called");
 };
 
 /**

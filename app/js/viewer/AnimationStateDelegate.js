@@ -41,7 +41,7 @@ AnimationStateDelegate.prototype.setShow = function(show) {
  * stuntsheet if necessary.
  */
 AnimationStateDelegate.prototype.nextBeat = function() {
-	if (this.hasNextBeatInCurrentSheet()) {
+    if (this.hasNextBeatInCurrentSheet()) {
         this._currBeat++;
     } else if (this.hasNextSheet()) {
         this.nextSheet();

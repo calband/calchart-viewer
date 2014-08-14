@@ -29,7 +29,7 @@ var ApplicationController = window.ApplicationController = function () {
     this._animationStateDelegate = null;
     this._grapher = null;
     this._show = null;
-	this._animator = null;
+    this._animator = null;
 };
 
 /**
@@ -46,8 +46,8 @@ ApplicationController.prototype.getShow = function () { return this._show; };
 ApplicationController.prototype.setShow = function (show) {
     this._show = show;
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
-	this._animator.setAnimationStateDelegate(this._animationStateDelegate);
-	this._animationStateDelegate.selectDot("15");
+    this._animator.setAnimationStateDelegate(this._animationStateDelegate);
+    this._animationStateDelegate.selectDot("15");
     this._syncWithDelegate();
 };
 
@@ -72,7 +72,7 @@ ApplicationController.prototype.applyAnimationAction = function(action) {
         return;
     }
     this._animationStateDelegate[action]();
-	this._syncWithDelegate();
+    this._syncWithDelegate();
 };
 
 /**
@@ -80,7 +80,7 @@ ApplicationController.prototype.applyAnimationAction = function(action) {
  * the graph and updating the UI.
  */
 ApplicationController.prototype._syncWithDelegate = function() {
-	this._updateUIWithAnimationState();
+    this._updateUIWithAnimationState();
 
     this._grapher.draw(
         this._animationStateDelegate.getCurrentSheet(),
@@ -129,9 +129,9 @@ ApplicationController.getInstance = function () {
  */
 ApplicationController.prototype.init = function () {
     this._musicPlayer = new MusicPlayerFactory().createMusicPlayer();
-	this._animator = new MusicAnimator();
-	var _this = this;
-	this._animator.registerEventHandler("beat", function() {_this._syncWithDelegate();});
+    this._animator = new MusicAnimator();
+    var _this = this;
+    this._animator.registerEventHandler("beat", function() {_this._syncWithDelegate();});
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
 };
@@ -207,10 +207,10 @@ ApplicationController.prototype._createFileURLHandler = function (callback) {
  * @return {Function(jQuery.Event)} the event handler
  */
 ApplicationController.prototype.getBeatsFileHandler = function () {
-	var _this = this;
+    var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
         var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
-		_this._animator.setBeats(beats);
+        _this._animator.setBeats(beats);
     });
 };
 
@@ -235,18 +235,18 @@ ApplicationController.prototype.getViewerFileHandler = function () {
 ApplicationController.prototype.getMusicFileHandler = function () {
     var _this = this;
     return this._createFileURLHandler(function (fileURL) {
-		if (fileURL != undefined) {
-			var newSound = _this._musicPlayer.createSound();
-			var onMusicLoaded = function() {
-				if (newSound.errorFlag()) {
-					console.log(newSound.getError());
-				} else {
-					_this._animator.setMusic(newSound);
-				}
-			};
-			newSound.registerEventHandler("finishedLoading", onMusicLoaded);
-			newSound.load(fileURL);
-		}
+        if (fileURL != undefined) {
+            var newSound = _this._musicPlayer.createSound();
+            var onMusicLoaded = function() {
+                if (newSound.errorFlag()) {
+                    console.log(newSound.getError());
+                } else {
+                    _this._animator.setMusic(newSound);
+                }
+            };
+            newSound.registerEventHandler("finishedLoading", onMusicLoaded);
+            newSound.load(fileURL);
+        }
     });
 };
 
@@ -255,11 +255,11 @@ ApplicationController.prototype.getMusicFileHandler = function () {
  * Animates the show, starting at the current beat, with the MusicAnimator.
  */
 ApplicationController.prototype.animate = function() {
-	if (this._animator.isReady()) {
-		this._animator.start();
-	} else {
-		console.log("Animator is not ready!");
-	}
+    if (this._animator.isReady()) {
+        this._animator.start();
+    } else {
+        console.log("Animator is not ready!");
+    }
 };
 
 module.exports = ApplicationController;

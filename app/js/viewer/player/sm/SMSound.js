@@ -14,15 +14,15 @@ var ClassUtils = require("../../ClassUtils");
  *   needs it.
  */
 var SMSound = function(musicURL) {
-	/** 
-	 * Used to prevent soundmanager from throwing timed events that
-	 * occur before the start time (e.g. if the sound is started at
-	 * time 4000 instead of 0, don't throw the timed events occuring before 4000).
-	 * @type {int}
-	 */
-	this._startTime = 0; 
+    /** 
+     * Used to prevent soundmanager from throwing timed events that
+     * occur before the start time (e.g. if the sound is started at
+     * time 4000 instead of 0, don't throw the timed events occuring before 4000).
+     * @type {int}
+     */
+    this._startTime = 0; 
     this._sound = null;
-	this._url = musicURL;
+    this._url = musicURL;
     this.reset();
     if (musicURL != undefined) {
         this.load(musicURL);
@@ -47,28 +47,28 @@ SMSound.prototype.load = function(musicURL) {
         onplay: this._makeEventRouter("play"),
         onstop: this._makeEventRouter("stop"),
         onfinish: function() {_this._handleFinished();},
-		onload: function() {_this._destroyURL(); _this._callEventHandler("finishedLoading"); }
+        onload: function() {_this._destroyURL(); _this._callEventHandler("finishedLoading"); }
     });
     this._installTimedEvents();
-	this._callEventHandler("startLoading");
-	this._sound.load();
+    this._callEventHandler("startLoading");
+    this._sound.load();
 };
 
 SMSound.prototype.unload = function() {
-	/**
-	 * This member variable is designed to make sure that timed events are 
-	 * not thrown after the music finishes. It is true when the music stops 
-	 * or finishes, but false when the music is playing. Its value is used
-	 * to differentiate between timed events that are thrown while the music
-	 * is playing from those thrown when the music is stopped.
-	 * @type {boolean}
-	 */
-	this._stopTimedEvents = true; 
+    /**
+     * This member variable is designed to make sure that timed events are 
+     * not thrown after the music finishes. It is true when the music stops 
+     * or finishes, but false when the music is playing. Its value is used
+     * to differentiate between timed events that are thrown while the music
+     * is playing from those thrown when the music is stopped.
+     * @type {boolean}
+     */
+    this._stopTimedEvents = true; 
     this._destroyURL();
-	if (this._sound != null) {
+    if (this._sound != null) {
         this._sound.destruct();
         this._sound = null;
-		
+        
     }
 };
 
@@ -77,31 +77,31 @@ SMSound.prototype.unload = function() {
  * of saving space.
  */
 SMSound.prototype._destroyURL = function() {
-	if (this._url != null) {
-		URL.revokeObjectURL(this._url);
-		this._url = null;
-	}
+    if (this._url != null) {
+        URL.revokeObjectURL(this._url);
+        this._url = null;
+    }
 };
 
 SMSound.prototype.reset = function() {
     this.unload();
-	this._eventHandlers = [];
-	for (var index = 0; index < this._eventTypes.length; index++) {
-		this._eventHandlers.push(null);
-	}
+    this._eventHandlers = [];
+    for (var index = 0; index < this._eventTypes.length; index++) {
+        this._eventHandlers.push(null);
+    }
     this._timedEvents = [];
 };
 
 SMSound.prototype.play = function(startTime) {
-	this._stopTimedEvents = false; //Timed events are allowed
+    this._stopTimedEvents = false; //Timed events are allowed
     if (this._sound != null) {
-		this._startTime = startTime;
+        this._startTime = startTime;
         this._sound.play({position: startTime});
     }
 };
 
 SMSound.prototype.stop = function() {
-	this._stopTimedEvents = true; //Don't allow any timed events to be thrown after the music is stopped
+    this._stopTimedEvents = true; //Don't allow any timed events to be thrown after the music is stopped
     if (this._sound != null) {
         this._sound.stop();
     }
@@ -117,19 +117,19 @@ SMSound.prototype.isPlaying = function() {
 };
 
 SMSound.prototype.isReady = function() {
-	return (this._sound.readyState === 3);
+    return (this._sound.readyState === 3);
 };
 
 SMSound.prototype.errorFlag = function() {
-	return (this._sound.readyState === 2);
+    return (this._sound.readyState === 2);
 };
 
 SMSound.prototype.getError = function() {
-	if (this.errorFlag()) {
-		return "Sound failed to load.";
-	} else {
-		return null;
-	}
+    if (this.errorFlag()) {
+        return "Sound failed to load.";
+    } else {
+        return null;
+    }
 };
 
 /**
@@ -149,14 +149,14 @@ SMSound.prototype.getError = function() {
  *   when the specified event occurs.
  */
 Sound.prototype.registerEventHandler = function(eventName, eventHandler) {
-	var handlerIndex = this._eventTypes.indexOf(eventName);
-	if (handlerIndex != -1) {
-		this._eventHandlers[handlerIndex] = eventHandler;
-	}
+    var handlerIndex = this._eventTypes.indexOf(eventName);
+    if (handlerIndex != -1) {
+        this._eventHandlers[handlerIndex] = eventHandler;
+    }
 };
 
 SMSound.prototype.addTimedEvent = function(time, eventHandler) {
-	var newEvent = {time: time, eventHandler: eventHandler};
+    var newEvent = {time: time, eventHandler: eventHandler};
     this._timedEvents.push(newEvent);
     if (this._sound != null) {
         this._installOneTimedEvent(newEvent);
@@ -176,7 +176,7 @@ SMSound.prototype.clearTimedEvents = function() {
  */
 SMSound.prototype._installTimedEvents = function() {
     for (var index = 0; index < this._timedEvents.length; index++) {
-		this._installOneTimedEvent(this._timedEvents[index]);
+        this._installOneTimedEvent(this._timedEvents[index]);
     }
 };
 
@@ -185,19 +185,19 @@ SMSound.prototype._installTimedEvents = function() {
  * object.
  */
 SMSound.prototype._installOneTimedEvent = function(timedEvent) {
-	var _this = this;
-	var eventTime = timedEvent.time;
-	var newEventHandler = function() {
-		//If we don't add this if clause, soundmanager will throw timed 
-		//events when we don't want it to (specifically, it will continue
-		//to throw some events after we stop playing, and it will throw
-		//events between the start of the audio and the position where
-		//we started playing the audio
-		if (!_this._stopTimedEvents && eventTime > _this._startTime) { 
-			timedEvent.eventHandler();
-		}
-	}
-	this._sound.onPosition(timedEvent.time, newEventHandler);
+    var _this = this;
+    var eventTime = timedEvent.time;
+    var newEventHandler = function() {
+        //If we don't add this if clause, soundmanager will throw timed 
+        //events when we don't want it to (specifically, it will continue
+        //to throw some events after we stop playing, and it will throw
+        //events between the start of the audio and the position where
+        //we started playing the audio
+        if (!_this._stopTimedEvents && eventTime > _this._startTime) { 
+            timedEvent.eventHandler();
+        }
+    }
+    this._sound.onPosition(timedEvent.time, newEventHandler);
 };
 
 /**
@@ -207,7 +207,7 @@ SMSound.prototype._installOneTimedEvent = function(timedEvent) {
  *   with the handler to call.
  */
 SMSound.prototype._callEventHandler = function(eventName) {
-	var index = this._eventTypes.indexOf(eventName);
+    var index = this._eventTypes.indexOf(eventName);
     if (index != -1 && this._eventHandlers[index] != null) {
         this._eventHandlers[index]();
     }
@@ -236,8 +236,8 @@ SMSound.prototype._makeEventRouter = function(eventName) {
  * An event handler for when the music finished.
  */
 SMSound.prototype._handleFinished = function() {
-	this._stopTimedEvents = true; //Make sure that no timed events are thrown after the music ends
-	this._callEventHandler("finished");
+    this._stopTimedEvents = true; //Make sure that no timed events are thrown after the music ends
+    this._callEventHandler("finished");
 };
 
 module.exports = SMSound;

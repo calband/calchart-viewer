@@ -24,7 +24,7 @@ var TimedBeats = require("../TimedBeats");
  * object for loading a particular Beats File version.
  */
 var BeatsFileLoadSelector = function() {
-	FileLoadSelector.apply(this, []);
+    FileLoadSelector.apply(this, []);
 };
 
 ClassUtils.extends(BeatsFileLoadSelector, FileLoadSelector);
@@ -100,7 +100,7 @@ ClassUtils.extends(BeatsFileLoad_1_0_0, BeatsFileLoadSelector.BeatsFileLoader);
  *   described in the file.
  */
 BeatsFileLoad_1_0_0.prototype.loadFile = function (beatsFileObject) {
-	return this.loadBeats(beatsFileObject.beats);
+    return this.loadBeats(beatsFileObject.beats);
 };
 
 /**
@@ -112,13 +112,13 @@ BeatsFileLoad_1_0_0.prototype.loadFile = function (beatsFileObject) {
  *   described in the array.
  */
 BeatsFileLoad_1_0_0.prototype.loadBeats = function (beatsArray) {
-	var returnVal = new TimedBeats();
-	var overallTime = 0;
-	for (var index = 0; index < beatsArray.length; index++) {
-		overallTime += beatsArray[index];
-		returnVal.addBeat(overallTime);
-	}
-	return returnVal;
+    var returnVal = new TimedBeats();
+    var overallTime = 0;
+    for (var index = 0; index < beatsArray.length; index++) {
+        overallTime += beatsArray[index];
+        returnVal.addBeat(overallTime);
+    }
+    return returnVal;
 };
 
 module.exports = BeatsFileLoadSelector;
