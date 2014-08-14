@@ -54,7 +54,7 @@ SMMusicPlayer.prototype.onReady = function(eventHandler) {
  *
  * @return {boolean} True if an error was encountered; false otherwise.
  */
-SMMusicPlayer.prototype.experiencedError = function() {
+SMMusicPlayer.prototype.errorFlag = function() {
     return this._error;
 };
 

@@ -6,7 +6,7 @@ var Grapher = require("./Grapher");
 var ShowUtils = require("./ShowUtils");
 var TimedBeatsUtils = require("./TimedBeatsUtils");
 var MusicAnimator = require("./player/MusicAnimator");
-var SMMusicPlayer = require("./player/sm/SMMusicPlayer");
+var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
 
 /**
@@ -46,9 +46,7 @@ ApplicationController.prototype.getShow = function () { return this._show; };
 ApplicationController.prototype.setShow = function (show) {
     this._show = show;
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
-	this._animator = new MusicAnimator(this._animationStateDelegate, this._musicPlayer);
-	var _this = this;
-	this._animator.onBeat(function() {_this._syncWithDelegate();});
+	this._animator.setAnimationStateDelegate(this._animationStateDelegate);
     this._syncWithDelegate();
 };
 
@@ -129,7 +127,10 @@ ApplicationController.getInstance = function () {
  * @param  {Grapher} grapher
  */
 ApplicationController.prototype.init = function () {
-    this._musicPlayer = new SMMusicPlayer();
+    this._musicPlayer = new MusicPlayerFactory().createMusicPlayer();
+	this._animator = new MusicAnimator();
+	var _this = this;
+	this._animator.registerEventHandler("beat", function() {_this._syncWithDelegate();});
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
 };
@@ -208,11 +209,7 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
 	var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
         var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
-		console.log(beats);
 		_this._animator.setBeats(beats);
-		if (_this._animator.isReady()) {
-				_this._animator.play();
-		}
     });
 };
 
@@ -238,12 +235,30 @@ ApplicationController.prototype.getMusicFileHandler = function () {
     var _this = this;
     return this._createFileURLHandler(function (fileURL) {
 		if (fileURL != undefined) {
-			_this._animator.setMusic(fileURL);
-			if (_this._animator.isReady()) {
-				_this._animator.start();
-			}
+			var newSound = _this._musicPlayer.createSound();
+			var onMusicLoaded = function() {
+				if (newSound.errorFlag()) {
+					console.log(newSound.getError());
+				} else {
+					_this._animator.setMusic(newSound);
+				}
+			};
+			newSound.registerEventHandler("finishedLoading", onMusicLoaded);
+			newSound.load(fileURL);
 		}
     });
+};
+
+
+/**
+ * Animates the show, starting at the current beat, with the MusicAnimator.
+ */
+ApplicationController.prototype.animate = function() {
+	if (this._animator.isReady()) {
+		this._animator.start();
+	} else {
+		console.log("Animator is not ready!");
+	}
 };
 
 module.exports = ApplicationController;

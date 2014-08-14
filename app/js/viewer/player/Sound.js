@@ -80,38 +80,48 @@ Sound.prototype.isLoaded = function() {
 };
 
 /**
- * Makes sure that the eventHandler is informed
- * when the sound starts to play.
+ * Returns whether or not the sound is ready to play.
  *
- * @param {function():*} eventHandler This function will be
- *   called when the sound starts to play.
+ * @return {boolean} True if the sound is ready to play;
+ *   false otherwise.
  */
-Sound.prototype.onPlay = function(eventHandler) {
-    console.log("Sound.onPlay(...) called");
+Sound.prototype.isReady = function() {
+	console.log("Sound.isReady(...) called");
 };
 
 /**
- * Makes sure that the eventHandler is informed
- * when the sound stops playing. This function
- * will NOT cause the eventHandler to be informed
- * when the Sound finishes.
+ * Returns whether or not an error occurred.
  *
- * @param {function():*} eventHandler This function 
- *   will be called when the sound stops playing.
+ * @return {boolean} True if an error occurred; false
+ *   otherwise.
  */
-Sound.prototype.onStop = function(eventHandler) {
-    console.log("Sound.onStop(...) called");
+Sound.prototype.errorFlag = function() {
+	console.log("Sound.errorFlag(...) called");
 };
 
 /**
- * Makes sure that the eventHandler is informed
- * when the sound finishes playing.
+ * Returns an error message if an error was experienced
+ * while setting up the sound.
  *
- * @param {function():*} eventHandler This function 
- *   will be called when the sound finishes playing.
+ * @return {string} An error message, if an error occurred.
+ *   If no error occurred, then returns null.
  */
-Sound.prototype.onFinished = function(eventHandler) {
-    console.log("Sound.onFinished(...) called");
+Sound.prototype.getError = function() {
+	console.log("Sound.getError(...) called");
+};
+
+/**
+ * Registers an event handler, so that whenever a particular event occurs,
+ * the event handler function is called.
+ *
+ * @param {string} eventName This is the name of the event to connect
+ *   the event handler to. When this event occurs, the eventHandler will
+ *   be called. 
+ * @param {function():*} eventHandler The function that will be called
+ *   when the specified event occurs.
+ */
+Sound.prototype.registerEventHandler = function(eventName, eventHandler) {
+	console.log("Sound.registerEventHandler(...) called");
 };
 
 /**

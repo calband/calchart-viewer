@@ -40,7 +40,7 @@ $(document).ready(function () {
     });
 
     $(".js-animate").click(function () {
-        console.log("click received");
+        applicationController.animate();
     });
     $(".js-generate-continuity").click(function () {
         console.log("click received");
