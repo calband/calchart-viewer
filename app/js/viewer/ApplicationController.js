@@ -41,8 +41,9 @@ ApplicationController.prototype.getShow = function () { return this._show; };
 ApplicationController.prototype.setShow = function (show) {
     this._show = show;
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
+    this._animationStateDelegate.selectDot("15");
     this._updateUIWithAnimationState();
-    this._grapher.draw(show.getSheets()[0], 0, null);
+    this._grapher.draw(show.getSheets()[0], 0, this._animationStateDelegate.getSelectedDot());
 };
 
 /**
