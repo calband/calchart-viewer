@@ -156,7 +156,16 @@ ViewerFileLoad_1_0_0.prototype.loadSheets = function(show, sheetsToLoad) {
  * @return {Sheet} The Sheet object represented in the viewer file.
  */
 ViewerFileLoad_1_0_0.prototype.buildIndividualSheet = function(sheetToBuild) {
-    return new Sheet(sheetToBuild.label, sheetToBuild.field_type, sheetToBuild.dot_types, sheetToBuild.dot_labels, sheetToBuild.continuities, sheetToBuild.beats, this.buildDots(sheetToBuild.movements));
+    return new Sheet(
+        sheetToBuild.label,
+        sheetToBuild.field_type,
+        sheetToBuild.dot_types,
+        sheetToBuild.dot_labels,
+        sheetToBuild.continuities,
+        sheetToBuild.beats,
+        this.buildDots(sheetToBuild.movements),
+        Object.keys(sheetToBuild.movements)
+    );
 };
 
 /**

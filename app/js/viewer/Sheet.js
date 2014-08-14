@@ -20,8 +20,10 @@
  * @param {Array<Dot>} dots An array of all dots involved in this sheet's
  *   movements. Note that all of these dots already have their
  *   MovementCommands before the Sheet is constructed.
+ * @param {Array<string>} dotLabels an array, in sync with dots, which specifies the
+ *   dot labels of the dots
  */
-var Sheet = function(sheetLabel, fieldType, dotTypes, dotTypeAssignments, continuityTexts, duration, dots) {
+var Sheet = function(sheetLabel, fieldType, dotTypes, dotTypeAssignments, continuityTexts, duration, dots, dotLabels) {
     this._sheetLabel = sheetLabel;
     this._fieldType = fieldType;
     this._dotTypes = dotTypes;
@@ -29,6 +31,7 @@ var Sheet = function(sheetLabel, fieldType, dotTypes, dotTypeAssignments, contin
     this._continuityTexts = continuityTexts;
     this._duration = duration;
     this._dots = dots;
+    this._dotLabels = dotLabels;
 };
 
 /**
@@ -95,6 +98,20 @@ Sheet.prototype.getContinuityTexts = function(dotType) {
  */
 Sheet.prototype.getDots = function() {
     return this._dots;
+};
+
+/**
+ * Get a dot in this sheet by its dot label.
+ * @param  {string} dotLabel the dots label, e.g. "A1" or "15"
+ * @return {Dot|null} the dot, or null if a dot with the given label does not
+ *   exist in the sheet
+ */
+Sheet.prototype.getDotByLabel = function (dotLabel) {
+    var index = this._dotLabels.indexOf(dotLabel);
+    if (index === -1) {
+        return null;
+    }
+    return this._dots[index];
 };
 
 /**

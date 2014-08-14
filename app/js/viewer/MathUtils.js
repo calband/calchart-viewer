@@ -12,7 +12,10 @@
  * Unless otherwise specified, angles are measured in the same way
  * as they are measured for the Grapher: clockwise from the positive
  * y-axis. Thoughout this file, this angle measurement scheme will be
- * referred to as being relative to "Grapher standard position."
+ * referred to as being relative to "Grapher standard position." Note
+ * that this position derives from the fact that facing east, in the context of
+ * memorial stadium, is the default: 0 degrees in the Grapher standard position
+ * is straight east, and 90 degrees is south, etc.
  */
 
  
