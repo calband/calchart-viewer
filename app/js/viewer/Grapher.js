@@ -155,6 +155,28 @@ Grapher.prototype._getHorizontalStepScale = function (fieldPadding) {
 };
 
 /**
+ * Return a d3 scale which maps an angle between 0 and 360 to a color hash
+ * representing what color we should draw the dot as based on its angle.
+ * 
+ * This is a d3 quantize scale, which means that it has a continuous domain but
+ * a discrete range: d3 automatically looks at the size of the range and the
+ * bounds of the input domain and returns a function that maps the domain to
+ * the range in even steps.
+ * @return {function(Number):string} function converts angle to color string
+ */
+Grapher.prototype._getAngleColorScale = function () {
+    var colors = {
+        east: "#F9FBF6", // scraped from images of front of the uniform
+        west: "#FFEA59", // scraped from images of uniform side
+        north: "#38363B", // scraped from images of uniform side
+        south: "#38363B" // scraped from actual images of cal band's capes #38363B
+    };
+    return d3.scale.quantize()
+        .domain([0, 360])
+        .range([colors.east, colors.south, colors.west, colors.north]);
+};
+
+/**
  * Return an array which contains the number of steps from the left side of a
  * college football field for each yardline in [5, 10, ... 50, 45, ... 10, 5].
  * For example, if we wanted to know how many steps from the left side of the
@@ -277,6 +299,7 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
     var dots = sheet.getDots();
     var xScale = this._getHorizontalStepScale(Grapher.COLLEGE_FIELD_PADDING);
     var yScale = this._getVerticalStepScale(Grapher.COLLEGE_FIELD_PADDING);
+    var colorScale = this._getAngleColorScale();
 
     // pixels, represents length and width since the dots are square
     var dotRectSize = 5;
@@ -289,7 +312,8 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
             .attr("x", function (dot) { return xScale(dot.getAnimationState(currentBeat).x) - dotRectSize / 2; })
             .attr("y", function (dot) { return yScale(dot.getAnimationState(currentBeat).y) - dotRectSize / 2; })
             .attr("width", dotRectSize)
-            .attr("height", dotRectSize);
+            .attr("height", dotRectSize)
+            .attr("fill", function (dot) { return colorScale(dot.getAnimationState(currentBeat).angle); });
 };
 
 
