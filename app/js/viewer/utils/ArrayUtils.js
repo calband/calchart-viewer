@@ -1,13 +1,13 @@
 /**
  * @fileOverview Defines various utility functions that can be used
- *   to search arrays.
+ *   to search/sort/operate on arrays.
  */
 
 /**
- * A collection of all of the array search functions.
+ * A collection of all of the array functions.
  * @type {object}
  */
-var ArraySearchUtils = {};
+var ArrayUtils = {};
 
 /**
  * A function that explores a sorted array using a binary search.
@@ -31,7 +31,7 @@ var ArraySearchUtils = {};
  *   search gives no return value, this function could be used to collect
  *   information about the findings of a search.
  */
-ArraySearchUtils.binarySearchBase = function(array, guideFunc) {
+ArrayUtils.binarySearchBase = function(array, guideFunc) {
     var currentBlockSize = array.length;
     var firstHalfBlockSize;
     var currentIndexOffset = 0;
@@ -42,9 +42,9 @@ ArraySearchUtils.binarySearchBase = function(array, guideFunc) {
         firstHalfBlockSize = Math.floor(currentBlockSize / 2);
         targetIndex = currentIndexOffset + firstHalfBlockSize;
         guideVal = guideFunc(array[targetIndex], targetIndex);
-        if (guideVal == 0) {
+        if (guideVal === 0) {
             break;
-        } 
+        }
         if (guideVal > 0) {
             frontShave = firstHalfBlockSize + 1;
             currentIndexOffset += frontShave;
@@ -81,16 +81,16 @@ ArraySearchUtils.binarySearchBase = function(array, guideFunc) {
  *   is 'larger'. Returns undefined if the value is not in the array and
  *   no larger value is found.
  */
-ArraySearchUtils.binarySearchForClosestLarger = function(array, value, comparatorFunc) {
-    var searchResult = undefined;
+ArrayUtils.binarySearchForClosestLarger = function(array, value, comparatorFunc) {
+    var searchResult;
     var guideFunc = function(checkValue, index) {
         var compResult = comparatorFunc(value, checkValue);
         if (compResult <= 0) {
             searchResult = index;
         }
         return compResult;
-    }
-    ArraySearchUtils.binarySearchBase(array, guideFunc);
+    };
+    ArrayUtils.binarySearchBase(array, guideFunc);
     return searchResult;
 };
 
@@ -120,17 +120,17 @@ ArraySearchUtils.binarySearchForClosestLarger = function(array, value, comparato
  *   is 'smaller'. Returns undefined if the value is not found in the array,
  *   and no smaller value is found either.
  */
-ArraySearchUtils.binarySearchForClosestSmaller = function(array, value, comparatorFunc) {
-    var searchResult = undefined;
-    guideFunc = function(checkValue, index) {
+ArrayUtils.binarySearchForClosestSmaller = function(array, value, comparatorFunc) {
+    var searchResult;
+    var guideFunc = function(checkValue, index) {
         var compResult = comparatorFunc(value, checkValue);
         if (compResult >= 0) {
             searchResult = index;
         }
         return compResult;
-    }
-    ArraySearchUtils.binarySearchBase(array, guideFunc);
-    return searchResult; 
+    };
+    ArrayUtils.binarySearchBase(array, guideFunc);
+    return searchResult;
 };
 
 /**
@@ -154,17 +154,59 @@ ArraySearchUtils.binarySearchForClosestSmaller = function(array, value, comparat
  * @return {int} The index of the specified value in the array, if it is found;
  *   undefined otherwise.
  */
-ArraySearchUtils.binarySearch = function(array, value, comparatorFunc) {
-    var searchResult = undefined;
-    guideFunc = function(checkValue, index) {
+ArrayUtils.binarySearch = function(array, value, comparatorFunc) {
+    var searchResult;
+    var guideFunc = function(checkValue, index) {
         var compResult = comparatorFunc(value, checkValue);
-        if (compResult == 0) {
+        if (compResult === 0) {
             searchResult = index;
         }
         return compResult;
-    }
-    ArraySearchUtils.binarySearchBase(array, guideFunc);
+    };
+    ArrayUtils.binarySearchBase(array, guideFunc);
     return searchResult;
 };
 
-module.exports = ArraySearchUtils;
+/**
+ * Merges two arrays into one large sorted array, given that the original
+ * two arrays are sorted according to the same ordering scheme that the
+ * final array will use.
+ *
+ * @param {Array<*>} first The first array to merge.
+ * @param {Array<*>} second The second array to merge.
+ * @param {function(*, *):int} comparator A function which will define
+ *   the order in which the final array will be sorted. The original
+ *   two arrays should also be sorted in a way that satisfies this function.
+ *   It will be passed two objects that will be placed into the final array,
+ *   and must return an integer indicating how they should be ordered in
+ *   the final array: a negative value if the first of the two objects
+ *   should come before the other in the final array; a positive value if
+ *   the first of the two objects should come after the other in the final
+ *   array; zero if the order in which the two objects appear in the final
+ *   array, relative to each other, does not matter.
+ * @return {Array<*>} A new array which contains all elements of the
+ *   original two arrays, in sorted order.
+ */
+ArrayUtils.mergeSortedArrays = function(first, second, comparator) {
+    var indexInFirst = 0;
+    var indexInSecond = 0;
+    var mergedArray = [];
+    while (indexInFirst < first.length && indexInSecond < second.length) {
+        if (comparator(first[indexInFirst], second[indexInSecond]) < 0) {
+            mergedArray.push(first[indexInFirst]);
+            indexInFirst++;
+        } else {
+            mergedArray.push(second[indexInSecond]);
+            indexInSecond++;
+        }
+    }
+    for (; indexInFirst < first.length; indexInFirst++) {
+        mergedArray.push(first[indexInFirst]);
+    }
+    for (; indexInSecond < second.length; indexInSecond++) {
+        mergedArray.push(second[indexInSecond]);
+    }
+    return mergedArray;
+};
+
+module.exports = ArrayUtils;

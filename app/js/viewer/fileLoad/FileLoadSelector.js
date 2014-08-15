@@ -35,7 +35,7 @@
  *         calling loadSelector.registerLoader(...)
  */
 
-var ArraySearchUtils = require("../ArraySearchUtils");
+var ArrayUtils = require("../utils/ArrayUtils");
 var Version = require("../Version");
  
 /**
@@ -56,7 +56,7 @@ var FileLoadSelector = function() {
  *   files of the given version.
  */
 FileLoadSelector.prototype.registerLoader = function(version, loader) {
-    var insertIndex = ArraySearchUtils.binarySearchForClosestLarger(this._loaders, version, FileLoadSelector._versionLocator);
+    var insertIndex = ArrayUtils.binarySearchForClosestLarger(this._loaders, version, FileLoadSelector._versionLocator);
     var loaderVersionPair = {
         version: version,
         loader: loader
@@ -73,7 +73,7 @@ FileLoadSelector.prototype.registerLoader = function(version, loader) {
  *   files with the provided version.
  */
 FileLoadSelector.prototype.getAppropriateLoader = function(version) {
-    var targetIndex = ArraySearchUtils.binarySearchForClosestSmaller(this._loaders, version, FileLoadSelector._versionLocator);
+    var targetIndex = ArrayUtils.binarySearchForClosestSmaller(this._loaders, version, FileLoadSelector._versionLocator);
     return this._loaders[targetIndex].loader;
 };
 

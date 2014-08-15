@@ -5,7 +5,7 @@
  *   beats in the music.
  */
  
- var ArrayBuildUtils = require("./ArrayBuildUtils");
+ var ArrayUtils = require("./utils/ArrayUtils");
 
 /**
  * TimedBeats objects record a sequence of
@@ -22,7 +22,7 @@
  *   to greatest.
  */
 var TimedBeats = function(beats) {
-    if (beats != undefined) {
+    if (beats !== undefined) {
         this._beats = beats;
     } else {
         this._beats = [];
@@ -48,7 +48,7 @@ TimedBeats.prototype.addBeat = function(beatTime) {
  *   MUST be sorted from least to greatest.
  */
 TimedBeats.prototype.addBeats = function(beats) {
-    this._beats = ArrayBuildUtils.mergeSortedArrays(this._beats, beats, this._timeComparator);
+    this._beats = ArrayUtils.mergeSortedArrays(this._beats, beats, this._timeComparator);
 };
 
 /**
@@ -66,7 +66,7 @@ TimedBeats.prototype.addBeats = function(beats) {
  *   is before the zeroth beat of the show.
  */
 TimedBeats.prototype.getBeatNumAtTime = function(time) {
-    return ArraySearchUtils.binarySearchForClosestSmaller(this._beats, time, this._timeComparator);
+    return ArrayUtils.binarySearchForClosestSmaller(this._beats, time, this._timeComparator);
 };
 
 /**
@@ -76,7 +76,7 @@ TimedBeats.prototype.getBeatNumAtTime = function(time) {
  *   time for.
  * @return {int} The time at which the beat starts, in
  *   milliseconds.
- */ 
+ */
 TimedBeats.prototype.getBeatTime = function(beatNum) {
     return this._beats[beatNum];
 };
