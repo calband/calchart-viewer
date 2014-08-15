@@ -38,6 +38,7 @@ ArrayBuildUtils.mergeSortedArrays = function(first, second, comparator) {
             indexInFirst++;
         } else {
             mergedArray.push(second[indexInSecond]);
+            indexInSecond++;
         }
     }
     for (; indexInFirst < first.length; indexInFirst++) {

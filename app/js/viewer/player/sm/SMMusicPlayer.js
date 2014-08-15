@@ -38,13 +38,13 @@ SMMusicPlayer.prototype.createSound = function(musicURL) {
 
 
 SMMusicPlayer.prototype.isReady = function() {
-    this._isReady;
+    this._isReady = true;
 };
 
 SMMusicPlayer.prototype.onReady = function(eventHandler) {
     this._onReadyHandler = eventHandler;
     if (this.isReady()) {
-        this._informReadyEventHandler;
+        this._informReadyEventHandler();
     }
 };
 
@@ -62,7 +62,7 @@ SMMusicPlayer.prototype.errorFlag = function() {
  * Tells the event handler that the MusicPlayer is now ready.
  */
 SMMusicPlayer.prototype._informReadyEventHandler = function() {
-    if (this._onReadyHandler != null) {
+    if (this._onReadyHandler !== null) {
         this._onReadyHandler();
     }
 };
