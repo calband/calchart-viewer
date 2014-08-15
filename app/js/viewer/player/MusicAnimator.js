@@ -30,15 +30,19 @@ var MusicAnimator = function() {
     this._animStateDelegate = null;
     this._sound = null;
     this._timedBeats = null;
-    this._eventHandlers = [];
-    for (var index = 0; index < this._eventTypes.length; index++) {
-        this._eventHandlers.push(null);
-    }
+    this._eventHandlers = {};
     this._blockStopEvent = false;
 };
 
-MusicAnimator.prototype._eventTypes = ["start", "stop", "finished", "beat"];
+/**
+ * Event strings that the music animator recognizes as hooks.
+ * @type {Array}
+ */
+MusicAnimator.eventTypes = ["start", "stop", "finished", "beat"];
 
+/**
+ * Set the animation state delegate.
+ */
 MusicAnimator.prototype.setAnimationStateDelegate = function(animationStateDelegate) {
     this.stop(); //Stop before making changes - we don't want the sound to fire events while we work
     this._animStateDelegate = animationStateDelegate; //Set up the new delegate
@@ -69,15 +73,6 @@ MusicAnimator.prototype.setMusic = function(soundObject) {
  */
 MusicAnimator.prototype.setBeats = function(timedBeats) {
     this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
-    this._loadBeats(timedBeats); //Load the new beats
-};
-
-/**
- * Installs the beats to the MusicAnimator object.
- *
- * @param {TimedBeats} timedBeats The beats to install.
- */
-MusicAnimator.prototype._loadBeats = function(timedBeats) {
     this._beats = timedBeats;
     this._loadBeatsOntoSound();
 };
@@ -87,7 +82,7 @@ MusicAnimator.prototype._loadBeats = function(timedBeats) {
  * time one of the beats is reached in the music.
  */
 MusicAnimator.prototype._loadBeatsOntoSound = function() {
-    if (this._beats != null && this._sound != null) {
+    if (this._beats !== null && this._sound !== null) {
         this._sound.clearTimedEvents();
         var _this = this;
         var timedEventHandler = function() {
@@ -129,7 +124,7 @@ MusicAnimator.prototype.start = function() {
  * Stop playing the animation with music.
  */
 MusicAnimator.prototype.stop = function() {
-    if (this._sound != null && this._sound.isPlaying()) {
+    if (this._sound !== null && this._sound.isPlaying()) {
         this._sound.stop();
     }
 };
@@ -141,7 +136,7 @@ MusicAnimator.prototype.stop = function() {
  *   otherwise.
  */
 MusicAnimator.prototype.isPlaying = function() {
-    if (this._sound != null) {
+    if (this._sound !== null) {
         return this._sound.isPlaying();
     } else {
         return false;
@@ -155,7 +150,12 @@ MusicAnimator.prototype.isPlaying = function() {
  *   otherwise.
  */
 MusicAnimator.prototype.isReady = function() {
-    return (this._sound != null && this._sound.isReady() && this._beats != null && this._animStateDelegate != null);
+    return (
+        this._sound !== null &&
+        this._sound.isReady() &&
+        this._beats !== null &&
+        this._animStateDelegate !== null
+    );
 };
 
 /**
@@ -174,10 +174,7 @@ MusicAnimator.prototype.isReady = function() {
  *   when the specified event occurs.
  */
 MusicAnimator.prototype.registerEventHandler = function(eventName, eventHandler) {
-    var handlerIndex = this._eventTypes.indexOf(eventName);
-    if (handlerIndex != -1) {
-        this._eventHandlers[handlerIndex] = eventHandler;
-    }
+    this._eventHandlers[eventName] = eventHandler;
 };
 
 /**
@@ -207,9 +204,8 @@ MusicAnimator.prototype._makeEventRouter = function(eventName) {
  * @param {string} eventName The event whose handler should be called.
  */
 MusicAnimator.prototype._callEventHandler = function(eventName) {
-    var index = this._eventTypes.indexOf(eventName);
-    if (index != -1 && this._eventHandlers[index] != null) {
-        this._eventHandlers[index]();
+    if (this._eventHandlers[eventName]) {
+        this._eventHandlers[eventName]();
     }
 };
 
