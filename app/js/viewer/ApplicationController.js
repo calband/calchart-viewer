@@ -47,7 +47,6 @@ ApplicationController.prototype.setShow = function (show) {
     this._show = show;
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
     this._animator.setAnimationStateDelegate(this._animationStateDelegate);
-    this._animationStateDelegate.selectDot("15");
     this._syncWithDelegate();
 };
 
