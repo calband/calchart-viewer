@@ -153,6 +153,9 @@ ApplicationController.prototype.init = function () {
     this._animator = new MusicAnimator();
     var _this = this;
     this._animator.registerEventHandler("beat", function() {_this._syncWithDelegate();});
+    this._animator.registerEventHandler("ready", function () {
+        $(".js-animate").removeClass("disabled");
+    });
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
 };
@@ -256,7 +259,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
 ApplicationController.prototype.getMusicFileHandler = function () {
     var _this = this;
     return this._createFileURLHandler(function (fileURL) {
-        if (fileURL != undefined) {
+        if (fileURL !== undefined) {
             var newSound = _this._musicPlayer.createSound();
             var onMusicLoaded = function() {
                 if (newSound.errorFlag()) {
