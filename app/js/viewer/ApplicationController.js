@@ -81,11 +81,18 @@ ApplicationController.prototype.getAnimationStateDelegate = function () {
 ApplicationController.prototype.applyAnimationAction = function(action) {
     // if we don't have an animation state delegate or we dont recognize the
     // action, just return without doing anything
-    var actions = ["prevSheet", "nextSheet", "prevBeat", "nextBeat"];
+    var actions = ["prevSheet", "nextSheet", "prevBeat", "nextBeat", "selectDot", "clearSelectedDot"];
+    var acceptOneArgument = ["selectDot"];
     if (this._animationStateDelegate === null || actions.indexOf(action) === -1) {
         return;
     }
-    this._animationStateDelegate[action]();
+    if (acceptOneArgument.indexOf(action) !== -1) {
+        // call the specified function, passing in the second argument to
+        // applyAnimationAction as the first argument to the specified function
+        this._animationStateDelegate[action]([].slice.call(arguments)[1]);
+    } else {
+        this._animationStateDelegate[action]();
+    }
     this._syncWithDelegate();
 };
 

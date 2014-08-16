@@ -46,9 +46,16 @@ $(document).ready(function () {
         console.log("click received");
     });
     $(".js-show-selected-dot").change(function () {
-        console.log("change received");
+        var checked = $(this).is(":checked");
+        if (checked) {
+            applicationController.applyAnimationAction("selectDot", $(".js-dot-labels").val());
+        } else {
+            applicationController.applyAnimationAction("clearSelectedDot");
+        }
     });
     $(".js-dot-labels").change(function () {
-        console.log("change received");
+        if ($(".js-show-selected-dot").is(":checked")) {
+            applicationController.applyAnimationAction("selectDot", $(this).val());
+        }
     });
 });
