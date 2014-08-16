@@ -1,53 +1,30 @@
 /**
- * @fileOverview This file defines how viewer files are loaded.
- *   Here's how the loading process works:
- *   The viewer file format can change over time, so not all
- *   viewer files will be loaded in the same way. Thus, before
- *   loading a particular viewer file, you first need to fetch
- *   a loader object that can load your particular viewer file. To do this,
- *   you need to call the getAppropriateLoader(version) method
- *   on the singleton instance of ViewerFileLoadSelector.
- *   This would be done with:
- *   ViewerFileLoadSelector.getViewerFileLoadSelector().getAppropriateLoaderVersion(viewerFileVersion);
- *   Once you have the appropriate loader for your file version, you
- *   can call its loadViewerFile(...) method to load the file.
- *
- *   WHAT TO DO WHEN THE VIEWER FILE FORMAT CHANGES:
- *   When the viewer file format changes, you need to add
- *   the ability to load the new file format while preserving
- *   the ability to load older file versions. To do this, you
- *   first need to define a child class of ViewerFileLoader
- *   that can load the new file version. Often,
- *   file format changes are small, and you only need to change
- *   the way in which a particular piece of the file is loaded.
- *   In these cases, it can be helpful to derive your new
- *   ViewerFileLoader from the loader for the previous version
- *   (e.g. ViewerFileLoad_1_0_1 might inherit from ViewerFileLoad_1_0_0
- *   in order to get access to all of the methods used to load
- *   file version 1.0.0; it may then change only a few of the original
- *   methods to accomodate for the file changes).
- *   After you make a new ViewerFileLoader, you need to register it
- *   with the ViewerFileLoadSelector. To do that, add the following line
- *   to the ViewerFileLoadSelector._setupInstance static method:
- *   instance.registerLoader(fileVersionHere, new YourViewerFileLoaderHere());
- *   In summary:
- *     - Define a new ViewerFileLoader to load the new file format
- *     - Register the new ViewerFileLoader with the ViewerFileLoadSelector by
- *         editing the ViewerFileLoadSelector._setupInstance static method
+ * @fileOverview This file describes how viewer files are loaded.
+ *   A singleton of the ViewerFileLoadSelector class
+ *   is used to determine how to load a specific version of the
+ *   viewer file. For more information about how a FileLoadSelector
+ *   like the ViewerFileLoadSelector works, @see FileLoadSelector.js.
+ *   Here are the steps that you should follow when the file format
+ *   changes:
+ *     - Define a FileLoadSelector.FileLoader that can load the
+ *         new file version
+ *     - Register your new file loader in 
+ *         ViewerFileLoadSelector._setupInstance(...)
+ *   
  */
 
-var ArraySearchUtils = require("./ArraySearchUtils");
-var ClassUtils = require("./ClassUtils");
-var Version = require("./Version");
-var Dot = require("./Dot");
-var Sheet = require("./Sheet");
-var Show = require("./Show");
-var MovementCommandStand = require("./MovementCommandStand");
-var MovementCommandMarkTime = require("./MovementCommandMarkTime");
-var MovementCommandArc = require("./MovementCommandArc");
-var MovementCommandMove = require("./MovementCommandMove");
-var MovementCommandGoto = require("./MovementCommandGoto");
-var MovementCommandEven = require("./MovementCommandEven");
+var FileLoadSelector = require("./FileLoadSelector");
+var ClassUtils = require("../ClassUtils");
+var Version = require("../Version");
+var Dot = require("../Dot");
+var Sheet = require("../Sheet");
+var Show = require("../Show");
+var MovementCommandStand = require("../MovementCommandStand");
+var MovementCommandMarkTime = require("../MovementCommandMarkTime");
+var MovementCommandArc = require("../MovementCommandArc");
+var MovementCommandMove = require("../MovementCommandMove");
+var MovementCommandGoto = require("../MovementCommandGoto");
+var MovementCommandEven = require("../MovementCommandEven");
  
 /**
  * Every version of the Viewer File needs to be loaded in a different way -
@@ -55,42 +32,14 @@ var MovementCommandEven = require("./MovementCommandEven");
  * object for loading a particular Viewer File version.
  */
 var ViewerFileLoadSelector = function() {
-    this._loaders = [];
+    FileLoadSelector.apply(this, []);
 };
 
-/**
- * Associates a particular Viewer File version with a ViewerFileLoader
- * that can load files of that version.
- *
- * @param {Version} version The Viewer File version.
- * @param {ViewerFileLoader} loader A ViewerFileLoader that can load
- *   viewer files of the given version.
- */
-ViewerFileLoadSelector.prototype.registerLoader = function(version, loader) {
-    var insertIndex = ArraySearchUtils.binarySearchForClosestLarger(this._loaders, version, ViewerFileLoadSelector._versionLocator);
-    var loaderVersionPair = {
-        version: version,
-        loader: loader
-    };
-    this._loaders.splice(insertIndex, 0, loaderVersionPair);
-};
-
-/**
- * Returns the ViewerFileLoader that can load a viewer file of the
- * given version.
- *
- * @param {Version} version The viewer file version to load.
- * @return {ViewerFileLoader} A ViewerFileLoader that can load viewer
- *   files with the provided version.
- */
-ViewerFileLoadSelector.prototype.getAppropriateLoader = function(version) {
-    var targetIndex = ArraySearchUtils.binarySearchForClosestSmaller(this._loaders, version, ViewerFileLoadSelector._versionLocator);
-    return this._loaders[targetIndex].loader;
-};
+ClassUtils.extends(ViewerFileLoadSelector, FileLoadSelector);
 
 /**
  * The ViewerFileLoadSelector is a singleton, and this is its
- * static instance.
+ * instance.
  * @type {ViewerFileLoadSelector}
  */
 ViewerFileLoadSelector._instance = undefined;
@@ -118,41 +67,14 @@ ViewerFileLoadSelector.getInstance = function() {
 ViewerFileLoadSelector._setupInstance = function(instance) {
     instance.registerLoader(new Version(1, 0, 0), new ViewerFileLoad_1_0_0());
 };
-
-/**
- * Used in a binary search to find the position where a particular version
- * fits into an array of loader-version pairs sorted from earliest version
- * to latest version.
- *
- * @param {Version} versionToLocate The version to find in the array.
- * @param {object} relativeTo A loader-version pair to compare against the
- *   versionToLocate.
- * @return {int} A negative value if the versionToLocate comes before
- *   relativeTo in the array; positive value if the versionToLocate comes
- *   after relativeTo in the array; zero if versionToLocate and relativeTo
- *   have identical versions.
- */
-ViewerFileLoadSelector._versionLocator = function(versionToLocate, relativeTo) {
-    return versionToLocate.compareTo(relativeTo.version);
-};
- 
  
 /**
  * This class is responsible for loading viewer files of a particular version.
  */
-var ViewerFileLoader = function() {
+ViewerFileLoadSelector.ViewerFileLoader = function() {
 };
 
-/**
- * Loads an entire viewer file, and returns the result.
- *
- * @param {object} viewerFileObject The main object from a
- *   JSON viewer file.
- * @return {*} Depends on the version of the viewer file.
- */
-ViewerFileLoader.prototype.loadViewerFile = function(viewerFileObject) {
-    console.log("ViewerFileLoader.loadViewerFile(...) called");
-};
+ClassUtils.extends(ViewerFileLoadSelector.ViewerFileLoader, FileLoadSelector.FileLoader); 
 
 
 /**
@@ -160,7 +82,7 @@ ViewerFileLoader.prototype.loadViewerFile = function(viewerFileObject) {
  *====================-- LOAD VIEWER FILE 1.0.0
  *=================================================================
  * ALL AVAILABLE METHODS IN THIS VERSION:
- *   loadViewerFile
+ *   loadFile
  *   loadShow
  *   loadSheets
  *   buildIndividualSheet
@@ -180,12 +102,12 @@ ViewerFileLoader.prototype.loadViewerFile = function(viewerFileObject) {
  * MODIFIED METHODS IN THIS VERSION:
  *   none
  * 
- * To use: call the loadViewerFile method.
+ * To use: call the loadFile method.
  */
 var ViewerFileLoad_1_0_0 = function() {
 };
 
-ClassUtils.extends(ViewerFileLoad_1_0_0, ViewerFileLoader);
+ClassUtils.extends(ViewerFileLoad_1_0_0, ViewerFileLoadSelector.ViewerFileLoader);
 
 /**
  * Loads an entire viewer file, and returns the result. For
@@ -195,7 +117,7 @@ ClassUtils.extends(ViewerFileLoad_1_0_0, ViewerFileLoader);
  *   viewer file.
  * @return {Show} The show described by the viewer file.
  */
-ViewerFileLoad_1_0_0.prototype.loadViewerFile = function (viewerFileObject) {
+ViewerFileLoad_1_0_0.prototype.loadFile = function (viewerFileObject) {
     return this.loadShow(viewerFileObject.show);
 };
 

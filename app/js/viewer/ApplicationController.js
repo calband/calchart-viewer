@@ -4,6 +4,9 @@
 
 var Grapher = require("./Grapher");
 var ShowUtils = require("./ShowUtils");
+var TimedBeatsUtils = require("./TimedBeatsUtils");
+var MusicAnimator = require("./player/MusicAnimator");
+var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
 
 /**
@@ -22,9 +25,11 @@ var AnimationStateDelegate = require("./AnimationStateDelegate");
  * if needed when this function is called.
  */
 var ApplicationController = window.ApplicationController = function () {
+    this._musicPlayer = null;
     this._animationStateDelegate = null;
     this._grapher = null;
     this._show = null;
+    this._animator = null;
 };
 
 /**
@@ -41,9 +46,9 @@ ApplicationController.prototype.getShow = function () { return this._show; };
 ApplicationController.prototype.setShow = function (show) {
     this._show = show;
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
-    this._animationStateDelegate.selectDot("15");
-    this._updateUIWithAnimationState();
-    this._grapher.draw(show.getSheets()[0], 0, this._animationStateDelegate.getSelectedDot());
+    this._animator.setAnimationStateDelegate(this._animationStateDelegate);
+    this._syncWithDelegate();
+    $(".js-show-title").text(this._show.getTitle());
 };
 
 /**
@@ -56,7 +61,7 @@ ApplicationController.prototype.getAnimationStateDelegate = function () {
 
 /**
  * Given an action that is "{previous|next}{Sheet|Beat}", apply the correct
- * action to the animation state delegate and redraw the graph, if possible.
+ * action to the animation state delegate.
  * @param  {string} action action to the apply
  */
 ApplicationController.prototype.applyAnimationAction = function(action) {
@@ -67,7 +72,14 @@ ApplicationController.prototype.applyAnimationAction = function(action) {
         return;
     }
     this._animationStateDelegate[action]();
+    this._syncWithDelegate();
+};
 
+/**
+ * When the AnimationStateDelegate changes, respond by redrawing
+ * the graph and updating the UI.
+ */
+ApplicationController.prototype._syncWithDelegate = function() {
     this._updateUIWithAnimationState();
 
     this._grapher.draw(
@@ -116,6 +128,10 @@ ApplicationController.getInstance = function () {
  * @param  {Grapher} grapher
  */
 ApplicationController.prototype.init = function () {
+    this._musicPlayer = new MusicPlayerFactory().createMusicPlayer();
+    this._animator = new MusicAnimator();
+    var _this = this;
+    this._animator.registerEventHandler("beat", function() {_this._syncWithDelegate();});
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
 };
@@ -156,14 +172,45 @@ ApplicationController.prototype._createFileHandler = function (callback) {
 };
 
 /**
+ * Given a callback function which expects to process the URL for a file,
+ * return a function that takes an event (an event handler, to be used with
+ * the jquery change function) and finds the URL for the event's current
+ * target (a file input). The returned function then passes the URL to
+ * the provided callback.
+ *
+ * Note: this handler function that this method generates will return undefined
+ * if there have been no files uploaded to the input, of if the input accepts
+ * multiple files and has more than one.
+ *
+ * Example useage of this:
+ *
+ * $(".my-input-target").change(_createFileURLHandler(function (fileURL) {
+ *     console.log(fileURL);
+ *
+ * @param {Function(*)} callback A callback which accepts a file's URL.
+ * @return {Function(jQuery.Event)} An event handler function which passes
+ *   a file's URL to the callback.
+ */
+ApplicationController.prototype._createFileURLHandler = function (callback) {
+    return function(event) {
+        var files = event.currentTarget.files;
+        if (!files || files.length !== 1) {
+            return;
+        }
+        callback(URL.createObjectURL(files[0]));
+    };
+};
+
+/**
  * Return an event handler function which reads the beats file and operates on
  * it.
  * @return {Function(jQuery.Event)} the event handler
  */
 ApplicationController.prototype.getBeatsFileHandler = function () {
+    var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
-        console.log("Beats file found with the following content:");
-        console.log(JSON.parse(fileContentsAsText));
+        var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
+        _this._animator.setBeats(beats);
     });
 };
 
@@ -178,6 +225,41 @@ ApplicationController.prototype.getViewerFileHandler = function () {
         var show = ShowUtils.fromJSON(fileContentsAsText);
         _this.setShow(show);
     });
+};
+
+/**
+ * Return an event handler function which loads and operates on a music file.
+ *
+ * @return {Function(jQuery.Event)} the event handler
+ */
+ApplicationController.prototype.getMusicFileHandler = function () {
+    var _this = this;
+    return this._createFileURLHandler(function (fileURL) {
+        if (fileURL != undefined) {
+            var newSound = _this._musicPlayer.createSound();
+            var onMusicLoaded = function() {
+                if (newSound.errorFlag()) {
+                    console.log(newSound.getError());
+                } else {
+                    _this._animator.setMusic(newSound);
+                }
+            };
+            newSound.registerEventHandler("finishedLoading", onMusicLoaded);
+            newSound.load(fileURL);
+        }
+    });
+};
+
+
+/**
+ * Animates the show, starting at the current beat, with the MusicAnimator.
+ */
+ApplicationController.prototype.animate = function() {
+    if (this._animator.isReady()) {
+        this._animator.start();
+    } else {
+        console.log("Animator is not ready!");
+    }
 };
 
 module.exports = ApplicationController;
