@@ -48,7 +48,21 @@ ApplicationController.prototype.setShow = function (show) {
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
     this._animator.setAnimationStateDelegate(this._animationStateDelegate);
     this._syncWithDelegate();
+    this._updateUIWithShow();
+};
+
+/**
+ * Update the html ui with various properties about the show. Assumes that
+ * this._show has already been loaded.
+ */
+ApplicationController.prototype._updateUIWithShow = function () {
     $(".js-show-title").text(this._show.getTitle());
+    console.log(this._show);
+    var options = this._show.getDotLabels().map(function (value) {
+        return "<option value='" + value + "'>" + value + "</option>";
+    });
+    var optionsHtml = options.join("");
+    $(".js-dot-labels").html(optionsHtml);
 };
 
 /**

@@ -129,7 +129,7 @@ ViewerFileLoad_1_0_0.prototype.loadFile = function (viewerFileObject) {
  * @return {Show} The show represented in the viewer file.
  */
 ViewerFileLoad_1_0_0.prototype.loadShow = function(showToLoad) {
-    var show = new Show(showToLoad.title, showToLoad.year, showToLoad.description, showToLoad.dot_labels);
+    var show = new Show(showToLoad.title, showToLoad.year, showToLoad.description, showToLoad.labels);
     this.loadSheets(show, showToLoad.sheets);
     return show;
 };
