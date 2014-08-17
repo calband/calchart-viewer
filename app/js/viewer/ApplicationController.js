@@ -48,7 +48,21 @@ ApplicationController.prototype.setShow = function (show) {
     this._animationStateDelegate = new AnimationStateDelegate(this._show);
     this._animator.setAnimationStateDelegate(this._animationStateDelegate);
     this._syncWithDelegate();
+    this._updateUIWithShow();
+};
+
+/**
+ * Update the html ui with various properties about the show. Assumes that
+ * this._show has already been loaded.
+ */
+ApplicationController.prototype._updateUIWithShow = function () {
     $(".js-show-title").text(this._show.getTitle());
+    console.log(this._show);
+    var options = this._show.getDotLabels().map(function (value) {
+        return "<option value='" + value + "'>" + value + "</option>";
+    });
+    var optionsHtml = options.join("");
+    $(".js-dot-labels").html(optionsHtml);
 };
 
 /**
@@ -67,11 +81,18 @@ ApplicationController.prototype.getAnimationStateDelegate = function () {
 ApplicationController.prototype.applyAnimationAction = function(action) {
     // if we don't have an animation state delegate or we dont recognize the
     // action, just return without doing anything
-    var actions = ["prevSheet", "nextSheet", "prevBeat", "nextBeat"];
+    var actions = ["prevSheet", "nextSheet", "prevBeat", "nextBeat", "selectDot", "clearSelectedDot"];
+    var acceptOneArgument = ["selectDot"];
     if (this._animationStateDelegate === null || actions.indexOf(action) === -1) {
         return;
     }
-    this._animationStateDelegate[action]();
+    if (acceptOneArgument.indexOf(action) !== -1) {
+        // call the specified function, passing in the second argument to
+        // applyAnimationAction as the first argument to the specified function
+        this._animationStateDelegate[action]([].slice.call(arguments)[1]);
+    } else {
+        this._animationStateDelegate[action]();
+    }
     this._syncWithDelegate();
 };
 
@@ -132,6 +153,9 @@ ApplicationController.prototype.init = function () {
     this._animator = new MusicAnimator();
     var _this = this;
     this._animator.registerEventHandler("beat", function() {_this._syncWithDelegate();});
+    this._animator.registerEventHandler("ready", function () {
+        $(".js-animate").removeClass("disabled");
+    });
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
 };
@@ -235,7 +259,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
 ApplicationController.prototype.getMusicFileHandler = function () {
     var _this = this;
     return this._createFileURLHandler(function (fileURL) {
-        if (fileURL != undefined) {
+        if (fileURL !== undefined) {
             var newSound = _this._musicPlayer.createSound();
             var onMusicLoaded = function() {
                 if (newSound.errorFlag()) {

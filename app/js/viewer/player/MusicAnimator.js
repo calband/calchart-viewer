@@ -38,14 +38,14 @@ var MusicAnimator = function() {
  * Event strings that the music animator recognizes as hooks.
  * @type {Array}
  */
-MusicAnimator.eventTypes = ["start", "stop", "finished", "beat"];
+MusicAnimator.eventTypes = ["start", "stop", "finished", "beat", "ready"];
 
 /**
  * Set the animation state delegate.
  */
 MusicAnimator.prototype.setAnimationStateDelegate = function(animationStateDelegate) {
-    this.stop(); //Stop before making changes - we don't want the sound to fire events while we work
-    this._animStateDelegate = animationStateDelegate; //Set up the new delegate
+    this.stop(); // Stop before making changes - we don't want the sound to fire events while we work
+    this._animStateDelegate = animationStateDelegate; // Set up the new delegate
 };
 
 
@@ -62,6 +62,9 @@ MusicAnimator.prototype.setMusic = function(soundObject) {
     this._sound.registerEventHandler("stop", function() {_this._musicStopped();});
     this._sound.registerEventHandler("finished", this._makeEventRouter("finished"));
     this._loadBeatsOntoSound();
+    if (this.isReady()) {
+        this._callEventHandler("ready");
+    }
 };
 
 /**
@@ -75,6 +78,9 @@ MusicAnimator.prototype.setBeats = function(timedBeats) {
     this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
     this._beats = timedBeats;
     this._loadBeatsOntoSound();
+    if (this.isReady()) {
+        this._callEventHandler("ready");
+    }
 };
 
 /**
@@ -82,7 +88,7 @@ MusicAnimator.prototype.setBeats = function(timedBeats) {
  * time one of the beats is reached in the music.
  */
 MusicAnimator.prototype._loadBeatsOntoSound = function() {
-    if (this._beats !== null && this._sound !== null) {
+    if (this._beats && this._sound) {
         this._sound.clearTimedEvents();
         var _this = this;
         var timedEventHandler = function() {
@@ -151,9 +157,8 @@ MusicAnimator.prototype.isPlaying = function() {
  */
 MusicAnimator.prototype.isReady = function() {
     return (
-        this._sound !== null &&
-        this._sound.isReady() &&
-        this._beats !== null &&
+        this._sound && this._sound.isReady() &&
+        this._beats &&
         this._animStateDelegate !== null
     );
 };
