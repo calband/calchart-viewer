@@ -280,12 +280,12 @@ ApplicationController.prototype.getMusicFileHandler = function () {
 ApplicationController.prototype.animate = function() {
      if (this._animator.isPlaying()) {
         this._animator.stop();
-	} else if (this._animator.isReady()) {
+    } else if (this._animator.isReady()) {
         this._animator.start();
     } else {
         console.log("Animator is not ready!");
     }
-	this._updateAnimateControl();
+    this._updateAnimateControl();
 };
 
 
@@ -294,16 +294,16 @@ ApplicationController.prototype.animate = function() {
  * and is crossed out if disabled.
  */
 ApplicationController.prototype._updateAnimateControl = function() {
-	if (this._animator.isPlaying()) {
-		$(".js-animate").text("Stop animation");
-	} else {
-		$(".js-animate").text("Animate with music");
-		if (this._animator.isReady()) {
-			$(".js-animate").removeClass("disabled");
-		} else {
-			$(".js-animate").addClass("disabled");
-		}
-	}
+    if (this._animator.isPlaying()) {
+        $(".js-animate").text("Stop animation");
+    } else {
+        $(".js-animate").text("Animate with music");
+        if (this._animator.isReady()) {
+            $(".js-animate").removeClass("disabled");
+        } else {
+            $(".js-animate").addClass("disabled");
+        }
+    }
 };
 
 module.exports = ApplicationController;
