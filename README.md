@@ -20,6 +20,12 @@ The goal of Calchart Viewer is to provide an easy way for Cal Band members to pr
 
 When you change a javascript file, you will have to compile `build/js/application.js` again by running `grunt webpack:build`. Same thing with when you change a .less file: you'll need to run `grunt less` to compile to CSS. You should run `grunt watch` from the project root: this will start a task that listens for changes to the javascript and less files and autocompiles `build/js/application.js` and all the CSS files on every save.
 
+### Contributing
+
+Open issues and milestones are on the issues page. When you start work on an issue, assign yourself to it to make sure no two people work on the same thing at the same time. Please work on your own branch and submit a pull request when you're done so it can be reviewed for style: tag the person you want to review it in the pull request, but feel free to comment on any open pull request with questions/conerns. Noah will be responsible for merging the pull requests into `master` or not.
+
+If you have an idea for a feature, general question, bug report, etc, open an issue about it! All issues will be triaged.
+
 #### Architecture Diagram
 
 You can find a very high level overview of how the code architecture should work and interact with the UI [here](http://imgur.com/yw7FbWL.png).
