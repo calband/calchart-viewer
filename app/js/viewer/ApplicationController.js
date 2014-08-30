@@ -119,6 +119,15 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
     $(".js-stuntsheet-total").text(this._animationStateDelegate.getCurrentSheet().getDuration());
     $(".js-beat-number").text(this._animationStateDelegate.getCurrentBeatNum() + 1);
     $(".js-stuntsheet-number").text(this._animationStateDelegate.getCurrentSheetNum() + 1);
+    if (this._animationStateDelegate.getSelectedDot() !== null) {
+        selectedDot = this._animationStateDelegate.getSelectedDot();
+        currentSheet = this._animationStateDelegate.getCurrentSheet();
+        typeOfDot = currentSheet.getDotType(selectedDot);
+        continuities = currentSheet.getContinuityTexts(typeOfDot).join("\n");
+        $(".js-dot-continuity").text(continuities);
+    } else {
+        $(".js-dot-continuity").text("");
+    }
 };
 
 /**

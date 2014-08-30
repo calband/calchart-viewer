@@ -108,7 +108,7 @@
     .controls-container {
         width: @controls-width;
 
-        .show-title, .stuntsheet, .beats, .next-prev-control, .control-button, .control-container {
+        .show-title, .stuntsheet, .beats, .js-dot-continuity, .next-prev-control, .control-button, .control-container {
             color: @calband-blue;
             font-family: @sans;
         }
@@ -132,7 +132,7 @@
             }
         }
 
-        .stuntsheet, .beats {
+        .stuntsheet, .beats, .js-dot-continuity {
             display: block;
             height: 30px;
             line-height: 30px;
@@ -145,6 +145,12 @@
 
         .beats {
             float: right;
+        }
+
+        .js-dot-continuity {
+            position: absolute;
+            margin-top: 40px;
+            font-size: 16px;
         }
 
         .increment-control, .control-button, .control-container {
