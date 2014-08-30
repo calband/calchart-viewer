@@ -68,6 +68,8 @@ AnimationStateDelegate.prototype.nextSheet = function() {
     if (this.hasNextSheet()) {
         this._currSheet++;
         this._currBeat = 0;
+    } else {
+        this._currBeat = this.getCurrentSheet().getDuration() - 1;
     }
 };
 
@@ -77,8 +79,8 @@ AnimationStateDelegate.prototype.nextSheet = function() {
 AnimationStateDelegate.prototype.prevSheet = function() {
     if (this.hasPrevSheet()) {
         this._currSheet--;
-        this._currBeat = 0;
     }
+    this._currBeat = 0;
 };
 
 /**
