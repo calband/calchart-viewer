@@ -62,7 +62,7 @@ ApplicationController.prototype._updateUIWithShow = function () {
         return "<option value='" + value + "'>" + value + "</option>";
     });
     var optionsHtml = options.join("");
-    $(".js-dot-labels").html(optionsHtml);
+    $(".js-dot-labels").html(optionsHtml).trigger("chosen:updated");
 };
 
 /**

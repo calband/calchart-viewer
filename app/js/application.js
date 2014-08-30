@@ -45,17 +45,15 @@ $(document).ready(function () {
     $(".js-generate-continuity").click(function () {
         console.log("click received");
     });
-    $(".js-show-selected-dot").change(function () {
-        var checked = $(this).is(":checked");
-        if (checked) {
-            applicationController.applyAnimationAction("selectDot", $(".js-dot-labels").val());
-        } else {
+    
+    $(".js-dot-labels").chosen({
+        allow_single_deselect: true,
+        width: "110px"
+    }).change(function(evt, params){
+        if (typeof params === "undefined") {
             applicationController.applyAnimationAction("clearSelectedDot");
-        }
-    });
-    $(".js-dot-labels").change(function () {
-        if ($(".js-show-selected-dot").is(":checked")) {
-            applicationController.applyAnimationAction("selectDot", $(this).val());
+        } else {
+            applicationController.applyAnimationAction("selectDot", params.selected);
         }
     });
 });
