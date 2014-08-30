@@ -22,9 +22,18 @@
  *   beats file.
  */
 TimedBeatsUtils.fromJSON = function(fileContent) {
-    var beatsFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-    var fileVersion = Version.parse(beatsFileMainObject.meta.version); //Get the version of the beats file
-    return BeatsFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(beatsFileMainObject); //Get the appropriate file loader and use it to load the file
+    try {
+        var beatsFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+        if (typeof beatsFileMainObject.beats === "undefined") {
+            alert("You need to upload the beats file!");
+        }
+        var fileVersion = Version.parse(beatsFileMainObject.meta.version); //Get the version of the beats file
+        return BeatsFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(beatsFileMainObject); //Get the appropriate file loader and use it to load the file
+    } catch (err) {
+        if (err.name == "SyntaxError") {
+            alert("You need to upload a .json file!");
+        }
+    }
 };
 
 module.exports = TimedBeatsUtils;

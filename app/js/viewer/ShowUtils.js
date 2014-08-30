@@ -22,9 +22,19 @@
  *   file.
  */
 ShowUtils.fromJSON = function(fileContent) {
-    var viewerFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-    var fileVersion = Version.parse(viewerFileMainObject.meta.version); //Get the version of the viewer file
-    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerFileMainObject); //Get the appropriate ViewerLoader and use it to load the file
+    try {
+        var viewerFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+        if (typeof viewerFileMainObject.show === "undefined") {
+            alert("You need to upload the viewer file!");
+        }
+        console.log(viewerFileMainObject.show);
+        var fileVersion = Version.parse(viewerFileMainObject.meta.version); //Get the version of the viewer file
+        return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerFileMainObject); //Get the appropriate ViewerLoader and use it to load the file
+    } catch (err) {
+        if (err.name == "SyntaxError") {
+            alert("You need to upload a .json file!");
+        }
+    }
 };
 
 module.exports = ShowUtils;
