@@ -86,6 +86,11 @@ ApplicationController.prototype.applyAnimationAction = function(action) {
     if (this._animationStateDelegate === null || actions.indexOf(action) === -1) {
         return;
     }
+	var restartAnimator = false;
+	if (this._animator.isPlaying()) {
+		this._animator.stop();
+		restartAnimator = true;
+	}
     if (acceptOneArgument.indexOf(action) !== -1) {
         // call the specified function, passing in the second argument to
         // applyAnimationAction as the first argument to the specified function
@@ -94,6 +99,9 @@ ApplicationController.prototype.applyAnimationAction = function(action) {
         this._animationStateDelegate[action]();
     }
     this._syncWithDelegate();
+	if (restartAnimator) {
+		this._animator.start();
+	}
 };
 
 /**
