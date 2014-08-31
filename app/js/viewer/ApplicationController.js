@@ -120,13 +120,16 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
     $(".js-beat-number").text(this._animationStateDelegate.getCurrentBeatNum() + 1);
     $(".js-stuntsheet-number").text(this._animationStateDelegate.getCurrentSheetNum() + 1);
     if (this._animationStateDelegate.getSelectedDot() !== null) {
-        selectedDot = this._animationStateDelegate.getSelectedDot();
-        currentSheet = this._animationStateDelegate.getCurrentSheet();
-        typeOfDot = currentSheet.getDotType(selectedDot);
-        continuities = currentSheet.getContinuityTexts(typeOfDot).join("\n");
-        $(".js-dot-continuity").text(continuities);
+        var selectedDot = this._animationStateDelegate.getSelectedDot();
+        var currentSheet = this._animationStateDelegate.getCurrentSheet();
+        var typeOfDot = currentSheet.getDotType(selectedDot);
+        var continuities = currentSheet.getContinuityTexts(typeOfDot);
+        for (var i = 0; i < continuities.length; i++) {
+            continuities[i] = "<div>" + continuities[i] + "</div>";
+        }
+        $(".js-dot-continuity").html(continuities.join(""));
     } else {
-        $(".js-dot-continuity").text("");
+        $(".js-dot-continuity").html("");
     }
 };
 
