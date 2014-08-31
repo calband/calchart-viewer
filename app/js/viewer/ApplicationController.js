@@ -153,7 +153,7 @@ ApplicationController.prototype.init = function () {
     var _this = this;
     this._animator.registerEventHandler("beat", function() {_this._syncWithDelegate();});
     this._animator.registerEventHandler("ready", function () {
-        _this._updateAnimateControl();
+        _this._updateAnimationControl();
     });
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
@@ -275,25 +275,29 @@ ApplicationController.prototype.getMusicFileHandler = function () {
 
 
 /**
- * Animates the show, starting at the current beat, with the MusicAnimator.
+ * Begins or stops a show animation. If the animation is not currently running,
+ * this will start animating at the current beat, with the MusicAnimator.
+ * Otherwise, this will stop the animation.
  */
-ApplicationController.prototype.animate = function() {
-     if (this._animator.isPlaying()) {
+ApplicationController.prototype.toggleAnimation = function() {
+    if (this._animator.isPlaying()) {
         this._animator.stop();
     } else if (this._animator.isReady()) {
         this._animator.start();
     } else {
         console.log("Animator is not ready!");
     }
-    this._updateAnimateControl();
+    this._updateAnimationControl();
 };
 
 
 /**
- * Updates the animation button, making sure that it reads the correct text
- * and is crossed out if disabled.
+ * Updates the animation button, making sure that it tells the user whether it
+ * will start or stop the animation. The button should also indicate when it is
+ * disabled (e.g. when the music and beats files have not been loaded, and the
+ * show cannot be animated).
  */
-ApplicationController.prototype._updateAnimateControl = function() {
+ApplicationController.prototype._updateAnimationControl = function() {
     if (this._animator.isPlaying()) {
         $(".js-animate").text("Stop animation");
     } else {
