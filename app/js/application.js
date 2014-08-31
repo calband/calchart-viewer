@@ -16,10 +16,12 @@ $(document).ready(function () {
         $(".js-beats-file").click();
     });
     $(".js-beats-file").change(applicationController.getBeatsFileHandler());
+
     $(".js-viewer-file-btn").click(function() {
         $(".js-viewer-file").click();
     });
     $(".js-viewer-file").change(applicationController.getViewerFileHandler());
+
     $(".js-mp3-file-btn").click(function() {
         $(".js-mp3-file").click();
     });
