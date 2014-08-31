@@ -233,8 +233,16 @@ ApplicationController.prototype._createFileURLHandler = function (callback) {
 ApplicationController.prototype.getBeatsFileHandler = function () {
     var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
-        var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
-        _this._animator.setBeats(beats);
+        try {
+            var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
+            _this._animator.setBeats(beats);
+        } catch (err) {
+            if (err.name == "SyntaxError") {
+                alert("You need to upload a .json file!");
+            } else if (err.name == "InvalidFileType") {
+                alert(err.message);
+            }
+        }
     });
 };
 
@@ -246,8 +254,16 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
 ApplicationController.prototype.getViewerFileHandler = function () {
     var _this = this;
     return this._createFileHandler(function (fileContentsAsText) {
-        var show = ShowUtils.fromJSON(fileContentsAsText);
-        _this.setShow(show);
+        try {
+            var show = ShowUtils.fromJSON(fileContentsAsText);
+            _this.setShow(show);
+        } catch (err) {
+            if (err.name == "SyntaxError") {
+                alert("You need to upload a .json file!");
+            } else if (err.name == "InvalidFileType") {
+                alert(err.message);
+            }
+        }
     });
 };
 
