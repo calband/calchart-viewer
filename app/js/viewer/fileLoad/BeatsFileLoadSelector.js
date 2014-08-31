@@ -17,7 +17,7 @@ var Version = require("../Version");
 var FileLoadSelector = require("./FileLoadSelector");
 var ClassUtils = require("../ClassUtils");
 var TimedBeats = require("../TimedBeats");
-var InvalidFileType = require("./InvalidFileType");
+var InvalidFileTypeError = require("./InvalidFileTypeError");
  
 /**
  * Every version of the Beats File needs to be loaded in a different way -
@@ -114,7 +114,7 @@ BeatsFileLoad_1_0_0.prototype.loadFile = function (beatsFileObject) {
  */
 BeatsFileLoad_1_0_0.prototype.loadBeats = function (beatsArray) {
     if (typeof beatsArray === "undefined") {
-        throw new InvalidFileType("Upload a proper beats file.");
+        throw new InvalidFileTypeError("Upload a proper beats file.");
     }
     var returnVal = new TimedBeats();
     var overallTime = 0;

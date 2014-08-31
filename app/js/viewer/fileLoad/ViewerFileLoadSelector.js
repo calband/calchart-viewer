@@ -14,7 +14,7 @@
  */
 
 var FileLoadSelector = require("./FileLoadSelector");
-var InvalidFileType = require("./InvalidFileType");
+var InvalidFileTypeError = require("./InvalidFileTypeError");
 var ClassUtils = require("../ClassUtils");
 var Version = require("../Version");
 var Dot = require("../Dot");
@@ -131,7 +131,7 @@ ViewerFileLoad_1_0_0.prototype.loadFile = function (viewerFileObject) {
  */
 ViewerFileLoad_1_0_0.prototype.loadShow = function(showToLoad) {
     if (typeof showToLoad === "undefined") {
-        throw new InvalidFileType("Upload a proper viewer file.");
+        throw new InvalidFileTypeError("Upload a proper viewer file.");
     }
     var show = new Show(showToLoad.title, showToLoad.year, showToLoad.description, showToLoad.labels);
     this.loadSheets(show, showToLoad.sheets);

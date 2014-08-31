@@ -239,7 +239,7 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
         } catch (err) {
             if (err.name == "SyntaxError") {
                 alert("You need to upload a .json file!");
-            } else if (err.name == "InvalidFileType") {
+            } else if (err.name == "InvalidFileTypeError") {
                 alert(err.message);
             }
         }
@@ -260,7 +260,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
         } catch (err) {
             if (err.name == "SyntaxError") {
                 alert("You need to upload a .json file!");
-            } else if (err.name == "InvalidFileType") {
+            } else if (err.name == "InvalidFileTypeError") {
                 alert(err.message);
             }
         }
