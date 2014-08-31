@@ -23,7 +23,6 @@
  */
 ShowUtils.fromJSON = function(fileContent) {
     var viewerFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-    console.log(viewerFileMainObject.show);
     var fileVersion = Version.parse(viewerFileMainObject.meta.version); //Get the version of the viewer file
     return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerFileMainObject); //Get the appropriate ViewerLoader and use it to load the file
 };
