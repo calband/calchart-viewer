@@ -243,6 +243,9 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
     return this._createFileHandler(function (fileContentsAsText, fileName) {
         var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
         _this._animator.setBeats(beats);
+        if (fileName.length > 24) {
+            fileName = fileName.substring(0, 25) + "...";
+        }
         $(".js-beats-file-btn").text(fileName);
     });
 };
@@ -257,6 +260,9 @@ ApplicationController.prototype.getViewerFileHandler = function () {
     return this._createFileHandler(function (fileContentsAsText, fileName) {
         var show = ShowUtils.fromJSON(fileContentsAsText);
         _this.setShow(show);
+        if (fileName.length > 24) {
+            fileName = fileName.substring(0, 25) + "...";
+        }
         $(".js-viewer-file-btn").text(fileName);
     });
 };
@@ -280,6 +286,9 @@ ApplicationController.prototype.getMusicFileHandler = function () {
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);
             newSound.load(fileURL);
+            if (fileName.length > 24) {
+                fileName = fileName.substring(0, 25) + "...";
+            }
             $(".js-mp3-file-btn").text(fileName);
         }
     });
