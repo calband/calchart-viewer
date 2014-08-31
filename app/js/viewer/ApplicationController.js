@@ -197,7 +197,7 @@ ApplicationController.prototype._createFileHandler = function (callback) {
         }
         var reader = new window.FileReader();
         reader.onload = function () {
-            callback(reader.result);
+            callback(reader.result, files[0].name);
         };
         reader.readAsText(files[0]);
     };
@@ -229,7 +229,7 @@ ApplicationController.prototype._createFileURLHandler = function (callback) {
         if (!files || files.length !== 1) {
             return;
         }
-        callback(URL.createObjectURL(files[0]));
+        callback(URL.createObjectURL(files[0]), files[0].name);
     };
 };
 
@@ -240,9 +240,11 @@ ApplicationController.prototype._createFileURLHandler = function (callback) {
  */
 ApplicationController.prototype.getBeatsFileHandler = function () {
     var _this = this;
-    return this._createFileHandler(function (fileContentsAsText) {
+    return this._createFileHandler(function (fileContentsAsText, fileName) {
         var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
         _this._animator.setBeats(beats);
+        $(".js-beats-file-name").text(fileName);
+        $(".js-beats-file-btn").css("visibility", "hidden");
     });
 };
 
@@ -253,9 +255,11 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
  */
 ApplicationController.prototype.getViewerFileHandler = function () {
     var _this = this;
-    return this._createFileHandler(function (fileContentsAsText) {
+    return this._createFileHandler(function (fileContentsAsText, fileName) {
         var show = ShowUtils.fromJSON(fileContentsAsText);
         _this.setShow(show);
+        $(".js-viewer-file-name").text(fileName);
+        $(".js-viewer-file-btn").css("visibility", "hidden");
     });
 };
 
@@ -266,7 +270,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
  */
 ApplicationController.prototype.getMusicFileHandler = function () {
     var _this = this;
-    return this._createFileURLHandler(function (fileURL) {
+    return this._createFileURLHandler(function (fileURL, fileName) {
         if (fileURL !== undefined) {
             var newSound = _this._musicPlayer.createSound();
             var onMusicLoaded = function() {
@@ -278,6 +282,8 @@ ApplicationController.prototype.getMusicFileHandler = function () {
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);
             newSound.load(fileURL);
+            $(".js-mp3-file-name").text(fileName);
+            $(".js-mp3-file-btn").css("visibility", "hidden");
         }
     });
 };
