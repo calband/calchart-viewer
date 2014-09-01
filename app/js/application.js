@@ -48,7 +48,7 @@ $(document).ready(function () {
     
     $(".js-dot-labels").chosen({
         allow_single_deselect: true,
-        width: "110px"
+        width: "90px"
     }).change(function(evt, params){
         if (typeof params === "undefined") {
             applicationController.applyAnimationAction("clearSelectedDot");
