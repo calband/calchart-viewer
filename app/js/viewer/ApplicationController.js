@@ -129,7 +129,14 @@ ApplicationController.prototype._syncWithDelegate = function() {
 ApplicationController.prototype._updateUIWithAnimationState = function () {
     $(".js-stuntsheet-total").text(this._animationStateDelegate.getCurrentSheet().getDuration());
     $(".js-beat-number").text(this._animationStateDelegate.getCurrentBeatNum() + 1);
-    $(".js-stuntsheet-number").text(this._animationStateDelegate.getCurrentSheetNum() + 1);
+    var sheetNum = this._animationStateDelegate.getCurrentSheetNum() + 1;
+    var sheetPage = sheetNum + "/" + this.getShow().getNumSheets();
+    var sheetLabel = this._animationStateDelegate.getCurrentSheet().getSheetLabel();
+    if (sheetLabel === "" || parseInt(sheetLabel) === sheetNum) {
+        $(".js-stuntsheet-label").text(sheetPage);
+    } else {
+        $(".js-stuntsheet-label").text(sheetLabel + " (" + sheetPage + ")");
+    }
     if (this._animationStateDelegate.getSelectedDot() !== null) {
         var selectedDot = this._animationStateDelegate.getSelectedDot();
         var currentSheet = this._animationStateDelegate.getCurrentSheet();
