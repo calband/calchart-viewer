@@ -155,7 +155,6 @@
 
         .animation-state {
             margin-top: 5px;
-            margin-bottom: 100px;
             &:after {
                 content: "";
                 display: table;
@@ -180,8 +179,13 @@
 
         .dot-continuity {
             clear: both;
+            height: 130px;
             margin-top: 40px;
             font-size: 16px;
+            overflow: scroll;
+            div {
+                line-height: 1.5em;
+            }
         }
 
         .increment-control, .control-button, .control-container {
