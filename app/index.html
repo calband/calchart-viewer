@@ -4,9 +4,11 @@
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="build/css/app.css">
     <link rel="stylesheet" type="text/css" href="build/css/graph.css">
+    <link rel="stylesheet" type="text/css" href="css/vendor/chosen.min.css">
     <script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="js/vendor/d3.min.js"></script>
     <script type="text/javascript" src="js/vendor/soundmanager2-nodebug-jsmin.js"></script>
+    <script type="text/javascript" src="js/vendor/chosen.jquery.min.js"></script>
     <script type="text/javascript" src="build/js/application.js"></script>
 </head>
 <body>
@@ -51,9 +53,9 @@
                     Animate with music
                 </div>
                 <div class="control-container">
-                    <input type="checkbox" class="js-show-selected-dot"><label>Show my dot:</label>
-                    <select class="js-dot-labels">
-                        <option>No show</option>
+                    <label>Show my dot:</label>
+                    <select class="js-dot-labels" data-placeholder="None">
+                        <option></option>
                     </select>
                 </div>
                 <div class="control-button js-generate-continuity disabled">

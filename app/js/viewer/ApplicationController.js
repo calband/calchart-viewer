@@ -60,8 +60,8 @@ ApplicationController.prototype._updateUIWithShow = function () {
     var options = this._show.getDotLabels().map(function (value) {
         return "<option value='" + value + "'>" + value + "</option>";
     });
-    var optionsHtml = options.join("");
-    $(".js-dot-labels").html(optionsHtml);
+    var optionsHtml = "<option></option>" + options.join("");
+    $(".js-dot-labels").html(optionsHtml).trigger("chosen:updated");
 };
 
 /**
