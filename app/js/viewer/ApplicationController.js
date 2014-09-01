@@ -251,7 +251,7 @@ ApplicationController.prototype._createFileURLHandler = function (callback) {
  */
 ApplicationController.prototype.getBeatsFileHandler = function () {
     var _this = this;
-    return this._createFileHandler(function (fileContentsAsText) {
+    return this._createFileHandler(function (fileContentsAsText, fileName) {
         try {
             var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
             _this._animator.setBeats(beats);
@@ -276,7 +276,7 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
  */
 ApplicationController.prototype.getViewerFileHandler = function () {
     var _this = this;
-    return this._createFileHandler(function (fileContentsAsText) {
+    return this._createFileHandler(function (fileContentsAsText, fileName) {
         try {
             var show = ShowUtils.fromJSON(fileContentsAsText);
             _this.setShow(show);
