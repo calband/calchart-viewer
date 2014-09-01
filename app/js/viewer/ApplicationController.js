@@ -276,7 +276,6 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
  */
 ApplicationController.prototype.getViewerFileHandler = function () {
     var _this = this;
-<<<<<<< HEAD
     return this._createFileHandler(function (fileContentsAsText) {
         try {
             var show = ShowUtils.fromJSON(fileContentsAsText);
