@@ -136,10 +136,9 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
         var typeOfDot = currentSheet.getDotType(selectedDot);
         var continuities = currentSheet.getContinuityTexts(typeOfDot);
         if (typeof continuities !== "undefined") {
-            continuities = continuities.slice(0); // Get a copy of the continuity texts
-            for (var i = 0; i < continuities.length; i++) {
-                continuities[i] = "<div>" + continuities[i] + "</div>";
-            }
+            continuities = continuities.map(function(continuity) {
+                return "<div class=\"dot-continuity\">" + continuity + "</div>";
+            });
             $(".js-dot-continuity").html(continuities.join(""));
         } else {
             $(".js-dot-continuity").html("");
