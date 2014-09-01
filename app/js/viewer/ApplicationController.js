@@ -131,6 +131,11 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
         var currentSheet = this._animationStateDelegate.getCurrentSheet();
         var typeOfDot = currentSheet.getDotType(selectedDot);
         var continuities = currentSheet.getContinuityTexts(typeOfDot);
+        if (typeof continuities === "undefined") {
+            $(".js-dot-continuity").html("");
+            return;
+        }
+
         for (var i = 0; i < continuities.length; i++) {
             continuities[i] = "<div>" + continuities[i] + "</div>";
         }
