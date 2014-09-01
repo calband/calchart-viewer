@@ -208,7 +208,7 @@ ApplicationController.prototype._createFileHandler = function (callback) {
         }
         var reader = new window.FileReader();
         reader.onload = function () {
-            callback(reader.result);
+            callback(reader.result, files[0].name);
         };
         reader.readAsText(files[0]);
     };
@@ -240,7 +240,7 @@ ApplicationController.prototype._createFileURLHandler = function (callback) {
         if (!files || files.length !== 1) {
             return;
         }
-        callback(URL.createObjectURL(files[0]));
+        callback(URL.createObjectURL(files[0]), files[0].name);
     };
 };
 
@@ -255,6 +255,10 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
         try {
             var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
             _this._animator.setBeats(beats);
+            if (fileName.length > 24) {
+                fileName = fileName.substring(0, 25) + "...";
+            }
+            $(".js-beats-file-btn").text(fileName);
         } catch (err) {
             if (err.name === "SyntaxError") {
                 alert("You need to upload a .json file!");
@@ -272,10 +276,15 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
  */
 ApplicationController.prototype.getViewerFileHandler = function () {
     var _this = this;
+<<<<<<< HEAD
     return this._createFileHandler(function (fileContentsAsText) {
         try {
             var show = ShowUtils.fromJSON(fileContentsAsText);
             _this.setShow(show);
+            if (fileName.length > 24) {
+                fileName = fileName.substring(0, 25) + "...";
+            }
+            $(".js-viewer-file-btn").text(fileName);
         } catch (err) {
             if (err.name === "SyntaxError") {
                 alert("You need to upload a .json file!");
@@ -293,7 +302,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
  */
 ApplicationController.prototype.getMusicFileHandler = function () {
     var _this = this;
-    return this._createFileURLHandler(function (fileURL) {
+    return this._createFileURLHandler(function (fileURL, fileName) {
         if (fileURL !== undefined) {
             var newSound = _this._musicPlayer.createSound();
             var onMusicLoaded = function() {
@@ -305,6 +314,10 @@ ApplicationController.prototype.getMusicFileHandler = function () {
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);
             newSound.load(fileURL);
+            if (fileName.length > 24) {
+                fileName = fileName.substring(0, 25) + "...";
+            }
+            $(".js-mp3-file-btn").text(fileName);
         }
     });
 };
