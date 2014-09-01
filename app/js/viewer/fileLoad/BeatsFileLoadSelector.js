@@ -114,7 +114,7 @@ BeatsFileLoad_1_0_0.prototype.loadFile = function (beatsFileObject) {
  */
 BeatsFileLoad_1_0_0.prototype.loadBeats = function (beatsArray) {
     if (typeof beatsArray === "undefined") {
-        throw new InvalidFileTypeError("Upload a proper beats file.");
+        throw new InvalidFileTypeError("Please upload a proper beats file.");
     }
     var returnVal = new TimedBeats();
     var overallTime = 0;

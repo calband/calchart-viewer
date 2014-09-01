@@ -131,7 +131,7 @@ ViewerFileLoad_1_0_0.prototype.loadFile = function (viewerFileObject) {
  */
 ViewerFileLoad_1_0_0.prototype.loadShow = function(showToLoad) {
     if (typeof showToLoad === "undefined") {
-        throw new InvalidFileTypeError("Upload a proper viewer file.");
+        throw new InvalidFileTypeError("Please upload a proper viewer file.");
     }
     var show = new Show(showToLoad.title, showToLoad.year, showToLoad.description, showToLoad.labels);
     this.loadSheets(show, showToLoad.sheets);

@@ -237,9 +237,9 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
             var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
             _this._animator.setBeats(beats);
         } catch (err) {
-            if (err.name == "SyntaxError") {
+            if (err.name === "SyntaxError") {
                 alert("You need to upload a .json file!");
-            } else if (err.name == "InvalidFileTypeError") {
+            } else if (err.name === "InvalidFileTypeError") {
                 alert(err.message);
             }
         }
@@ -258,9 +258,9 @@ ApplicationController.prototype.getViewerFileHandler = function () {
             var show = ShowUtils.fromJSON(fileContentsAsText);
             _this.setShow(show);
         } catch (err) {
-            if (err.name == "SyntaxError") {
+            if (err.name === "SyntaxError") {
                 alert("You need to upload a .json file!");
-            } else if (err.name == "InvalidFileTypeError") {
+            } else if (err.name === "InvalidFileTypeError") {
                 alert(err.message);
             }
         }
