@@ -56,7 +56,11 @@ ApplicationController.prototype.setShow = function (show) {
  * this._show has already been loaded.
  */
 ApplicationController.prototype._updateUIWithShow = function () {
-    $(".js-show-title").text(this._show.getTitle());
+    if (typeof this._show.getTitle() === "undefined") {
+        $(".js-show-title").text("Untitled Show");
+    } else {
+        $(".js-show-title").text(this._show.getTitle());
+    }
     var options = this._show.getDotLabels().map(function (value) {
         return "<option value='" + value + "'>" + value + "</option>";
     });
