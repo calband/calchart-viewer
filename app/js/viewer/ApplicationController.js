@@ -309,14 +309,14 @@ ApplicationController.prototype.getMusicFileHandler = function () {
                     _this.displayFileInputError("Please upload a valid mp3 file.");
                 } else {
                     _this._animator.setMusic(newSound);
+                    if (fileName.length > 20) {
+                        fileName = fileName.substring(0, 21) + "...";
+                    }
+                    $(".js-mp3-file-btn").text(fileName);
                 }
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);
             newSound.load(fileURL);
-            if (fileName.length > 20) {
-                fileName = fileName.substring(0, 21) + "...";
-            }
-            $(".js-mp3-file-btn").text(fileName);
         }
     });
 };
