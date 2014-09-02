@@ -48,7 +48,7 @@ $(document).ready(function () {
         } else if (event.keyCode === 37) { // left arrow
             applicationController.applyAnimationAction("prevBeat");
         } else if (event.keyCode === 32) { // space
-            if (!$(".js-animate").hasClass("disabled")) {
+            if (applicationController.getAnimator().isReady()) {
                 applicationController.toggleAnimation();
             }
         }

@@ -69,6 +69,14 @@ ApplicationController.prototype._updateUIWithShow = function () {
 };
 
 /**
+ * Returns the MusicAnimator or null if one hasn't been instantiated.
+ * @return {MusicAnimator|null} the music animator
+ */
+ApplicationController.prototype.getAnimator = function() {
+    return this._animator;
+}
+
+/**
  * Return the AnimationStateDelegate or null if one hasn't been instantiated.
  * @return {AnimationStateDelegate|null} the delegate
  */
