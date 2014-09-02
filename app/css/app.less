@@ -203,6 +203,19 @@
             margin-top: 10px;
         }
 
+        .control-container {
+            label {
+                margin-right: 10px;
+            }
+            .chosen-results {
+                max-height: 140px;
+                display: none;
+            }
+            .chosen-with-drop .chosen-results {
+                display: block;
+            }
+        }
+
         .increment-control, .control-button {
             cursor: pointer;
         }
@@ -244,10 +257,6 @@
                 border-color: #999;
                 cursor: inherit;
             }
-        }
-
-        label {
-            margin-right: 10px;
         }
     }
 }
