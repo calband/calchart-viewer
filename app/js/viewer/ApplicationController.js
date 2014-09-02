@@ -190,9 +190,6 @@ ApplicationController.prototype.init = function () {
     this._animator.registerEventHandler("ready", function () {
         _this._updateAnimationControl();
     });
-    this._animator.registerEventHandler("finished", function() {
-        _this._updateAnimationControl();
-    });
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
 };
