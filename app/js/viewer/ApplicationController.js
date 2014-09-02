@@ -270,15 +270,16 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
         try {
             var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
             _this._animator.setBeats(beats);
-            if (fileName.length > 24) {
-                fileName = fileName.substring(0, 25) + "...";
+            if (fileName.length > 20) {
+                fileName = fileName.substring(0, 21) + "...";
             }
             $(".js-beats-file-btn").text(fileName);
         } catch (err) {
+            $(".js-beats-file").val("");
             if (err.name === "SyntaxError") {
-                alert("You need to upload a .json file!");
+                _this.displayFileInputError("Please upload a valid json file.");
             } else if (err.name === "InvalidFileTypeError") {
-                alert(err.message);
+                _this.displayFileInputError(err.message);
             }
         }
     });
@@ -295,15 +296,16 @@ ApplicationController.prototype.getViewerFileHandler = function () {
         try {
             var show = ShowUtils.fromJSON(fileContentsAsText);
             _this.setShow(show);
-            if (fileName.length > 24) {
-                fileName = fileName.substring(0, 25) + "...";
+            if (fileName.length > 20) {
+                fileName = fileName.substring(0, 21) + "...";
             }
             $(".js-viewer-file-btn").text(fileName);
         } catch (err) {
+            $(".js-viewer-file").val("");
             if (err.name === "SyntaxError") {
-                alert("You need to upload a .json file!");
+                _this.displayFileInputError("Please upload a valid json file.");
             } else if (err.name === "InvalidFileTypeError") {
-                alert(err.message);
+                _this.displayFileInputError(err.message);
             }
         }
     });
@@ -321,20 +323,34 @@ ApplicationController.prototype.getMusicFileHandler = function () {
             var newSound = _this._musicPlayer.createSound();
             var onMusicLoaded = function() {
                 if (newSound.errorFlag()) {
-                    console.log(newSound.getError());
+                    $(".js-mp3-file").val("");
+                    _this.displayFileInputError("Please upload a valid mp3 file.");
                 } else {
                     _this._animator.setMusic(newSound);
+                    if (fileName.length > 20) {
+                        fileName = fileName.substring(0, 21) + "...";
+                    }
+                    $(".js-mp3-file-btn").text(fileName);
                 }
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);
             newSound.load(fileURL);
-            if (fileName.length > 24) {
-                fileName = fileName.substring(0, 25) + "...";
-            }
-            $(".js-mp3-file-btn").text(fileName);
         }
     });
 };
+
+/**
+ * Displays error message in the UI for invalid file uploads.
+ *
+ * @param {String} message to be displayed
+ */
+ApplicationController.prototype.displayFileInputError = function(message) {
+    $(".file-input-error")
+        .text(message)
+        .fadeIn(1000)
+        .delay(1000)
+        .fadeOut(500);
+}
 
 
 /**
