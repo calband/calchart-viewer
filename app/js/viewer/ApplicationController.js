@@ -260,6 +260,7 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
             }
             $(".js-beats-file-btn").text(fileName);
         } catch (err) {
+            $(".js-beats-file").val("");
             if (err.name === "SyntaxError") {
                 _this.displayFileInputError("Please upload a valid json file.");
             } else if (err.name === "InvalidFileTypeError") {
@@ -285,6 +286,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
             }
             $(".js-viewer-file-btn").text(fileName);
         } catch (err) {
+            $(".js-viewer-file").val("");
             if (err.name === "SyntaxError") {
                 _this.displayFileInputError("Please upload a valid json file.");
             } else if (err.name === "InvalidFileTypeError") {
@@ -306,6 +308,7 @@ ApplicationController.prototype.getMusicFileHandler = function () {
             var newSound = _this._musicPlayer.createSound();
             var onMusicLoaded = function() {
                 if (newSound.errorFlag()) {
+                    $(".js-mp3-file").val("");
                     _this.displayFileInputError("Please upload a valid mp3 file.");
                 } else {
                     _this._animator.setMusic(newSound);
@@ -329,8 +332,8 @@ ApplicationController.prototype.getMusicFileHandler = function () {
 ApplicationController.prototype.displayFileInputError = function(message) {
     $(".file-input-error")
         .text(message)
-        .fadeIn(500)
-        .delay(2000)
+        .fadeIn(1000)
+        .delay(1000)
         .fadeOut(500);
 }
 
