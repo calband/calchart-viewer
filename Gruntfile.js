@@ -7,32 +7,32 @@ module.exports = function (grunt) {
         less: {
             src: {
                 expand: true,
-                cwd: "app/css",
+                cwd: "css",
                 src: ["**/*.less"],
-                dest: "app/build/css",
+                dest: "build/css",
                 ext: ".css"
             }
         },
         webpack: {
             build: {
-                entry: "./app/js/application.js",
+                entry: "./js/application.js",
                 output: {
-                    path: "app/build/js/",
+                    path: "build/js/",
                     filename: "application.js"
                 }
             }
         },
         watch: {
             less: {
-                files: ["app/css/**/*.less"],
+                files: ["css/**/*.less"],
                 tasks: ["less"]
             },
             js: {
-                files: ["app/js/**/*.js"],
+                files: ["js/**/*.js"],
                 tasks: ["webpack:build"]
             }
         }
     });
 
-    grunt.registerTask("build", ["less", "webpack:build"])
+    grunt.registerTask("build", ["less", "webpack:build"]);
 };
