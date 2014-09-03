@@ -69,6 +69,14 @@ ApplicationController.prototype._updateUIWithShow = function () {
 };
 
 /**
+ * Returns the MusicAnimator or null if one hasn't been instantiated.
+ * @return {MusicAnimator|null} the music animator
+ */
+ApplicationController.prototype.getAnimator = function() {
+    return this._animator;
+}
+
+/**
  * Return the AnimationStateDelegate or null if one hasn't been instantiated.
  * @return {AnimationStateDelegate|null} the delegate
  */
@@ -188,6 +196,9 @@ ApplicationController.prototype.init = function () {
     var _this = this;
     this._animator.registerEventHandler("beat", function() {_this._syncWithDelegate();});
     this._animator.registerEventHandler("ready", function () {
+        _this._updateAnimationControl();
+    });
+    this._animator.registerEventHandler("finished", function() {
         _this._updateAnimationControl();
     });
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));

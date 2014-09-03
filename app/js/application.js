@@ -47,6 +47,11 @@ $(document).ready(function () {
             applicationController.applyAnimationAction("nextBeat");
         } else if (event.keyCode === 37) { // left arrow
             applicationController.applyAnimationAction("prevBeat");
+        } else if (event.keyCode === 32) { // space
+            var _animator = applicationController.getAnimator();
+            if (_animator && _animator.isReady()) {
+                applicationController.toggleAnimation();
+            }
         }
     });
 
