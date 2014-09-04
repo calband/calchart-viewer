@@ -288,7 +288,7 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
         } catch (err) {
             $(".js-beats-file").val("");
             if (err.name === "SyntaxError") {
-                _this.displayFileInputError("Please upload a valid json file.");
+                _this.displayFileInputError("Please upload a valid beats file.");
             } else if (err.name === "InvalidFileTypeError") {
                 _this.displayFileInputError(err.message);
             }
@@ -314,7 +314,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
         } catch (err) {
             $(".js-viewer-file").val("");
             if (err.name === "SyntaxError") {
-                _this.displayFileInputError("Please upload a valid json file.");
+                _this.displayFileInputError("Please upload a valid viewer file.");
             } else if (err.name === "InvalidFileTypeError") {
                 _this.displayFileInputError(err.message);
             }
