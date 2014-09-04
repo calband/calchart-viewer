@@ -924,7 +924,7 @@
 	 *   used to create and manage TimedBeats objects.
 	 */
 
-	 var BeatsFileLoadSelector = __webpack_require__(11);
+	 var BeatsFileLoadSelector = __webpack_require__(9);
 	 var Version = __webpack_require__(8);
 	 
 	 /**
@@ -1451,7 +1451,7 @@
 	 *   generate a MusicPlayer that will play audio for us.
 	 */
 
-	var SMMusicPlayer = __webpack_require__(9);
+	var SMMusicPlayer = __webpack_require__(11);
 	 
 	/**
 	 * MusicPlayerFactory objects can create an appropriate MusicPlayer object
@@ -1554,75 +1554,133 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * @fileOverview Defines the SMMusicPlayer class, a MusicPlayer
-	 *   type that uses SoundManager2 to play audio.
+	 * @fileOverview This file describes how beats files are loaded.
+	 *   A singleton of the BeatsFileLoadSelector class
+	 *   is used to determine how to load a specific version of the
+	 *   beats file. For more information about how a FileLoadSelector
+	 *   like the BeatsFileLoadSelector works, @see FileLoadSelector.js.
+	 *   Here are the steps that you should follow when the file format
+	 *   changes:
+	 *     - Define a FileLoadSelector.FileLoader that can load the
+	 *         new file version
+	 *     - Register your new file loader in 
+	 *         BeatsFileLoadSelector._setupInstance(...)
+	 *   
 	 */
 
-	var ClassUtils = __webpack_require__(12);
-	var SMSound = __webpack_require__(13);
-	var MusicPlayer = __webpack_require__(14);
+	var Version = __webpack_require__(8);
+	var FileLoadSelector = __webpack_require__(12);
+	var ClassUtils = __webpack_require__(13);
+	var TimedBeats = __webpack_require__(14);
+	var InvalidFileTypeError = __webpack_require__(15);
 	 
 	/**
-	 * A MusicPlayer that uses SoundManager2.
+	 * Every version of the Beats File needs to be loaded in a different way -
+	 * this class is responsible for finding the appropriate BeatsFileLoader
+	 * object for loading a particular Beats File version.
 	 */
-	var SMMusicPlayer = function() {
-	    this._onReadyHandler = null;
-	    this._isReady = false;
-	    this._error = false;
-	    var _this = this;
-	    soundManager.setup({
-	        url: '/soundmanager/swf/',
-	        onready: function() {
-	            _this._isReady = true;
-	            _this._informReadyEventHandler();
-	        },
-	        ontimeout: function() {
-	            _this._error = true;
-	        },
-	        html5PollingInterval: 20,
-	        flashPollingInterval: 20
-	    });
+	var BeatsFileLoadSelector = function() {
+	    FileLoadSelector.apply(this, []);
 	};
 
-	ClassUtils.extends(SMMusicPlayer, MusicPlayer);
-
-
-	SMMusicPlayer.prototype.createSound = function(musicURL) {
-	    return new SMSound(musicURL);
-	};
-
-
-	SMMusicPlayer.prototype.isReady = function() {
-	    this._isReady = true;
-	};
-
-	SMMusicPlayer.prototype.onReady = function(eventHandler) {
-	    this._onReadyHandler = eventHandler;
-	    if (this.isReady()) {
-	        this._informReadyEventHandler();
-	    }
-	};
+	ClassUtils.extends(BeatsFileLoadSelector, FileLoadSelector);
 
 	/**
-	 * Returns whether or not an error was encountered while setting
-	 * up the MusicPlayer.
+	 * The BeatsFileLoadSelector is a singleton, and this is its
+	 * instance.
+	 * @type {BeatsFileLoadSelector}
+	 */
+	BeatsFileLoadSelector._instance = undefined;
+
+	/**
+	 * Returns the BeatsFileLoadSelector singleton instance. If it doesn't exist,
+	 * it is created and then returned.
 	 *
-	 * @return {boolean} True if an error was encountered; false otherwise.
+	 * @return {BeatsFileLoadSelector} The BeatsFileLoadSelector singleton instance.
 	 */
-	SMMusicPlayer.prototype.errorFlag = function() {
-	    return this._error;
+	BeatsFileLoadSelector.getInstance = function() {
+	    if (BeatsFileLoadSelector._instance === undefined) {
+	        BeatsFileLoadSelector._instance = new BeatsFileLoadSelector();
+	        BeatsFileLoadSelector._setupInstance(BeatsFileLoadSelector._instance);
+	    }
+	    return BeatsFileLoadSelector._instance;    
 	};
 
 	/**
-	 * Tells the event handler that the MusicPlayer is now ready.
+	 * Loads a new BeatsFileLoadSelector with all of the known BeatsFileLoader
+	 * types, so that it understands how to load every Beats File version.
+	 *
+	 * @param {BeatsFileLoadSelector} instance The BeatsFileLoadSelector to set up.
 	 */
-	SMMusicPlayer.prototype._informReadyEventHandler = function() {
-	    if (this._onReadyHandler !== null) {
-	        this._onReadyHandler();
-	    }
+	BeatsFileLoadSelector._setupInstance = function(instance) {
+	    instance.registerLoader(new Version(1, 0, 0), new BeatsFileLoad_1_0_0());
+	};
+	 
+	/**
+	 * This class is responsible for loading beats files of a particular version.
+	 */
+	BeatsFileLoadSelector.BeatsFileLoader = function() {
 	};
 
-	module.exports = SMMusicPlayer;
+	ClassUtils.extends(BeatsFileLoadSelector.BeatsFileLoader, FileLoadSelector.FileLoader); 
+
+
+	/**
+	 *=================================================================
+	 *====================-- LOAD BEATS FILE 1.0.0
+	 *=================================================================
+	 * ALL AVAILABLE METHODS IN THIS VERSION:
+	 *   loadFile
+	 *   loadBeats
+	 * ADDED METHODS IN THIS VERSION:
+	 *  all available METHODS
+	 * REMOVED METHODS IN THIS VERSION:
+	 *   none
+	 * MODIFIED METHODS IN THIS VERSION:
+	 *   none
+	 * 
+	 * To use: call the loadFile method.
+	 */
+	var BeatsFileLoad_1_0_0 = function() {
+	};
+
+	ClassUtils.extends(BeatsFileLoad_1_0_0, BeatsFileLoadSelector.BeatsFileLoader);
+
+	/**
+	 * Loads an entire beats file, and returns the result. For
+	 * beats file version 1.0.0, the result is just a TimedBeats object.
+	 *
+	 * @param {object} beatsFileObject The main object from a
+	 *   beats file.
+	 * @return {TimedBeats} An object which records the beats
+	 *   described in the file.
+	 */
+	BeatsFileLoad_1_0_0.prototype.loadFile = function (beatsFileObject) {
+	    return this.loadBeats(beatsFileObject.beats);
+	};
+
+	/**
+	 * Loads the "beats" array of a beats file.
+	 *
+	 * @param {Array<int>} beatsArray The "beats" property of
+	 *   the main object in the file.
+	 * @return {TimedBeats} An object that tracks all of the beats
+	 *   described in the array.
+	 */
+	BeatsFileLoad_1_0_0.prototype.loadBeats = function (beatsArray) {
+	    if (typeof beatsArray === "undefined") {
+	        throw new InvalidFileTypeError("Please upload a proper beats file.");
+	    }
+	    var returnVal = new TimedBeats();
+	    var overallTime = 0;
+	    for (var index = 0; index < beatsArray.length; index++) {
+	        overallTime += beatsArray[index];
+	        returnVal.addBeat(overallTime);
+	    }
+	    return returnVal;
+	};
+
+	module.exports = BeatsFileLoadSelector;
 
 /***/ },
 /* 10 */
@@ -1643,19 +1701,19 @@
 	 *   
 	 */
 
-	var FileLoadSelector = __webpack_require__(15);
-	var InvalidFileTypeError = __webpack_require__(17);
-	var ClassUtils = __webpack_require__(12);
+	var FileLoadSelector = __webpack_require__(12);
+	var InvalidFileTypeError = __webpack_require__(15);
+	var ClassUtils = __webpack_require__(13);
 	var Version = __webpack_require__(8);
-	var Dot = __webpack_require__(18);
-	var Sheet = __webpack_require__(19);
-	var Show = __webpack_require__(20);
-	var MovementCommandStand = __webpack_require__(21);
-	var MovementCommandMarkTime = __webpack_require__(22);
-	var MovementCommandArc = __webpack_require__(23);
-	var MovementCommandMove = __webpack_require__(24);
-	var MovementCommandGoto = __webpack_require__(25);
-	var MovementCommandEven = __webpack_require__(26);
+	var Dot = __webpack_require__(16);
+	var Sheet = __webpack_require__(17);
+	var Show = __webpack_require__(18);
+	var MovementCommandStand = __webpack_require__(19);
+	var MovementCommandMarkTime = __webpack_require__(20);
+	var MovementCommandArc = __webpack_require__(21);
+	var MovementCommandMove = __webpack_require__(22);
+	var MovementCommandGoto = __webpack_require__(23);
+	var MovementCommandEven = __webpack_require__(24);
 	 
 	/**
 	 * Every version of the Viewer File needs to be loaded in a different way -
@@ -1948,136 +2006,197 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * @fileOverview This file describes how beats files are loaded.
-	 *   A singleton of the BeatsFileLoadSelector class
-	 *   is used to determine how to load a specific version of the
-	 *   beats file. For more information about how a FileLoadSelector
-	 *   like the BeatsFileLoadSelector works, @see FileLoadSelector.js.
-	 *   Here are the steps that you should follow when the file format
-	 *   changes:
-	 *     - Define a FileLoadSelector.FileLoader that can load the
-	 *         new file version
-	 *     - Register your new file loader in 
-	 *         BeatsFileLoadSelector._setupInstance(...)
-	 *   
+	 * @fileOverview Defines the SMMusicPlayer class, a MusicPlayer
+	 *   type that uses SoundManager2 to play audio.
 	 */
 
-	var Version = __webpack_require__(8);
-	var FileLoadSelector = __webpack_require__(15);
-	var ClassUtils = __webpack_require__(12);
-	var TimedBeats = __webpack_require__(16);
-	var InvalidFileTypeError = __webpack_require__(17);
+	var ClassUtils = __webpack_require__(13);
+	var SMSound = __webpack_require__(25);
+	var MusicPlayer = __webpack_require__(26);
 	 
 	/**
-	 * Every version of the Beats File needs to be loaded in a different way -
-	 * this class is responsible for finding the appropriate BeatsFileLoader
-	 * object for loading a particular Beats File version.
+	 * A MusicPlayer that uses SoundManager2.
 	 */
-	var BeatsFileLoadSelector = function() {
-	    FileLoadSelector.apply(this, []);
+	var SMMusicPlayer = function() {
+	    this._onReadyHandler = null;
+	    this._isReady = false;
+	    this._error = false;
+	    var _this = this;
+	    soundManager.setup({
+	        url: '/soundmanager/swf/',
+	        onready: function() {
+	            _this._isReady = true;
+	            _this._informReadyEventHandler();
+	        },
+	        ontimeout: function() {
+	            _this._error = true;
+	        },
+	        html5PollingInterval: 20,
+	        flashPollingInterval: 20
+	    });
 	};
 
-	ClassUtils.extends(BeatsFileLoadSelector, FileLoadSelector);
+	ClassUtils.extends(SMMusicPlayer, MusicPlayer);
 
-	/**
-	 * The BeatsFileLoadSelector is a singleton, and this is its
-	 * instance.
-	 * @type {BeatsFileLoadSelector}
-	 */
-	BeatsFileLoadSelector._instance = undefined;
 
-	/**
-	 * Returns the BeatsFileLoadSelector singleton instance. If it doesn't exist,
-	 * it is created and then returned.
-	 *
-	 * @return {BeatsFileLoadSelector} The BeatsFileLoadSelector singleton instance.
-	 */
-	BeatsFileLoadSelector.getInstance = function() {
-	    if (BeatsFileLoadSelector._instance === undefined) {
-	        BeatsFileLoadSelector._instance = new BeatsFileLoadSelector();
-	        BeatsFileLoadSelector._setupInstance(BeatsFileLoadSelector._instance);
+	SMMusicPlayer.prototype.createSound = function(musicURL) {
+	    return new SMSound(musicURL);
+	};
+
+
+	SMMusicPlayer.prototype.isReady = function() {
+	    this._isReady = true;
+	};
+
+	SMMusicPlayer.prototype.onReady = function(eventHandler) {
+	    this._onReadyHandler = eventHandler;
+	    if (this.isReady()) {
+	        this._informReadyEventHandler();
 	    }
-	    return BeatsFileLoadSelector._instance;    
 	};
 
 	/**
-	 * Loads a new BeatsFileLoadSelector with all of the known BeatsFileLoader
-	 * types, so that it understands how to load every Beats File version.
+	 * Returns whether or not an error was encountered while setting
+	 * up the MusicPlayer.
 	 *
-	 * @param {BeatsFileLoadSelector} instance The BeatsFileLoadSelector to set up.
+	 * @return {boolean} True if an error was encountered; false otherwise.
 	 */
-	BeatsFileLoadSelector._setupInstance = function(instance) {
-	    instance.registerLoader(new Version(1, 0, 0), new BeatsFileLoad_1_0_0());
-	};
-	 
-	/**
-	 * This class is responsible for loading beats files of a particular version.
-	 */
-	BeatsFileLoadSelector.BeatsFileLoader = function() {
-	};
-
-	ClassUtils.extends(BeatsFileLoadSelector.BeatsFileLoader, FileLoadSelector.FileLoader); 
-
-
-	/**
-	 *=================================================================
-	 *====================-- LOAD BEATS FILE 1.0.0
-	 *=================================================================
-	 * ALL AVAILABLE METHODS IN THIS VERSION:
-	 *   loadFile
-	 *   loadBeats
-	 * ADDED METHODS IN THIS VERSION:
-	 *  all available METHODS
-	 * REMOVED METHODS IN THIS VERSION:
-	 *   none
-	 * MODIFIED METHODS IN THIS VERSION:
-	 *   none
-	 * 
-	 * To use: call the loadFile method.
-	 */
-	var BeatsFileLoad_1_0_0 = function() {
-	};
-
-	ClassUtils.extends(BeatsFileLoad_1_0_0, BeatsFileLoadSelector.BeatsFileLoader);
-
-	/**
-	 * Loads an entire beats file, and returns the result. For
-	 * beats file version 1.0.0, the result is just a TimedBeats object.
-	 *
-	 * @param {object} beatsFileObject The main object from a
-	 *   beats file.
-	 * @return {TimedBeats} An object which records the beats
-	 *   described in the file.
-	 */
-	BeatsFileLoad_1_0_0.prototype.loadFile = function (beatsFileObject) {
-	    return this.loadBeats(beatsFileObject.beats);
+	SMMusicPlayer.prototype.errorFlag = function() {
+	    return this._error;
 	};
 
 	/**
-	 * Loads the "beats" array of a beats file.
-	 *
-	 * @param {Array<int>} beatsArray The "beats" property of
-	 *   the main object in the file.
-	 * @return {TimedBeats} An object that tracks all of the beats
-	 *   described in the array.
+	 * Tells the event handler that the MusicPlayer is now ready.
 	 */
-	BeatsFileLoad_1_0_0.prototype.loadBeats = function (beatsArray) {
-	    if (typeof beatsArray === "undefined") {
-	        throw new InvalidFileTypeError("Please upload a proper beats file.");
+	SMMusicPlayer.prototype._informReadyEventHandler = function() {
+	    if (this._onReadyHandler !== null) {
+	        this._onReadyHandler();
 	    }
-	    var returnVal = new TimedBeats();
-	    var overallTime = 0;
-	    for (var index = 0; index < beatsArray.length; index++) {
-	        overallTime += beatsArray[index];
-	        returnVal.addBeat(overallTime);
-	    }
-	    return returnVal;
 	};
 
-	module.exports = BeatsFileLoadSelector;
+	module.exports = SMMusicPlayer;
 
 /***/ },
 /* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview This file defines the FileLoadSelector class,
+	 *   which is used to track changes to file formats and to make
+	 *   sure that different versions of a file type get loaded properly.
+	 *   Here's how the loading process works:
+	 *   A file format can change over time, so not all
+	 *   files will be loaded in the same way. Thus, before
+	 *   loading a particular file, you first need to fetch
+	 *   a loader object that can load your particular file. To do this,
+	 *   you need to call the getAppropriateLoader(version) method
+	 *   on a FileLoadSelector object.
+	 *   Once you have the appropriate loader for your file version, you
+	 *   can call its loadFile(...) method to load the file.
+	 *
+	 *   WHAT TO DO WHEN A FILE FORMAT CHANGES:
+	 *   When a file format changes, you need to add
+	 *   the ability to load the new file format while preserving
+	 *   the ability to load older file versions. To do this, you
+	 *   first need to define a child class of FileLoader
+	 *   that can load the new file version. Often,
+	 *   file format changes are small, and you only need to change
+	 *   the way in which a particular piece of the file is loaded.
+	 *   In these cases, it can be helpful to derive your new
+	 *   FileLoader from the loader for the previous version
+	 *   (e.g. FileLoad_1_0_1 might inherit from FileLoad_1_0_0
+	 *   in order to get access to all of the methods used to load
+	 *   file version 1.0.0; it may then change only a few of the original
+	 *   methods to accomodate for the file changes).
+	 *   After you make a new FileLoader, you need to register it
+	 *   with the FileLoadSelector. To do that, call
+	 *   loadSelector.registerLoader(fileVersionHere, new YourFileLoaderHere());
+	 *   In summary:
+	 *     - Define a new FileLoader to load the new file format
+	 *     - Register the new FileLoader with the FileLoadSelector by
+	 *         calling loadSelector.registerLoader(...)
+	 */
+
+	var ArrayUtils = __webpack_require__(27);
+	var Version = __webpack_require__(8);
+	 
+	/**
+	 * Every version of a file needs to be loaded in a different way -
+	 * this class is responsible for finding the appropriate FileLoader
+	 * object for loading a particular file version.
+	 */
+	var FileLoadSelector = function() {
+	    this._loaders = [];
+	};
+
+	/**
+	 * Associates a particular file version with a FileLoader
+	 * that can load files of that version.
+	 *
+	 * @param {Version} version The file version.
+	 * @param {FileLoader} loader A FileLoader that can load
+	 *   files of the given version.
+	 */
+	FileLoadSelector.prototype.registerLoader = function(version, loader) {
+	    var insertIndex = ArrayUtils.binarySearchForClosestLarger(this._loaders, version, FileLoadSelector._versionLocator);
+	    var loaderVersionPair = {
+	        version: version,
+	        loader: loader
+	    };
+	    this._loaders.splice(insertIndex, 0, loaderVersionPair);
+	};
+
+	/**
+	 * Returns the FileLoader that can load a file of the
+	 * given version.
+	 *
+	 * @param {Version} version The file version to load.
+	 * @return {FileLoader} A FileLoader that can load
+	 *   files with the provided version.
+	 */
+	FileLoadSelector.prototype.getAppropriateLoader = function(version) {
+	    var targetIndex = ArrayUtils.binarySearchForClosestSmaller(this._loaders, version, FileLoadSelector._versionLocator);
+	    return this._loaders[targetIndex].loader;
+	};
+
+	/**
+	 * Used in a binary search to find the position where a particular version
+	 * fits into an array of loader-version pairs sorted from earliest version
+	 * to latest version.
+	 *
+	 * @param {Version} versionToLocate The version to find in the array.
+	 * @param {object} relativeTo A loader-version pair to compare against the
+	 *   versionToLocate.
+	 * @return {int} A negative value if the versionToLocate comes before
+	 *   relativeTo in the array; positive value if the versionToLocate comes
+	 *   after relativeTo in the array; zero if versionToLocate and relativeTo
+	 *   have identical versions.
+	 */
+	FileLoadSelector._versionLocator = function(versionToLocate, relativeTo) {
+	    return versionToLocate.compareTo(relativeTo.version);
+	};
+	 
+	/**
+	 * This class is responsible for loading files of a particular version.
+	 */
+	FileLoadSelector.FileLoader = function() {
+	};
+
+	/**
+	 * Loads an entire file, and returns the result.
+	 *
+	 * @param {object} fileObject The file content.
+	 * @return {*} Depends on the version of the file.
+	 */
+	FileLoadSelector.FileLoader.prototype.loadFile = function(fileObject) {
+	    console.log("FileLoader.loadFile(...) called");
+	};
+
+
+	module.exports = FileLoadSelector;
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2106,7 +2225,709 @@
 	module.exports = ClassUtils;
 
 /***/ },
-/* 13 */
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the TimedBeats class.
+	 *   TimedBeats objects are loaded from beats files,
+	 *   and are used to help the MusicAnimator find
+	 *   beats in the music.
+	 */
+	 
+	 var ArrayUtils = __webpack_require__(27);
+
+	/**
+	 * TimedBeats objects record a sequence of
+	 * timed beats, and can be used to get
+	 * information about them.
+	 *
+	 * @param {Array<int>=} An array containing
+	 *   the times at which beats occur, in
+	 *   milliseconds. TimedBeats objects are
+	 *   generally used to locate the beats in
+	 *   a music file, so the times are usually
+	 *   relative to the start of an audio file.
+	 *   The array MUST be sorted from least
+	 *   to greatest.
+	 */
+	var TimedBeats = function(beats) {
+	    if (beats !== undefined) {
+	        this._beats = beats;
+	    } else {
+	        this._beats = [];
+	    }
+	};
+
+	/**
+	 * Adds a beat to the TimedBeats object at
+	 * the specified time.
+	 *
+	 * @param {int} beatTime The time of the beat,
+	 *   measured in milliseconds.
+	 */
+	TimedBeats.prototype.addBeat = function(beatTime) {
+	    this.addBeats([beatTime]);
+	};
+
+	/**
+	 * Adds a sequence of beats to the TimedBeats object.
+	 *
+	 * @param {Array<int>} beats An array of times at
+	 *   which beats occur, in milliseconds. This array
+	 *   MUST be sorted from least to greatest.
+	 */
+	TimedBeats.prototype.addBeats = function(beats) {
+	    this._beats = ArrayUtils.mergeSortedArrays(this._beats, beats, this._timeComparator);
+	};
+
+	/**
+	 * Returns the beat number which is active at a particular
+	 * time. An individual beat spans a range of time equal
+	 * to [beatTime, nextBeatTime) (note that the upper bound
+	 * is exclusive). That is, if you ask for a time between
+	 * two beats, this will always return the lower of the two
+	 * beats. This will return undefined if you ask for the
+	 * beat number before the zeroth beat in the show.
+	 *
+	 * @param {int} time The time to check, in milliseconds.
+	 * @return {int} The beat number that is active at the
+	 *   given time, or undefined if the time requested
+	 *   is before the zeroth beat of the show.
+	 */
+	TimedBeats.prototype.getBeatNumAtTime = function(time) {
+	    return ArrayUtils.binarySearchForClosestSmaller(this._beats, time, this._timeComparator);
+	};
+
+	/**
+	 * Returns the time at which the specified beat starts.
+	 *
+	 * @param {int} beatNum The beat to find the start
+	 *   time for.
+	 * @return {int} The time at which the beat starts, in
+	 *   milliseconds.
+	 */
+	TimedBeats.prototype.getBeatTime = function(beatNum) {
+	    return this._beats[beatNum];
+	};
+
+	/**
+	 * Returns the number of recorded beats in this object.
+	 *
+	 * @return {int} The number of beats.
+	 */
+	TimedBeats.prototype.getNumBeats = function() {
+	    return this._beats.length;
+	};
+
+	/**
+	 * A comparator used to order the beats in chronological order.
+	 *
+	 * @param {int} firstTime The time of some beat, in milliseconds.
+	 * @param {int} secondTime The time of some other beat, in milliseconds.
+	 * @return {int} A positive value if the first time should come after
+	 *   the second in chronological order; a negative value if the first
+	 *   should come before the second in chronological order; zero if the
+	 *   times are the same.
+	 */
+	TimedBeats.prototype._timeComparator = function(firstTime, secondTime) {
+	    return firstTime - secondTime;
+	};
+
+	module.exports = TimedBeats;
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * An Exception thrown by the FileLoadSelectors if the loaded file is of the wrong
+	 * file type.
+	 *
+	 * @param {String} message The message to accompany the error.
+	 */
+	var InvalidFileTypeError = function(message) {
+	    this.message = message;
+	    this.name = "InvalidFileTypeError";
+	};
+
+	module.exports = InvalidFileTypeError;
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the Dot class.
+	 */
+
+	/**
+	 * Dot objects represent marchers. They execute a sequence
+	 * of MovementCommands, which define their position and orientation
+	 * on any given beat. Every Stuntsheet has its own set of Dot objects,
+	 * so a marcher will be represented by more than one of them throughout
+	 * a show. Specifically, every marcher is associated with AT MOST one
+	 * Dot object per Stuntsheet (some Stuntsheets may not include certain
+	 * marchers).
+	 *
+	 * @param {string} label The dot's label. This is also the label of
+	 *   the marcher associated with this dot.
+	 * @param {Array<MovemenetCommand>} movementCommands All of the MovementCommand
+	 *   objects that this Dot will execute. The commands must be sorted in the
+	 *   order in which they will be executed.
+	 */
+	var Dot = function(label, movementCommands) {
+	    this._label = label;
+	    this._movements = movementCommands;
+	};
+
+	/**
+	 * Returns the label for this dot.
+	 *
+	 * @return {string} The dot's label.
+	 */
+	Dot.prototype.getLabel = function() {
+	    return this._label;
+	};
+
+	/**
+	 * Returns an AnimationState object that describes the Dot's
+	 * position, orientation, etc. at a specific moment in the show.
+	 *
+	 * @param {int} beatNum The Dot's AnimationState will be
+	 *   relevant to the beat indicated by this value. The beat
+	 *   is relative to the start of the stuntsheet.
+	 * @return {AnimationState} An AnimationState that
+	 *   describes the Dot at a moment of the show,. If the Dot
+	 *   has no movement at the specified beat, returns undefined.
+	 */
+	Dot.prototype.getAnimationState = function(beatNum) {
+	    for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
+	        if (beatNum < this._movements[commandIndex].getBeatDuration()) {
+	            return this._movements[commandIndex].getAnimationState(beatNum);
+	        }
+	        beatNum -= this._movements[commandIndex].getBeatDuration();
+	    }
+	};
+
+	module.exports = Dot;
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the Sheet class.
+	 */
+
+	/**
+	 * Sheets represent stuntsheets in a show. Each has a collection of
+	 * all of the Dots involved in its formations, and those Dots,
+	 * in turn, know their positions and orientations for all beats during
+	 * the Sheet's duration.
+	 *
+	 * @param {string} label The label/name for the sheet.
+	 * @param {string} fieldType A string that indicates the type of field that this sheet
+	 *   is performed on.
+	 * @param {Array<string>} dotTypes An array of all dot types used in this sheet.
+	 * @param {object} dotTypeAssignments An object that maps each dot label to the dot type
+	 *   associated with that dot.
+	 * @param {object} continuityTexts An object that maps each dot type to an array
+	 *   containing all of the continuity instructions associated with that dot type.
+	 * @param {int} duration The duration of the sheet, in beats.
+	 * @param {Array<Dot>} dots An array of all dots involved in this sheet's
+	 *   movements. Note that all of these dots already have their
+	 *   MovementCommands before the Sheet is constructed.
+	 * @param {Array<string>} dotLabels an array, in sync with dots, which specifies the
+	 *   dot labels of the dots
+	 */
+	var Sheet = function(sheetLabel, fieldType, dotTypes, dotTypeAssignments, continuityTexts, duration, dots, dotLabels) {
+	    this._sheetLabel = sheetLabel;
+	    this._fieldType = fieldType;
+	    this._dotTypes = dotTypes;
+	    this._dotTypeAssignments = dotTypeAssignments;
+	    this._continuityTexts = continuityTexts;
+	    this._duration = duration;
+	    this._dots = dots;
+	    this._dotLabels = dotLabels;
+	};
+
+	/**
+	 * Returns the sheet's label.
+	 *
+	 * @return {string} The sheet's label.
+	 */
+	Sheet.prototype.getSheetLabel = function() {
+	    return this._sheetLabel;
+	};
+
+	/**
+	 * Returns the type of field that this sheet is performed on.
+	 *
+	 * @return {string} A string that indicates what kind of field
+	 *   the sheet is performed on.
+	 */
+	Sheet.prototype.getFieldType = function() {
+	    return this._fieldType;
+	};
+
+	/**
+	 * Returns an array of all dot types involved with this
+	 * sheet.
+	 *
+	 * @return {Array<string>} An array of all dot types involved in
+	 *   this sheet. Dot types are given as strings.
+	 */
+	Sheet.prototype.getAllDotTypes = function() {
+	    return this._dotTypes;
+	};
+
+	/**
+	 * Returns the dot type associated with a particular
+	 * dot.
+	 *
+	 * @param {string} dotLabel The label of the dot whose
+	 *   dot type will be returned.
+	 * @return {string} The dot label of the specified dot.
+	 */
+	Sheet.prototype.getDotType = function(dotLabel) {
+	    return this._dotTypeAssignments[dotLabel];
+	};
+
+	/**
+	 * Returns an array containing the continuities associated
+	 * with a particular dot type. Each continuity is a human-readable
+	 * instruction as would appear on a printed version of a stuntsheet.
+	 *
+	 * @param {string} dotType The dot type to retrieve continuities for.
+	 * @return {Array<string>} An array containing all continuities associated
+	 *   with the specified dot type. Each continuity is a human-readable
+	 *   text instruction.
+	 */
+	Sheet.prototype.getContinuityTexts = function(dotType) {
+	    return this._continuityTexts[dotType];
+	};
+
+	/**
+	 * Returns an array of all dots involved in this sheet's movements.
+	 *
+	 * @return {Array<Dot>} An array of all dots involved in this sheet's
+	 *   movements.
+	 */
+	Sheet.prototype.getDots = function() {
+	    return this._dots;
+	};
+
+	/**
+	 * Get a dot in this sheet by its dot label.
+	 * @param  {string} dotLabel the dots label, e.g. "A1" or "15"
+	 * @return {Dot|null} the dot, or null if a dot with the given label does not
+	 *   exist in the sheet
+	 */
+	Sheet.prototype.getDotByLabel = function (dotLabel) {
+	    var index = this._dotLabels.indexOf(dotLabel);
+	    if (index === -1) {
+	        return null;
+	    }
+	    return this._dots[index];
+	};
+
+	/**
+	 * Returns the duration of this sheet, in beats.
+	 *
+	 * @return {int} The duration of this sheet, in beats.
+	 */
+	Sheet.prototype.getDuration = function() {
+	    return this._duration;
+	};
+
+	module.exports = Sheet;
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the Show class.
+	 */
+	 
+	/**
+	 * Represents an entire fieldshow.
+	 *
+	 * @param {string} title The title of the show.
+	 * @param {string} year The year that the show was performed.
+	 * @param {string} description The show description.
+	 * @param {Array<string>} dotLabels An array containing the
+	 *   labels of each dot in the show.
+	 * @param {Array<Sheet>=} sheets The sheets in the show. This
+	 *   parameter is optional - sheets can be appended after
+	 *   the show is constructed by using the appendSheet(...)
+	 *   method.
+	 */
+	var Show = function(title, year, description, dotLabels, sheets) {
+	    this._title = title;
+	    this._year = year;
+	    this._description = description;
+	    this._dotLabels = dotLabels;
+	    if (sheets === undefined) {
+	        this._sheets = [];
+	    } else {
+	        this._sheets = sheets;
+	    }
+	};
+
+	/**
+	 * Returns the title of the show.
+	 *
+	 * @return {string} The title of the show.
+	 */
+	Show.prototype.getTitle = function() {
+	    return this._title;
+	};
+
+	/**
+	 * Returns the year during which the show was performed.
+	 *
+	 * @return {string} The year during which the show was
+	 *   performed.
+	 */
+	Show.prototype.getYear = function() {
+	    return this._year;
+	};
+
+	/**
+	 * Returns the show description.
+	 *
+	 * @return {string} The show description.
+	 */
+	Show.prototype.getDescription = function() {
+	    return this._description;
+	};
+
+	/**
+	 * Returns an array containing the labels for
+	 * all dots in the show.
+	 *
+	 * @return {Array<string>} An array of all dot labels.
+	 */
+	Show.prototype.getDotLabels = function() {
+	    return this._dotLabels;
+	};
+
+	/**
+	 * Returns an array of all sheets in the show.
+	 *
+	 * @return {Array<Sheet>} An array of all sheets in the show.
+	 */
+	Show.prototype.getSheets = function() {
+	    return this._sheets;
+	};
+
+	/**
+	 * Returns a particular sheet from the show.
+	 *
+	 * @param {int} index The index of the sheet to retrieve.
+	 *   This can be any integer in the range [0, num_sheets).
+	 *   Notice that the upper bound of the range is exclusive.
+	 *   To find the Nth sheet in a show, you need to request
+	 *   the sheet with an index of N-1 (e.g. to retrive the 5th
+	 *   sheet, you would call getSheet(4)).
+	 * @return {Sheet} The stuntsheet with the specified index.
+	 */
+	Show.prototype.getSheet = function(index) {
+	    return this._sheets[index];
+	};
+
+	/**
+	 * Returns the number of sheets in the show.
+	 *
+	 * @return {int} The number of sheets in the show.
+	 */
+	Show.prototype.getNumSheets = function() {
+	    return this._sheets.length;
+	};
+
+	/**
+	 * Adds a sheet to the back of the show.
+	 *
+	 * @param {Sheet} sheet The sheet to add to the
+	 *   show.
+	 */
+	Show.prototype.appendSheet = function(sheet) {
+	    this._sheets.push(sheet);
+	};
+
+	module.exports = Show;
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandStand class.
+	 */
+
+	var ClassUtils = __webpack_require__(13);
+	var MovementCommand = __webpack_require__(28);
+	var AnimationState = __webpack_require__(29);
+	 
+	/**
+	 * A MovementCommand representing a period of standing.
+	 * @param {float} x The x coordinate to stand at.
+	 * @param {float} y The y coordinate to stand at.
+	 * @param {float} orientation The angle at which the marcher will
+	 *   face while standing. This is measured in degrees relative
+	 *   to Grapher standard position (@see MathUtils.js for a definition
+	 *   of "grapher standard position).
+	 * @param {int} beats The duration of the movement, in beats.
+	 */
+	var MovementCommandStand = function(x, y, orientation, beats) {
+	    this._orientation = orientation;
+	    MovementCommand.apply(this, [x, y, beats]);
+	};
+
+	ClassUtils.extends(MovementCommandStand, MovementCommand);
+
+	MovementCommandStand.prototype.getAnimationState = function(beatNum) {
+	    return new AnimationState(this._startX, this._startY, this._orientation);
+	};
+
+	module.exports = MovementCommandStand;
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandMarkTime class.
+	 */
+
+	var ClassUtils = __webpack_require__(13);
+	var MovementCommand = __webpack_require__(28);
+	var AnimationState = __webpack_require__(29);
+
+	 /**
+	  * A MovementCommand that represents a period of mark time.
+	  *
+	  * @param {float} x The x position where the mark time takes place.
+	  * @param {float} y The y position where the mark time takes place.
+	  * @param {float} orientation The direction toward which the marcher
+	  *   faces while marking time. This is measured in degrees,
+	  *   relative to Grapher standard position (@see MathUtils.js
+	  *   for a definition of "Grapher standard position").
+	  * @param {int} beats The duration of the movement, in beats.
+	  */
+	var MovementCommandMarkTime = function(x, y, orientation, beats) {
+	    this._orientation = orientation;
+	    MovementCommand.apply(this, [x, y, x, y, beats]);
+	};
+
+	ClassUtils.extends(MovementCommandMarkTime, MovementCommand);
+
+	MovementCommandMarkTime.prototype.getAnimationState = function(beatNum) {
+	    return new AnimationState(this._startX, this._startY, this._orientation);
+	};
+
+	module.exports = MovementCommandMarkTime;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandArc class.
+	 */
+
+	var ClassUtils = __webpack_require__(13);
+	var MathUtils = __webpack_require__(30);
+	var MovementCommand = __webpack_require__(28);
+	var AnimationState = __webpack_require__(29);
+	 
+	/**
+	 * A MovementCommandArc object represents a movement along the
+	 * perimeter of a circular arc.
+	 *
+	 * @param {float} startX The x coordinate of the movement's start position.
+	 * @param {float} startY The y coordinate of the movement's start position.
+	 * @param {float} centerX The x coordinate of the arc center.
+	 * @param {float} centerY The y coordinate of the arc center.
+	 * @param {float angleTorotate The amount to rotate about the center, in
+	 *   degrees. Positive values indicate a rotation in the clockwise
+	 *   direction, negative values indicate a rotation in the
+	 *   counterclockwise direction.
+	 * @param {float} facingOffset The difference between the direction
+	 *   in which a marcher is travelling and the direction in
+	 *   which a marcher is facing. This angle is measured in degrees,
+	 *   where positive angles indicate a clockwise offset, and
+	 *   negative angles indicate a counterclockwise one.
+	 * @param {int} beats The duration of the movement, in beats.
+	 * @param {int} beatsPerStep The duration of each step, in beats.
+	 */
+	var MovementCommandArc = function(startX, startY, centerX, centerY, angleToRotate, facingOffset, beats, beatsPerStep) {
+	    this._beatsPerStep = beatsPerStep;
+	    this._centerX = centerX;
+	    this._centerY = centerY;
+	    this._radius = MathUtils.calcDistance(startX, startY, this._centerX, this._centerY);
+	    this._startAngle = MathUtils.calcAngleAbout(startX, startY, centerX, centerY);
+	    this._stepAngleDelta = MathUtils.toRadians(angleToRotate) / Math.floor(beats / this._beatsPerStep);
+	    this._movementIsCW = this._stepAngleDelta >= 0;
+	    this._orientationOffset = MathUtils.toRadians(facingOffset);
+	    var finalAnimState = this.getAnimationState(beats);
+	    MovementCommand.apply(this, [startX, startY, finalAnimState.x, finalAnimState.y, beats]);
+	};
+
+	ClassUtils.extends(MovementCommandArc, MovementCommand);
+
+	MovementCommandArc.prototype.getAnimationState = function(beatNum) {
+	    var numSteps = Math.floor(beatNum / this._beatsPerStep);
+	    var finalAngle = this._startAngle + (this._stepAngleDelta * numSteps);
+	    var finalX = this._radius * MathUtils.calcRotatedXPos(finalAngle) + this._centerX;
+	    var finalY = this._radius * MathUtils.calcRotatedYPos(finalAngle) + this._centerY;
+	    var finalOrientation = MathUtils.quarterTurn(finalAngle, this._movementIsCW) + this._orientationOffset;
+	    return new AnimationState(finalX, finalY, MathUtils.toDegrees(finalOrientation));
+	};
+
+	module.exports = MovementCommandArc;
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandMove class.
+	 */
+
+	var ClassUtils = __webpack_require__(13);
+	var MathUtils = __webpack_require__(30);
+	var MovementCommand = __webpack_require__(28);
+	var AnimationState = __webpack_require__(29);
+	 
+	/**
+	 * A MovementCommand which represents a constant movement in a
+	 * particular direction.
+	 *
+	 * @param {float} startX The x component of the movement's start position.
+	 * @param {float} startY The y component of the movement's start position.
+	 * @param {float} stepSize the size of each step, relative to standard
+	 *   stepsize (standard stepsize is 8 steps per 5 yards).
+	 * @param {float} movementDirection The direction toward which the marcher
+	 *   will move. This is measured in degrees relative to Grapher standard
+	 *   position (@see MathUtils.js for a definition of "Grapher standard
+	 *   position").
+	 * @param {float} faceOrientation the direction toward which the marcher
+	 *   will face while executing the movement. This is measured in degrees,
+	 *   relative to Grapher standard position.
+	 * @param {int} beats The duration of the movement, in beats.
+	 * @param {int} beatsPerStep the number of beats per each step of the movement.
+	 */ 
+	var MovementCommandMove = function(startX, startY, stepSize, movementDirection, faceOrientation, beats, beatsPerStep) {
+	    movementDirection = MathUtils.toRadians(movementDirection);
+	    this._deltaXPerStep = MathUtils.calcRotatedXPos(movementDirection) * stepSize;
+	    this._deltaYPerStep = MathUtils.calcRotatedYPos(movementDirection) * stepSize;
+	    this._orientation = faceOrientation;
+	    this._beatsPerStep = beatsPerStep;
+	    numSteps = Math.floor(beats / this._beatsPerStep);
+	    MovementCommand.apply(this, [startX, startY, startX + (this._deltaXPerStep * numSteps), startY + (this._deltaYPerStep * numSteps), beats]);
+	};
+
+	ClassUtils.extends(MovementCommandMove, MovementCommand);
+
+	MovementCommandMove.prototype.getAnimationState = function(beatNum) {
+	    numSteps = Math.floor(beatNum / this._beatsPerStep);
+	    return new AnimationState(this._startX + (this._deltaXPerStep * numSteps), this._startY + (this._deltaYPerStep * numSteps), this._orientation);
+	};
+
+	module.exports = MovementCommandMove;
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandGoto class.
+	 */
+
+	var ClassUtils = __webpack_require__(13);
+	var MovementCommand = __webpack_require__(28);
+	var AnimationState = __webpack_require__(29);
+	 
+	/**
+	 * A MovementCommand that represents a "Goto" movement:
+	 * dots executing this movement simply jump to the movement's final
+	 * position and orientation at every beat of the movement.
+	 *
+	 * @param {float} startX The x component of the movement's start position.
+	 * @param {float} startY The y component of the movement's start position.
+	 * @param {float} endX The x component of the movement's end position.
+	 * @param {float} endY The y component of the movement's end position.
+	 * @param {float} orientation The direction in which the marcher will face
+	 *   while executing the movement. The direction is measured in degrees relative
+	 *   to Grapher standard position (@see MathUtils.js for the definition of
+	 *   "Grapher standard position").
+	 * @param {int} beats The duration of the movement, in beats.
+	 */
+	var MovementCommandGoto = function(startX, startY, endX, endY, orientation, beats) {
+	    this._orientation = orientation;
+	    MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
+	};
+
+	ClassUtils.extends(MovementCommandGoto, MovementCommand);
+
+	MovementCommandGoto.prototype.getAnimationState = function(beatNum) {
+	    return new AnimationState(this._endX, this._endY, this._orientation);
+	};
+
+	module.exports = MovementCommandGoto;
+
+/***/ },
+/* 24 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandEven class.
+	 */
+
+	var ClassUtils = __webpack_require__(13);
+	var MovementCommand = __webpack_require__(28);
+	var AnimationState = __webpack_require__(29);
+	 
+	 
+	/**
+	 * A MovementCommand that defines an even-step transition between
+	 * two points.
+	 *
+	 * @param {float} startX The x component of the movement's start position.
+	 * @param {float} startY The y component of the movement's start position.
+	 * @param {float} endX The x component of the movement's end position.
+	 * @param {float} endY The y component of the movement's end position.
+	 * @param {float} orientation The angle toward which the marcher is facing while
+	 *   executing the movement. The angle is measured in degrees relative to
+	 *   Grapher standard position. (@see MathUtils.js for definition of
+	 *   "Grapher standard position")
+	 * @param {int} beats The duration of the movement, in beats.
+	 * @param {int} beatsPerStep The number of beats per each step.
+	 */
+	var MovementCommandEven = function(startX, startY, endX, endY, orientation, beats, beatsPerStep) {
+	    this._orientation = orientation;
+	    this._beatsPerStep = beatsPerStep;
+	    var numSteps = Math.floor(beats / this._beatsPerStep);
+	    this._deltaXPerStep = (endX - startX) / numSteps;
+	    this._deltaYPerStep = (endY - startY) / numSteps;
+	    
+	    MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
+	};
+
+	ClassUtils.extends(MovementCommandEven, MovementCommand);
+
+	MovementCommandEven.prototype.getAnimationState = function(beatNum) {
+	    var stepNum = Math.floor(beatNum / this._beatsPerStep);
+	    return new AnimationState(this._startX + (this._deltaXPerStep * stepNum), this._startY + (this._deltaYPerStep * stepNum), this._orientation);
+	};
+
+	module.exports = MovementCommandEven;
+
+/***/ },
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2114,8 +2935,8 @@
 	 *   SoundManager2.
 	 */
 	 
-	var Sound = __webpack_require__(27);
-	var ClassUtils = __webpack_require__(12);
+	var Sound = __webpack_require__(31);
+	var ClassUtils = __webpack_require__(13);
 	 
 	/**
 	 * SMSound objects play music through SoundManager2.
@@ -2404,7 +3225,7 @@
 	module.exports = SMSound;
 
 /***/ },
-/* 14 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2465,1113 +3286,7 @@
 	module.exports = MusicPlayer;
 
 /***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview This file defines the FileLoadSelector class,
-	 *   which is used to track changes to file formats and to make
-	 *   sure that different versions of a file type get loaded properly.
-	 *   Here's how the loading process works:
-	 *   A file format can change over time, so not all
-	 *   files will be loaded in the same way. Thus, before
-	 *   loading a particular file, you first need to fetch
-	 *   a loader object that can load your particular file. To do this,
-	 *   you need to call the getAppropriateLoader(version) method
-	 *   on a FileLoadSelector object.
-	 *   Once you have the appropriate loader for your file version, you
-	 *   can call its loadFile(...) method to load the file.
-	 *
-	 *   WHAT TO DO WHEN A FILE FORMAT CHANGES:
-	 *   When a file format changes, you need to add
-	 *   the ability to load the new file format while preserving
-	 *   the ability to load older file versions. To do this, you
-	 *   first need to define a child class of FileLoader
-	 *   that can load the new file version. Often,
-	 *   file format changes are small, and you only need to change
-	 *   the way in which a particular piece of the file is loaded.
-	 *   In these cases, it can be helpful to derive your new
-	 *   FileLoader from the loader for the previous version
-	 *   (e.g. FileLoad_1_0_1 might inherit from FileLoad_1_0_0
-	 *   in order to get access to all of the methods used to load
-	 *   file version 1.0.0; it may then change only a few of the original
-	 *   methods to accomodate for the file changes).
-	 *   After you make a new FileLoader, you need to register it
-	 *   with the FileLoadSelector. To do that, call
-	 *   loadSelector.registerLoader(fileVersionHere, new YourFileLoaderHere());
-	 *   In summary:
-	 *     - Define a new FileLoader to load the new file format
-	 *     - Register the new FileLoader with the FileLoadSelector by
-	 *         calling loadSelector.registerLoader(...)
-	 */
-
-	var ArrayUtils = __webpack_require__(30);
-	var Version = __webpack_require__(8);
-	 
-	/**
-	 * Every version of a file needs to be loaded in a different way -
-	 * this class is responsible for finding the appropriate FileLoader
-	 * object for loading a particular file version.
-	 */
-	var FileLoadSelector = function() {
-	    this._loaders = [];
-	};
-
-	/**
-	 * Associates a particular file version with a FileLoader
-	 * that can load files of that version.
-	 *
-	 * @param {Version} version The file version.
-	 * @param {FileLoader} loader A FileLoader that can load
-	 *   files of the given version.
-	 */
-	FileLoadSelector.prototype.registerLoader = function(version, loader) {
-	    var insertIndex = ArrayUtils.binarySearchForClosestLarger(this._loaders, version, FileLoadSelector._versionLocator);
-	    var loaderVersionPair = {
-	        version: version,
-	        loader: loader
-	    };
-	    this._loaders.splice(insertIndex, 0, loaderVersionPair);
-	};
-
-	/**
-	 * Returns the FileLoader that can load a file of the
-	 * given version.
-	 *
-	 * @param {Version} version The file version to load.
-	 * @return {FileLoader} A FileLoader that can load
-	 *   files with the provided version.
-	 */
-	FileLoadSelector.prototype.getAppropriateLoader = function(version) {
-	    var targetIndex = ArrayUtils.binarySearchForClosestSmaller(this._loaders, version, FileLoadSelector._versionLocator);
-	    return this._loaders[targetIndex].loader;
-	};
-
-	/**
-	 * Used in a binary search to find the position where a particular version
-	 * fits into an array of loader-version pairs sorted from earliest version
-	 * to latest version.
-	 *
-	 * @param {Version} versionToLocate The version to find in the array.
-	 * @param {object} relativeTo A loader-version pair to compare against the
-	 *   versionToLocate.
-	 * @return {int} A negative value if the versionToLocate comes before
-	 *   relativeTo in the array; positive value if the versionToLocate comes
-	 *   after relativeTo in the array; zero if versionToLocate and relativeTo
-	 *   have identical versions.
-	 */
-	FileLoadSelector._versionLocator = function(versionToLocate, relativeTo) {
-	    return versionToLocate.compareTo(relativeTo.version);
-	};
-	 
-	/**
-	 * This class is responsible for loading files of a particular version.
-	 */
-	FileLoadSelector.FileLoader = function() {
-	};
-
-	/**
-	 * Loads an entire file, and returns the result.
-	 *
-	 * @param {object} fileObject The file content.
-	 * @return {*} Depends on the version of the file.
-	 */
-	FileLoadSelector.FileLoader.prototype.loadFile = function(fileObject) {
-	    console.log("FileLoader.loadFile(...) called");
-	};
-
-
-	module.exports = FileLoadSelector;
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the TimedBeats class.
-	 *   TimedBeats objects are loaded from beats files,
-	 *   and are used to help the MusicAnimator find
-	 *   beats in the music.
-	 */
-	 
-	 var ArrayUtils = __webpack_require__(30);
-
-	/**
-	 * TimedBeats objects record a sequence of
-	 * timed beats, and can be used to get
-	 * information about them.
-	 *
-	 * @param {Array<int>=} An array containing
-	 *   the times at which beats occur, in
-	 *   milliseconds. TimedBeats objects are
-	 *   generally used to locate the beats in
-	 *   a music file, so the times are usually
-	 *   relative to the start of an audio file.
-	 *   The array MUST be sorted from least
-	 *   to greatest.
-	 */
-	var TimedBeats = function(beats) {
-	    if (beats !== undefined) {
-	        this._beats = beats;
-	    } else {
-	        this._beats = [];
-	    }
-	};
-
-	/**
-	 * Adds a beat to the TimedBeats object at
-	 * the specified time.
-	 *
-	 * @param {int} beatTime The time of the beat,
-	 *   measured in milliseconds.
-	 */
-	TimedBeats.prototype.addBeat = function(beatTime) {
-	    this.addBeats([beatTime]);
-	};
-
-	/**
-	 * Adds a sequence of beats to the TimedBeats object.
-	 *
-	 * @param {Array<int>} beats An array of times at
-	 *   which beats occur, in milliseconds. This array
-	 *   MUST be sorted from least to greatest.
-	 */
-	TimedBeats.prototype.addBeats = function(beats) {
-	    this._beats = ArrayUtils.mergeSortedArrays(this._beats, beats, this._timeComparator);
-	};
-
-	/**
-	 * Returns the beat number which is active at a particular
-	 * time. An individual beat spans a range of time equal
-	 * to [beatTime, nextBeatTime) (note that the upper bound
-	 * is exclusive). That is, if you ask for a time between
-	 * two beats, this will always return the lower of the two
-	 * beats. This will return undefined if you ask for the
-	 * beat number before the zeroth beat in the show.
-	 *
-	 * @param {int} time The time to check, in milliseconds.
-	 * @return {int} The beat number that is active at the
-	 *   given time, or undefined if the time requested
-	 *   is before the zeroth beat of the show.
-	 */
-	TimedBeats.prototype.getBeatNumAtTime = function(time) {
-	    return ArrayUtils.binarySearchForClosestSmaller(this._beats, time, this._timeComparator);
-	};
-
-	/**
-	 * Returns the time at which the specified beat starts.
-	 *
-	 * @param {int} beatNum The beat to find the start
-	 *   time for.
-	 * @return {int} The time at which the beat starts, in
-	 *   milliseconds.
-	 */
-	TimedBeats.prototype.getBeatTime = function(beatNum) {
-	    return this._beats[beatNum];
-	};
-
-	/**
-	 * Returns the number of recorded beats in this object.
-	 *
-	 * @return {int} The number of beats.
-	 */
-	TimedBeats.prototype.getNumBeats = function() {
-	    return this._beats.length;
-	};
-
-	/**
-	 * A comparator used to order the beats in chronological order.
-	 *
-	 * @param {int} firstTime The time of some beat, in milliseconds.
-	 * @param {int} secondTime The time of some other beat, in milliseconds.
-	 * @return {int} A positive value if the first time should come after
-	 *   the second in chronological order; a negative value if the first
-	 *   should come before the second in chronological order; zero if the
-	 *   times are the same.
-	 */
-	TimedBeats.prototype._timeComparator = function(firstTime, secondTime) {
-	    return firstTime - secondTime;
-	};
-
-	module.exports = TimedBeats;
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * An Exception thrown by the FileLoadSelectors if the loaded file is of the wrong
-	 * file type.
-	 *
-	 * @param {String} message The message to accompany the error.
-	 */
-	var InvalidFileTypeError = function(message) {
-	    this.message = message;
-	    this.name = "InvalidFileTypeError";
-	};
-
-	module.exports = InvalidFileTypeError;
-
-/***/ },
-/* 18 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Dot class.
-	 */
-
-	/**
-	 * Dot objects represent marchers. They execute a sequence
-	 * of MovementCommands, which define their position and orientation
-	 * on any given beat. Every Stuntsheet has its own set of Dot objects,
-	 * so a marcher will be represented by more than one of them throughout
-	 * a show. Specifically, every marcher is associated with AT MOST one
-	 * Dot object per Stuntsheet (some Stuntsheets may not include certain
-	 * marchers).
-	 *
-	 * @param {string} label The dot's label. This is also the label of
-	 *   the marcher associated with this dot.
-	 * @param {Array<MovemenetCommand>} movementCommands All of the MovementCommand
-	 *   objects that this Dot will execute. The commands must be sorted in the
-	 *   order in which they will be executed.
-	 */
-	var Dot = function(label, movementCommands) {
-	    this._label = label;
-	    this._movements = movementCommands;
-	};
-
-	/**
-	 * Returns the label for this dot.
-	 *
-	 * @return {string} The dot's label.
-	 */
-	Dot.prototype.getLabel = function() {
-	    return this._label;
-	};
-
-	/**
-	 * Returns an AnimationState object that describes the Dot's
-	 * position, orientation, etc. at a specific moment in the show.
-	 *
-	 * @param {int} beatNum The Dot's AnimationState will be
-	 *   relevant to the beat indicated by this value. The beat
-	 *   is relative to the start of the stuntsheet.
-	 * @return {AnimationState} An AnimationState that
-	 *   describes the Dot at a moment of the show,. If the Dot
-	 *   has no movement at the specified beat, returns undefined.
-	 */
-	Dot.prototype.getAnimationState = function(beatNum) {
-	    for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
-	        if (beatNum < this._movements[commandIndex].getBeatDuration()) {
-	            return this._movements[commandIndex].getAnimationState(beatNum);
-	        }
-	        beatNum -= this._movements[commandIndex].getBeatDuration();
-	    }
-	};
-
-	module.exports = Dot;
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Sheet class.
-	 */
-
-	/**
-	 * Sheets represent stuntsheets in a show. Each has a collection of
-	 * all of the Dots involved in its formations, and those Dots,
-	 * in turn, know their positions and orientations for all beats during
-	 * the Sheet's duration.
-	 *
-	 * @param {string} label The label/name for the sheet.
-	 * @param {string} fieldType A string that indicates the type of field that this sheet
-	 *   is performed on.
-	 * @param {Array<string>} dotTypes An array of all dot types used in this sheet.
-	 * @param {object} dotTypeAssignments An object that maps each dot label to the dot type
-	 *   associated with that dot.
-	 * @param {object} continuityTexts An object that maps each dot type to an array
-	 *   containing all of the continuity instructions associated with that dot type.
-	 * @param {int} duration The duration of the sheet, in beats.
-	 * @param {Array<Dot>} dots An array of all dots involved in this sheet's
-	 *   movements. Note that all of these dots already have their
-	 *   MovementCommands before the Sheet is constructed.
-	 * @param {Array<string>} dotLabels an array, in sync with dots, which specifies the
-	 *   dot labels of the dots
-	 */
-	var Sheet = function(sheetLabel, fieldType, dotTypes, dotTypeAssignments, continuityTexts, duration, dots, dotLabels) {
-	    this._sheetLabel = sheetLabel;
-	    this._fieldType = fieldType;
-	    this._dotTypes = dotTypes;
-	    this._dotTypeAssignments = dotTypeAssignments;
-	    this._continuityTexts = continuityTexts;
-	    this._duration = duration;
-	    this._dots = dots;
-	    this._dotLabels = dotLabels;
-	};
-
-	/**
-	 * Returns the sheet's label.
-	 *
-	 * @return {string} The sheet's label.
-	 */
-	Sheet.prototype.getSheetLabel = function() {
-	    return this._sheetLabel;
-	};
-
-	/**
-	 * Returns the type of field that this sheet is performed on.
-	 *
-	 * @return {string} A string that indicates what kind of field
-	 *   the sheet is performed on.
-	 */
-	Sheet.prototype.getFieldType = function() {
-	    return this._fieldType;
-	};
-
-	/**
-	 * Returns an array of all dot types involved with this
-	 * sheet.
-	 *
-	 * @return {Array<string>} An array of all dot types involved in
-	 *   this sheet. Dot types are given as strings.
-	 */
-	Sheet.prototype.getAllDotTypes = function() {
-	    return this._dotTypes;
-	};
-
-	/**
-	 * Returns the dot type associated with a particular
-	 * dot.
-	 *
-	 * @param {string} dotLabel The label of the dot whose
-	 *   dot type will be returned.
-	 * @return {string} The dot label of the specified dot.
-	 */
-	Sheet.prototype.getDotType = function(dotLabel) {
-	    return this._dotTypeAssignments[dotLabel];
-	};
-
-	/**
-	 * Returns an array containing the continuities associated
-	 * with a particular dot type. Each continuity is a human-readable
-	 * instruction as would appear on a printed version of a stuntsheet.
-	 *
-	 * @param {string} dotType The dot type to retrieve continuities for.
-	 * @return {Array<string>} An array containing all continuities associated
-	 *   with the specified dot type. Each continuity is a human-readable
-	 *   text instruction.
-	 */
-	Sheet.prototype.getContinuityTexts = function(dotType) {
-	    return this._continuityTexts[dotType];
-	};
-
-	/**
-	 * Returns an array of all dots involved in this sheet's movements.
-	 *
-	 * @return {Array<Dot>} An array of all dots involved in this sheet's
-	 *   movements.
-	 */
-	Sheet.prototype.getDots = function() {
-	    return this._dots;
-	};
-
-	/**
-	 * Get a dot in this sheet by its dot label.
-	 * @param  {string} dotLabel the dots label, e.g. "A1" or "15"
-	 * @return {Dot|null} the dot, or null if a dot with the given label does not
-	 *   exist in the sheet
-	 */
-	Sheet.prototype.getDotByLabel = function (dotLabel) {
-	    var index = this._dotLabels.indexOf(dotLabel);
-	    if (index === -1) {
-	        return null;
-	    }
-	    return this._dots[index];
-	};
-
-	/**
-	 * Returns the duration of this sheet, in beats.
-	 *
-	 * @return {int} The duration of this sheet, in beats.
-	 */
-	Sheet.prototype.getDuration = function() {
-	    return this._duration;
-	};
-
-	module.exports = Sheet;
-
-/***/ },
-/* 20 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Show class.
-	 */
-	 
-	/**
-	 * Represents an entire fieldshow.
-	 *
-	 * @param {string} title The title of the show.
-	 * @param {string} year The year that the show was performed.
-	 * @param {string} description The show description.
-	 * @param {Array<string>} dotLabels An array containing the
-	 *   labels of each dot in the show.
-	 * @param {Array<Sheet>=} sheets The sheets in the show. This
-	 *   parameter is optional - sheets can be appended after
-	 *   the show is constructed by using the appendSheet(...)
-	 *   method.
-	 */
-	var Show = function(title, year, description, dotLabels, sheets) {
-	    this._title = title;
-	    this._year = year;
-	    this._description = description;
-	    this._dotLabels = dotLabels;
-	    if (sheets === undefined) {
-	        this._sheets = [];
-	    } else {
-	        this._sheets = sheets;
-	    }
-	};
-
-	/**
-	 * Returns the title of the show.
-	 *
-	 * @return {string} The title of the show.
-	 */
-	Show.prototype.getTitle = function() {
-	    return this._title;
-	};
-
-	/**
-	 * Returns the year during which the show was performed.
-	 *
-	 * @return {string} The year during which the show was
-	 *   performed.
-	 */
-	Show.prototype.getYear = function() {
-	    return this._year;
-	};
-
-	/**
-	 * Returns the show description.
-	 *
-	 * @return {string} The show description.
-	 */
-	Show.prototype.getDescription = function() {
-	    return this._description;
-	};
-
-	/**
-	 * Returns an array containing the labels for
-	 * all dots in the show.
-	 *
-	 * @return {Array<string>} An array of all dot labels.
-	 */
-	Show.prototype.getDotLabels = function() {
-	    return this._dotLabels;
-	};
-
-	/**
-	 * Returns an array of all sheets in the show.
-	 *
-	 * @return {Array<Sheet>} An array of all sheets in the show.
-	 */
-	Show.prototype.getSheets = function() {
-	    return this._sheets;
-	};
-
-	/**
-	 * Returns a particular sheet from the show.
-	 *
-	 * @param {int} index The index of the sheet to retrieve.
-	 *   This can be any integer in the range [0, num_sheets).
-	 *   Notice that the upper bound of the range is exclusive.
-	 *   To find the Nth sheet in a show, you need to request
-	 *   the sheet with an index of N-1 (e.g. to retrive the 5th
-	 *   sheet, you would call getSheet(4)).
-	 * @return {Sheet} The stuntsheet with the specified index.
-	 */
-	Show.prototype.getSheet = function(index) {
-	    return this._sheets[index];
-	};
-
-	/**
-	 * Returns the number of sheets in the show.
-	 *
-	 * @return {int} The number of sheets in the show.
-	 */
-	Show.prototype.getNumSheets = function() {
-	    return this._sheets.length;
-	};
-
-	/**
-	 * Adds a sheet to the back of the show.
-	 *
-	 * @param {Sheet} sheet The sheet to add to the
-	 *   show.
-	 */
-	Show.prototype.appendSheet = function(sheet) {
-	    this._sheets.push(sheet);
-	};
-
-	module.exports = Show;
-
-/***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandStand class.
-	 */
-
-	var ClassUtils = __webpack_require__(12);
-	var MovementCommand = __webpack_require__(28);
-	var AnimationState = __webpack_require__(29);
-	 
-	/**
-	 * A MovementCommand representing a period of standing.
-	 * @param {float} x The x coordinate to stand at.
-	 * @param {float} y The y coordinate to stand at.
-	 * @param {float} orientation The angle at which the marcher will
-	 *   face while standing. This is measured in degrees relative
-	 *   to Grapher standard position (@see MathUtils.js for a definition
-	 *   of "grapher standard position).
-	 * @param {int} beats The duration of the movement, in beats.
-	 */
-	var MovementCommandStand = function(x, y, orientation, beats) {
-	    this._orientation = orientation;
-	    MovementCommand.apply(this, [x, y, beats]);
-	};
-
-	ClassUtils.extends(MovementCommandStand, MovementCommand);
-
-	MovementCommandStand.prototype.getAnimationState = function(beatNum) {
-	    return new AnimationState(this._startX, this._startY, this._orientation);
-	};
-
-	module.exports = MovementCommandStand;
-
-/***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandMarkTime class.
-	 */
-
-	var ClassUtils = __webpack_require__(12);
-	var MovementCommand = __webpack_require__(28);
-	var AnimationState = __webpack_require__(29);
-
-	 /**
-	  * A MovementCommand that represents a period of mark time.
-	  *
-	  * @param {float} x The x position where the mark time takes place.
-	  * @param {float} y The y position where the mark time takes place.
-	  * @param {float} orientation The direction toward which the marcher
-	  *   faces while marking time. This is measured in degrees,
-	  *   relative to Grapher standard position (@see MathUtils.js
-	  *   for a definition of "Grapher standard position").
-	  * @param {int} beats The duration of the movement, in beats.
-	  */
-	var MovementCommandMarkTime = function(x, y, orientation, beats) {
-	    this._orientation = orientation;
-	    MovementCommand.apply(this, [x, y, x, y, beats]);
-	};
-
-	ClassUtils.extends(MovementCommandMarkTime, MovementCommand);
-
-	MovementCommandMarkTime.prototype.getAnimationState = function(beatNum) {
-	    return new AnimationState(this._startX, this._startY, this._orientation);
-	};
-
-	module.exports = MovementCommandMarkTime;
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandArc class.
-	 */
-
-	var ClassUtils = __webpack_require__(12);
-	var MathUtils = __webpack_require__(31);
-	var MovementCommand = __webpack_require__(28);
-	var AnimationState = __webpack_require__(29);
-	 
-	/**
-	 * A MovementCommandArc object represents a movement along the
-	 * perimeter of a circular arc.
-	 *
-	 * @param {float} startX The x coordinate of the movement's start position.
-	 * @param {float} startY The y coordinate of the movement's start position.
-	 * @param {float} centerX The x coordinate of the arc center.
-	 * @param {float} centerY The y coordinate of the arc center.
-	 * @param {float angleTorotate The amount to rotate about the center, in
-	 *   degrees. Positive values indicate a rotation in the clockwise
-	 *   direction, negative values indicate a rotation in the
-	 *   counterclockwise direction.
-	 * @param {float} facingOffset The difference between the direction
-	 *   in which a marcher is travelling and the direction in
-	 *   which a marcher is facing. This angle is measured in degrees,
-	 *   where positive angles indicate a clockwise offset, and
-	 *   negative angles indicate a counterclockwise one.
-	 * @param {int} beats The duration of the movement, in beats.
-	 * @param {int} beatsPerStep The duration of each step, in beats.
-	 */
-	var MovementCommandArc = function(startX, startY, centerX, centerY, angleToRotate, facingOffset, beats, beatsPerStep) {
-	    this._beatsPerStep = beatsPerStep;
-	    this._centerX = centerX;
-	    this._centerY = centerY;
-	    this._radius = MathUtils.calcDistance(startX, startY, this._centerX, this._centerY);
-	    this._startAngle = MathUtils.calcAngleAbout(startX, startY, centerX, centerY);
-	    this._stepAngleDelta = MathUtils.toRadians(angleToRotate) / Math.floor(beats / this._beatsPerStep);
-	    this._movementIsCW = this._stepAngleDelta >= 0;
-	    this._orientationOffset = MathUtils.toRadians(facingOffset);
-	    var finalAnimState = this.getAnimationState(beats);
-	    MovementCommand.apply(this, [startX, startY, finalAnimState.x, finalAnimState.y, beats]);
-	};
-
-	ClassUtils.extends(MovementCommandArc, MovementCommand);
-
-	MovementCommandArc.prototype.getAnimationState = function(beatNum) {
-	    var numSteps = Math.floor(beatNum / this._beatsPerStep);
-	    var finalAngle = this._startAngle + (this._stepAngleDelta * numSteps);
-	    var finalX = this._radius * MathUtils.calcRotatedXPos(finalAngle) + this._centerX;
-	    var finalY = this._radius * MathUtils.calcRotatedYPos(finalAngle) + this._centerY;
-	    var finalOrientation = MathUtils.quarterTurn(finalAngle, this._movementIsCW) + this._orientationOffset;
-	    return new AnimationState(finalX, finalY, MathUtils.toDegrees(finalOrientation));
-	};
-
-	module.exports = MovementCommandArc;
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandMove class.
-	 */
-
-	var ClassUtils = __webpack_require__(12);
-	var MathUtils = __webpack_require__(31);
-	var MovementCommand = __webpack_require__(28);
-	var AnimationState = __webpack_require__(29);
-	 
-	/**
-	 * A MovementCommand which represents a constant movement in a
-	 * particular direction.
-	 *
-	 * @param {float} startX The x component of the movement's start position.
-	 * @param {float} startY The y component of the movement's start position.
-	 * @param {float} stepSize the size of each step, relative to standard
-	 *   stepsize (standard stepsize is 8 steps per 5 yards).
-	 * @param {float} movementDirection The direction toward which the marcher
-	 *   will move. This is measured in degrees relative to Grapher standard
-	 *   position (@see MathUtils.js for a definition of "Grapher standard
-	 *   position").
-	 * @param {float} faceOrientation the direction toward which the marcher
-	 *   will face while executing the movement. This is measured in degrees,
-	 *   relative to Grapher standard position.
-	 * @param {int} beats The duration of the movement, in beats.
-	 * @param {int} beatsPerStep the number of beats per each step of the movement.
-	 */ 
-	var MovementCommandMove = function(startX, startY, stepSize, movementDirection, faceOrientation, beats, beatsPerStep) {
-	    movementDirection = MathUtils.toRadians(movementDirection);
-	    this._deltaXPerStep = MathUtils.calcRotatedXPos(movementDirection) * stepSize;
-	    this._deltaYPerStep = MathUtils.calcRotatedYPos(movementDirection) * stepSize;
-	    this._orientation = faceOrientation;
-	    this._beatsPerStep = beatsPerStep;
-	    numSteps = Math.floor(beats / this._beatsPerStep);
-	    MovementCommand.apply(this, [startX, startY, startX + (this._deltaXPerStep * numSteps), startY + (this._deltaYPerStep * numSteps), beats]);
-	};
-
-	ClassUtils.extends(MovementCommandMove, MovementCommand);
-
-	MovementCommandMove.prototype.getAnimationState = function(beatNum) {
-	    numSteps = Math.floor(beatNum / this._beatsPerStep);
-	    return new AnimationState(this._startX + (this._deltaXPerStep * numSteps), this._startY + (this._deltaYPerStep * numSteps), this._orientation);
-	};
-
-	module.exports = MovementCommandMove;
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandGoto class.
-	 */
-
-	var ClassUtils = __webpack_require__(12);
-	var MovementCommand = __webpack_require__(28);
-	var AnimationState = __webpack_require__(29);
-	 
-	/**
-	 * A MovementCommand that represents a "Goto" movement:
-	 * dots executing this movement simply jump to the movement's final
-	 * position and orientation at every beat of the movement.
-	 *
-	 * @param {float} startX The x component of the movement's start position.
-	 * @param {float} startY The y component of the movement's start position.
-	 * @param {float} endX The x component of the movement's end position.
-	 * @param {float} endY The y component of the movement's end position.
-	 * @param {float} orientation The direction in which the marcher will face
-	 *   while executing the movement. The direction is measured in degrees relative
-	 *   to Grapher standard position (@see MathUtils.js for the definition of
-	 *   "Grapher standard position").
-	 * @param {int} beats The duration of the movement, in beats.
-	 */
-	var MovementCommandGoto = function(startX, startY, endX, endY, orientation, beats) {
-	    this._orientation = orientation;
-	    MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
-	};
-
-	ClassUtils.extends(MovementCommandGoto, MovementCommand);
-
-	MovementCommandGoto.prototype.getAnimationState = function(beatNum) {
-	    return new AnimationState(this._endX, this._endY, this._orientation);
-	};
-
-	module.exports = MovementCommandGoto;
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandEven class.
-	 */
-
-	var ClassUtils = __webpack_require__(12);
-	var MovementCommand = __webpack_require__(28);
-	var AnimationState = __webpack_require__(29);
-	 
-	 
-	/**
-	 * A MovementCommand that defines an even-step transition between
-	 * two points.
-	 *
-	 * @param {float} startX The x component of the movement's start position.
-	 * @param {float} startY The y component of the movement's start position.
-	 * @param {float} endX The x component of the movement's end position.
-	 * @param {float} endY The y component of the movement's end position.
-	 * @param {float} orientation The angle toward which the marcher is facing while
-	 *   executing the movement. The angle is measured in degrees relative to
-	 *   Grapher standard position. (@see MathUtils.js for definition of
-	 *   "Grapher standard position")
-	 * @param {int} beats The duration of the movement, in beats.
-	 * @param {int} beatsPerStep The number of beats per each step.
-	 */
-	var MovementCommandEven = function(startX, startY, endX, endY, orientation, beats, beatsPerStep) {
-	    this._orientation = orientation;
-	    this._beatsPerStep = beatsPerStep;
-	    var numSteps = Math.floor(beats / this._beatsPerStep);
-	    this._deltaXPerStep = (endX - startX) / numSteps;
-	    this._deltaYPerStep = (endY - startY) / numSteps;
-	    
-	    MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
-	};
-
-	ClassUtils.extends(MovementCommandEven, MovementCommand);
-
-	MovementCommandEven.prototype.getAnimationState = function(beatNum) {
-	    var stepNum = Math.floor(beatNum / this._beatsPerStep);
-	    return new AnimationState(this._startX + (this._deltaXPerStep * stepNum), this._startY + (this._deltaYPerStep * stepNum), this._orientation);
-	};
-
-	module.exports = MovementCommandEven;
-
-/***/ },
 /* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Sound class. We are using third-party code to
-	 *   play music, so this class is designed to help us easily replace the third-party
-	 *   code with something else if we ever need to. For more information, @see MusicPlayer.js.
-	 */
-
-	/**
-	 * Sound objects can play audio. They are
-	 * created through the MusicPlayer.
-	 */ 
-	var Sound = function() {
-	};
-
-	/**
-	 * Loads an audio file to play.
-	 *
-	 * @param {string} musicURL The URL of the audio
-	 *   to load.
-	 */
-	Sound.prototype.load = function(musicURL) {
-	    console.log("Sound.load(...) called");
-	};
-
-	/**
-	 * Unloads the audio file, so that the sound is
-	 * not ready to play. This will clear the errors
-	 * from the last load.
-	 */
-	Sound.prototype.unload = function() {
-	    console.log("Sound.unload(...) called");
-	};
-
-	/**
-	 * Resets the sound, so that it no longer
-	 * has audio loaded. This will also clear
-	 * the event handlers and timed events.
-	 */
-	Sound.prototype.reset = function() {
-	    console.log("Sound.reset(...) called");
-	};
-
-	/**
-	 * Plays the sound, starting at the
-	 * given time.
-	 *
-	 * @param {int} The time in the audio to
-	 *   start playing at. The time is measured
-	 *   in milliseconds, relative to the start
-	 *   of the audio.
-	 */
-	Sound.prototype.play = function(startTime) {
-	    console.log("Sound.play(...) called");
-	};
-
-	/**
-	 * Stops the sound.
-	 */
-	Sound.prototype.stop = function() {
-	    console.log("Sound.stop(...) called");
-	};
-
-	/**
-	 * Returns whether or not the sound is playing.
-	 *
-	 * @return {boolean} True if the sound is playing;
-	 *   false otherwise.
-	 */
-	Sound.prototype.isPlaying = function() {
-	    console.log("Sound.isPlaying(...) called");
-	};
-
-	/**
-	 * Returns whether or not a sound is loaded.
-	 *
-	 * @return {boolean} True if a sound is loaded; false
-	 *   otherwise.
-	 */
-	Sound.prototype.isLoaded = function() {
-	    console.log("Sound.isLoaded(...) called");
-	};
-
-	/**
-	 * Returns whether or not the sound is ready to play.
-	 *
-	 * @return {boolean} True if the sound is ready to play;
-	 *   false otherwise.
-	 */
-	Sound.prototype.isReady = function() {
-	    console.log("Sound.isReady(...) called");
-	};
-
-	/**
-	 * Returns whether or not an error occurred.
-	 *
-	 * @return {boolean} True if an error occurred; false
-	 *   otherwise.
-	 */
-	Sound.prototype.errorFlag = function() {
-	    console.log("Sound.errorFlag(...) called");
-	};
-
-	/**
-	 * Returns an error message if an error was experienced
-	 * while setting up the sound.
-	 *
-	 * @return {string} An error message, if an error occurred.
-	 *   If no error occurred, then returns null.
-	 */
-	Sound.prototype.getError = function() {
-	    console.log("Sound.getError(...) called");
-	};
-
-	/**
-	 * Registers an event handler, so that whenever a particular event occurs,
-	 * the event handler function is called.
-	 *
-	 * @param {string} eventName This is the name of the event to connect
-	 *   the event handler to. When this event occurs, the eventHandler will
-	 *   be called. 
-	 * @param {function():*} eventHandler The function that will be called
-	 *   when the specified event occurs.
-	 */
-	Sound.prototype.registerEventHandler = function(eventName, eventHandler) {
-	    console.log("Sound.registerEventHandler(...) called");
-	};
-
-	/**
-	 * Makes sure that the eventHandler is informed when
-	 * a particular time is reached while playing.
-	 *
-	 * @param {int} time The time at which the event will
-	 *   be fired, in milliseconds releative to the start of
-	 *   the audio.
-	 * @param {function():*} eventHandler This function 
-	 *   will be called when the time is reached.
-	 */
-	Sound.prototype.addTimedEvent = function(time, eventHandler) {
-	    console.log("Sound.addTimedEvent(...) called");
-	};
-
-	/**
-	 * Clears all timed events.
-	 */
-	Sound.prototype.clearTimedEvents = function() {
-	    console.log("Sound.clearTimedEvents(...) called");
-	};
-
-	module.exports = Sound;
-
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommand class.
-	 */
-
-	var Coordinate = __webpack_require__(32);
-
-	/**
-	 * MovementCommand class
-	 *
-	 * Represents an individual movement that a marcher executes during
-	 * a show.
-	 * 
-	 * This is an abstract class - do not make an instance of this
-	 * directly.
-	 *
-	 * @param {float} startX The x coordinate at which the movement starts.
-	 * @param {float} startY The y coordinate at which the movement starts.
-	 * @param {float} endX The x coordinate at which the movement starts.
-	 * @param {float} endY The y coordinate at which the movement starts.
-	 * @param {int} numBeats The duration of the movement, in beats. 
-	 **/
-	var MovementCommand = function(startX, startY, endX, endY, numBeats) {
-	    /**
-	     * The x component of the movement's start position, measured in
-	     * steps from the upper left corner of the field.
-	     * @type {float}
-	     */
-	    this._startX = startX;
-	    
-	    /**
-	     * The y component of the movement's start position, measured in
-	     * steps from the upper left corner of the field.
-	     * @type {float}
-	     */
-	    this._startY = startY;
-	    
-	    /**
-	     * The x component of the movement's end position, measured in
-	     * steps from the upper left corner of the field.
-	     * @type {float}
-	     */
-	    this._endX = endX;
-	    
-	    /**
-	     * The y component of the movement's end position, measured in
-	     * steps from the upper left corner of the field.
-	     * @type {float}
-	     */
-	    this._endY = endY;
-	    
-	    /**
-	     * The duration of the command, in beats.
-	     * @type {int}
-	     */
-	    this._numBeats = numBeats;
-	};
-
-	/**
-	 * Returns the position at which this movement starts.
-	 *
-	 * @return {Coordinate} The position where the movement begins.
-	 */
-	MovementCommand.prototype.getStartPosition = function() {
-	        return new Coordinate(this._startX, this._startY);
-	};
-
-	/**
-	 * Returns the position at which this movement ends.
-	 *
-	 * @return {Coordinate} The position where the movement ends.
-	 */
-	MovementCommand.prototype.getEndPosition = function() {
-	    return new Coordinate(this._endX, this._endY);
-	};
-
-	/**
-	 * Returns the number of beats required to complete this
-	 * command.
-	 *
-	 * @return {int} The duration of this command, in beats.
-	 */
-	MovementCommand.prototype.getBeatDuration = function() {
-	    return this._numBeats;
-	};
-
-	/**
-	 * Returns an AnimationState describing a marcher
-	 * who is executing this movement.
-	 *
-	 * @param {int} beatNum The beat of this movement that
-	 * the marcher is currently executing (relative
-	 * to the start of the movement).
-	 * @return {AnimationState} An AnimationState describing
-	 * a marcher who is executing this movement.
-	 */
-	MovementCommand.prototype.getAnimationState = function(beatNum) {
-	    console.log("getAnimationState called");
-	};
-
-
-	module.exports = MovementCommand;
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the AnimationState struct.
-	 */
-
-	/**
-	 * An AnimationState struct describes the state of a dot at a specific time
-	 * in the show. It contains all information required to properly draw
-	 * the dot in the grapher.
-	 *
-	 * @param {float} posX The x position of the dot.
-	 * @param {float} posY The y position of the dot.
-	 * @param {float} facingAngle The angle at which the dot is oriented.
-	 */
-	var AnimationState = function(posX, posY, facingAngle) {
-	    this.x = posX;
-	    this.y = posY;
-	    this.angle = facingAngle;
-	};
-
-	module.exports = AnimationState;
-
-/***/ },
-/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3788,7 +3503,138 @@
 	module.exports = ArrayUtils;
 
 /***/ },
-/* 31 */
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommand class.
+	 */
+
+	var Coordinate = __webpack_require__(32);
+
+	/**
+	 * MovementCommand class
+	 *
+	 * Represents an individual movement that a marcher executes during
+	 * a show.
+	 * 
+	 * This is an abstract class - do not make an instance of this
+	 * directly.
+	 *
+	 * @param {float} startX The x coordinate at which the movement starts.
+	 * @param {float} startY The y coordinate at which the movement starts.
+	 * @param {float} endX The x coordinate at which the movement starts.
+	 * @param {float} endY The y coordinate at which the movement starts.
+	 * @param {int} numBeats The duration of the movement, in beats. 
+	 **/
+	var MovementCommand = function(startX, startY, endX, endY, numBeats) {
+	    /**
+	     * The x component of the movement's start position, measured in
+	     * steps from the upper left corner of the field.
+	     * @type {float}
+	     */
+	    this._startX = startX;
+	    
+	    /**
+	     * The y component of the movement's start position, measured in
+	     * steps from the upper left corner of the field.
+	     * @type {float}
+	     */
+	    this._startY = startY;
+	    
+	    /**
+	     * The x component of the movement's end position, measured in
+	     * steps from the upper left corner of the field.
+	     * @type {float}
+	     */
+	    this._endX = endX;
+	    
+	    /**
+	     * The y component of the movement's end position, measured in
+	     * steps from the upper left corner of the field.
+	     * @type {float}
+	     */
+	    this._endY = endY;
+	    
+	    /**
+	     * The duration of the command, in beats.
+	     * @type {int}
+	     */
+	    this._numBeats = numBeats;
+	};
+
+	/**
+	 * Returns the position at which this movement starts.
+	 *
+	 * @return {Coordinate} The position where the movement begins.
+	 */
+	MovementCommand.prototype.getStartPosition = function() {
+	        return new Coordinate(this._startX, this._startY);
+	};
+
+	/**
+	 * Returns the position at which this movement ends.
+	 *
+	 * @return {Coordinate} The position where the movement ends.
+	 */
+	MovementCommand.prototype.getEndPosition = function() {
+	    return new Coordinate(this._endX, this._endY);
+	};
+
+	/**
+	 * Returns the number of beats required to complete this
+	 * command.
+	 *
+	 * @return {int} The duration of this command, in beats.
+	 */
+	MovementCommand.prototype.getBeatDuration = function() {
+	    return this._numBeats;
+	};
+
+	/**
+	 * Returns an AnimationState describing a marcher
+	 * who is executing this movement.
+	 *
+	 * @param {int} beatNum The beat of this movement that
+	 * the marcher is currently executing (relative
+	 * to the start of the movement).
+	 * @return {AnimationState} An AnimationState describing
+	 * a marcher who is executing this movement.
+	 */
+	MovementCommand.prototype.getAnimationState = function(beatNum) {
+	    console.log("getAnimationState called");
+	};
+
+
+	module.exports = MovementCommand;
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the AnimationState struct.
+	 */
+
+	/**
+	 * An AnimationState struct describes the state of a dot at a specific time
+	 * in the show. It contains all information required to properly draw
+	 * the dot in the grapher.
+	 *
+	 * @param {float} posX The x position of the dot.
+	 * @param {float} posY The y position of the dot.
+	 * @param {float} facingAngle The angle at which the dot is oriented.
+	 */
+	var AnimationState = function(posX, posY, facingAngle) {
+	    this.x = posX;
+	    this.y = posY;
+	    this.angle = facingAngle;
+	};
+
+	module.exports = AnimationState;
+
+/***/ },
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4023,6 +3869,160 @@
 	};
 
 	module.exports = MathUtils;
+
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the Sound class. We are using third-party code to
+	 *   play music, so this class is designed to help us easily replace the third-party
+	 *   code with something else if we ever need to. For more information, @see MusicPlayer.js.
+	 */
+
+	/**
+	 * Sound objects can play audio. They are
+	 * created through the MusicPlayer.
+	 */ 
+	var Sound = function() {
+	};
+
+	/**
+	 * Loads an audio file to play.
+	 *
+	 * @param {string} musicURL The URL of the audio
+	 *   to load.
+	 */
+	Sound.prototype.load = function(musicURL) {
+	    console.log("Sound.load(...) called");
+	};
+
+	/**
+	 * Unloads the audio file, so that the sound is
+	 * not ready to play. This will clear the errors
+	 * from the last load.
+	 */
+	Sound.prototype.unload = function() {
+	    console.log("Sound.unload(...) called");
+	};
+
+	/**
+	 * Resets the sound, so that it no longer
+	 * has audio loaded. This will also clear
+	 * the event handlers and timed events.
+	 */
+	Sound.prototype.reset = function() {
+	    console.log("Sound.reset(...) called");
+	};
+
+	/**
+	 * Plays the sound, starting at the
+	 * given time.
+	 *
+	 * @param {int} The time in the audio to
+	 *   start playing at. The time is measured
+	 *   in milliseconds, relative to the start
+	 *   of the audio.
+	 */
+	Sound.prototype.play = function(startTime) {
+	    console.log("Sound.play(...) called");
+	};
+
+	/**
+	 * Stops the sound.
+	 */
+	Sound.prototype.stop = function() {
+	    console.log("Sound.stop(...) called");
+	};
+
+	/**
+	 * Returns whether or not the sound is playing.
+	 *
+	 * @return {boolean} True if the sound is playing;
+	 *   false otherwise.
+	 */
+	Sound.prototype.isPlaying = function() {
+	    console.log("Sound.isPlaying(...) called");
+	};
+
+	/**
+	 * Returns whether or not a sound is loaded.
+	 *
+	 * @return {boolean} True if a sound is loaded; false
+	 *   otherwise.
+	 */
+	Sound.prototype.isLoaded = function() {
+	    console.log("Sound.isLoaded(...) called");
+	};
+
+	/**
+	 * Returns whether or not the sound is ready to play.
+	 *
+	 * @return {boolean} True if the sound is ready to play;
+	 *   false otherwise.
+	 */
+	Sound.prototype.isReady = function() {
+	    console.log("Sound.isReady(...) called");
+	};
+
+	/**
+	 * Returns whether or not an error occurred.
+	 *
+	 * @return {boolean} True if an error occurred; false
+	 *   otherwise.
+	 */
+	Sound.prototype.errorFlag = function() {
+	    console.log("Sound.errorFlag(...) called");
+	};
+
+	/**
+	 * Returns an error message if an error was experienced
+	 * while setting up the sound.
+	 *
+	 * @return {string} An error message, if an error occurred.
+	 *   If no error occurred, then returns null.
+	 */
+	Sound.prototype.getError = function() {
+	    console.log("Sound.getError(...) called");
+	};
+
+	/**
+	 * Registers an event handler, so that whenever a particular event occurs,
+	 * the event handler function is called.
+	 *
+	 * @param {string} eventName This is the name of the event to connect
+	 *   the event handler to. When this event occurs, the eventHandler will
+	 *   be called. 
+	 * @param {function():*} eventHandler The function that will be called
+	 *   when the specified event occurs.
+	 */
+	Sound.prototype.registerEventHandler = function(eventName, eventHandler) {
+	    console.log("Sound.registerEventHandler(...) called");
+	};
+
+	/**
+	 * Makes sure that the eventHandler is informed when
+	 * a particular time is reached while playing.
+	 *
+	 * @param {int} time The time at which the event will
+	 *   be fired, in milliseconds releative to the start of
+	 *   the audio.
+	 * @param {function():*} eventHandler This function 
+	 *   will be called when the time is reached.
+	 */
+	Sound.prototype.addTimedEvent = function(time, eventHandler) {
+	    console.log("Sound.addTimedEvent(...) called");
+	};
+
+	/**
+	 * Clears all timed events.
+	 */
+	Sound.prototype.clearTimedEvents = function() {
+	    console.log("Sound.clearTimedEvents(...) called");
+	};
+
+	module.exports = Sound;
 
 
 /***/ },
