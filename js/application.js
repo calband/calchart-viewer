@@ -22,10 +22,10 @@ $(document).ready(function () {
     });
     $(".js-viewer-file").change(applicationController.getViewerFileHandler());
 
-    $(".js-mp3-file-btn").click(function() {
-        $(".js-mp3-file").click();
+    $(".js-audio-file-btn").click(function() {
+        $(".js-audio-file").click();
     });
-    $(".js-mp3-file").change(applicationController.getMusicFileHandler());
+    $(".js-audio-file").change(applicationController.getMusicFileHandler());
 
     // bindings for user interface components
     $(".js-prev-beat").click(function () {

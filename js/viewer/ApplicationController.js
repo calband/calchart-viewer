@@ -334,14 +334,14 @@ ApplicationController.prototype.getMusicFileHandler = function () {
             var newSound = _this._musicPlayer.createSound();
             var onMusicLoaded = function() {
                 if (newSound.errorFlag()) {
-                    $(".js-mp3-file").val("");
-                    _this.displayFileInputError("Please upload a valid mp3 file.");
+                    $(".js-audio-file").val("");
+                    _this.displayFileInputError("Please upload a valid audio file.");
                 } else {
                     _this._animator.setMusic(newSound);
                     if (fileName.length > 20) {
                         fileName = fileName.substring(0, 21) + "...";
                     }
-                    $(".js-mp3-file-btn").text(fileName);
+                    $(".js-audio-file-btn").text(fileName);
                 }
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);
