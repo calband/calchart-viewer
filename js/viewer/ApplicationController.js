@@ -56,49 +56,30 @@ ApplicationController.prototype.setShow = function (show) {
  * @param {int} the year of the desired shows
  */
 ApplicationController.prototype.getShows = function(year) {
-    var xmlhttp;
-    if (window.XMLHttpRequest) {
-        // code for IE7+, Firefox, Chrome, Opera, Safari
-        xmlhttp = new XMLHttpRequest();
-    } else {
-        // code for IE6, IE5
-        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    }
-
     // CHANGE IN PRODUCTION
     var url = "http://localhost:7000/list/" + year;
-    xmlhttp.open("GET", url, false);
-    xmlhttp.send();
-    return JSON.parse(xmlhttp.response).shows;
+    var response = $.getJSON(url);
+    // store response in variable called "<year>_shows", i.e. "2014_shows"
+    this[year + "_shows"] = response.responseJSON.shows;
+    return this[year + "_shows"];
 };
 
 /**
  * Autoloads show from the Calchart server
  * @param {String} show is the index_name of the show to get
  */
-ApplicationController.prototype.autoloadShow = function(show) {
-    var xmlhttp;
-    if (window.XMLHttpRequest) {
-        // code for IE7+, Firefox, Chrome, Opera, Safari
-        xmlhttp = new XMLHttpRequest();
-    } else {
-        // code for IE6, IE5
-        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    }
-
+ApplicationController.prototype.autoloadShow = function(index_name) {
     // CHANGE IN PRODUCTION
     var url = "http://localhost:7000/";
-    xmlhttp.open("GET", url + "chart/" + show, false);
-    xmlhttp.send();
-    var viewer = ShowUtils.fromJSON(xmlhttp.response);
+    var response = $.getJSON(url + "chart/" + index_name);
+    var viewer = ShowUtils.fromJSON(response.responseText);
     this.setShow(viewer);
-    this._setFileInputText(show, ".js-viewer-file-btn");
+    this._setFileInputText(".js-viewer-file-btn", index_name);
 
-    xmlhttp.open("GET", url + "beats/" + show, false);
-    xmlhttp.send();
-    var beats = TimedBeatsUtils.fromJSON(xmlhttp.response);
+    response = $.getJSON(url + "beats/" + index_name);
+    var beats = TimedBeatsUtils.fromJSON(response.responseText);
     this._animator.setBeats(beats);
-    this._setFileInputText(show, ".js-beats-file-btn");
+    this._setFileInputText(".js-beats-file-btn", index_name);
 };
 
 /**
@@ -253,20 +234,21 @@ ApplicationController.prototype.init = function () {
     });
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
+    $.ajaxSetup({ async: false });
 };
 
 /**
  * Sets the text of the file input buttons to be the name of the file
  * 
+ * @param {String} selector, i.e. ".js-beats-file-btn"
  * @param {String} fileName
- * @param {String} buttonClass, i.e. ".js-beats-file-btn"
  */
-ApplicationController.prototype._setFileInputText = function(fileName, buttonClass) {
+ApplicationController.prototype._setFileInputText = function(selector, fileName) {
     const MAX_LENGTH = 15;
     if (fileName.length > MAX_LENGTH) {
         fileName = fileName.substring(0, MAX_LENGTH + 1) + "...";
     }
-    $(buttonClass).text(fileName);
+    $(selector).text(fileName);
 };
 
 /**
@@ -345,7 +327,7 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
         try {
             var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
             _this._animator.setBeats(beats);
-            _this._setFileInputText(fileName, ".js-beats-file-btn");
+            _this._setFileInputText(".js-beats-file-btn", fileName);
         } catch (err) {
             $(".js-beats-file").val("");
             if (err.name === "SyntaxError") {
@@ -368,7 +350,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
         try {
             var show = ShowUtils.fromJSON(fileContentsAsText);
             _this.setShow(show);
-            _this._setFileInputText(fileName, ".js-viewer-file-btn");
+            _this._setFileInputText(".js-viewer-file-btn", fileName);
         } catch (err) {
             $(".js-viewer-file").val("");
             if (err.name === "SyntaxError") {
@@ -396,7 +378,7 @@ ApplicationController.prototype.getMusicFileHandler = function () {
                     _this.displayFileInputError("Please upload a valid audio file.");
                 } else {
                     _this._animator.setMusic(newSound);
-                    _this._setFileInputText(fileName, ".js-audio-file-btn");
+                    _this._setFileInputText(".js-audio-file-btn", fileName);
                 }
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);

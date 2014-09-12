@@ -73,16 +73,17 @@ $(document).ready(function () {
         }
     });
 
-    $(".js-select-show").html(function() {
-        var shows = applicationController.getShows(2014);
-        var options = shows.map(function(show) {
-            return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
+    var showOptions = applicationController.getShows(2014).map(function(show) {
+        return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
+    }).join("");
+
+    $(".js-select-show")
+        .html("<option></option>" + showOptions)
+        .chosen({
+            width: "150px",
+            disable_search_threshold: 4 // if there are less than 4 shows, hide search
+        })
+        .change(function(evt, params) {
+            applicationController.autoloadShow(params.selected);
         });
-        return "<option></option>" + options.join("");
-    }()).chosen({
-        width: "150px",
-        disable_search: true
-    }).change(function(evt, params) {
-        applicationController.autoloadShow(params.selected);
-    });
 });
