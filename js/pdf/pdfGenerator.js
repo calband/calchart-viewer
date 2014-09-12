@@ -2,8 +2,6 @@
  * @fileOverview This file will generate a PDF representation of dots and movements
  */
 
-var jsPDF = require("../vendor/jsPDF");
-
 /**
  * The pdfGenerator will be the overall object that contains the methods to generate
  * a PDF.
@@ -26,7 +24,7 @@ var pdfGenerator = function(show, dot) {
  * @return {jsPDF} the PDF document for the dot
  */
 pdfGenerator.prototype.generatePDF = function() {
-    return this._pdf.output();
+    return this._pdf.save("show.pdf");
 };
 
 module.exports = pdfGenerator;
