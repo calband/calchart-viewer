@@ -72,4 +72,17 @@ $(document).ready(function () {
             applicationController.applyAnimationAction("selectDot", params.selected);
         }
     });
+
+    $(".js-select-show").html(function() {
+        var shows = applicationController.getShows(2014);
+        var options = shows.map(function(show) {
+            return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
+        });
+        return "<option></option>" + options.join("");
+    }()).chosen({
+        width: "150px",
+        disable_search: true
+    }).change(function(evt, params) {
+        applicationController.autoloadShow(params.selected);
+    });
 });

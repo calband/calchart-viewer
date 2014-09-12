@@ -24,21 +24,27 @@
             </div>
             <div class="header-files">
                 <div class="files-description">Files<span class="file-input-error"></span></div>
-                <div class="files">
-                    <div class="file-input">
-                        <label for="viewer-file">Viewer file:</label>
-                        <input type="file" id="viewer-file" class='js-viewer-file'>
-                        <button class="js-viewer-file-btn">Choose file...</button>
+                <div class="input">
+                    <div class="files">
+                        <div class="file-input">
+                            <label for="viewer-file">Viewer file:</label>
+                            <input type="file" id="viewer-file" class='js-viewer-file'>
+                            <button class="js-viewer-file-btn">Choose file...</button>
+                        </div>
+                        <div class="file-input">
+                            <label for="beats-file">Beats file:</label>
+                            <input type="file" id="beats-file" class='js-beats-file'>
+                            <button class="js-beats-file-btn">Choose file...</button>
+                        </div>
+                        <div class="file-input">
+                            <label for="audio-file">Audio file:</label>
+                            <input type="file" id="audio-file" class='js-audio-file'>
+                            <button class="js-audio-file-btn">Choose file...</button>
+                        </div>
                     </div>
-                    <div class="file-input">
-                        <label for="beats-file">Beats file:</label>
-                        <input type="file" id="beats-file" class='js-beats-file'>
-                        <button class="js-beats-file-btn">Choose file...</button>
-                    </div>
-                    <div class="file-input">
-                        <label for="audio-file">Audio file:</label>
-                        <input type="file" id="audio-file" class='js-audio-file'>
-                        <button class="js-audio-file-btn">Choose file...</button>
+                    <div class="autoload">
+                        <label>Or autoload show:</label>
+                        <select class="js-select-show select-show" data-placeholder="None"></select>
                     </div>
                 </div>
             </div>
