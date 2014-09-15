@@ -52,16 +52,21 @@ ApplicationController.prototype.setShow = function (show) {
 };
 
 /**
- * Returns all shows from the Calchart server from the given year
+ * Sends a GET call to the Calchart server and retrieves all charts from the 
+ * given year and adds it to the HTML UI
  * @param {int} the year of the desired shows
  */
 ApplicationController.prototype.getShows = function(year) {
     // CHANGE IN PRODUCTION
     var url = "http://localhost:7000/list/" + year;
-    var response = $.getJSON(url);
-    // store response in variable called "<year>_shows", i.e. "2014_shows"
-    this[year + "_shows"] = response.responseJSON.shows;
-    return this[year + "_shows"];
+    $.getJSON(url, function(data) {
+        var options = data.shows.map(function(show) {
+            return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
+        }).join("");
+
+        $(".js-select-show").html("<option></option>" + options);
+        this[year + "_shows"] = data.shows;
+    });
 };
 
 /**
@@ -71,15 +76,20 @@ ApplicationController.prototype.getShows = function(year) {
 ApplicationController.prototype.autoloadShow = function(index_name) {
     // CHANGE IN PRODUCTION
     var url = "http://localhost:7000/";
-    var response = $.getJSON(url + "chart/" + index_name);
-    var viewer = ShowUtils.fromJSON(response.responseText);
-    this.setShow(viewer);
-    this._setFileInputText(".js-viewer-file-btn", index_name);
+    var _this = this;
+    $.getJSON(url + "chart/" + index_name, function(data) {
+        var response = JSON.stringify(data);
+        var viewer = ShowUtils.fromJSON(response);
+        _this.setShow(viewer);
+        _this._setFileInputText(".js-viewer-file-btn", index_name);
+    });
 
-    response = $.getJSON(url + "beats/" + index_name);
-    var beats = TimedBeatsUtils.fromJSON(response.responseText);
-    this._animator.setBeats(beats);
-    this._setFileInputText(".js-beats-file-btn", index_name);
+    $.getJSON(url + "beats/" + index_name, function(data) {
+        var response = JSON.stringify(data);
+        var beats = TimedBeatsUtils.fromJSON(response);
+        _this._animator.setBeats(beats);
+        _this._setFileInputText(".js-beats-file-btn", index_name);
+    });
 };
 
 /**

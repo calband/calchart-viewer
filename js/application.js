@@ -73,12 +73,9 @@ $(document).ready(function () {
         }
     });
 
-    var showOptions = applicationController.getShows(2014).map(function(show) {
-        return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
-    }).join("");
+    applicationController.getShows(2014);
 
     $(".js-select-show")
-        .html("<option></option>" + showOptions)
         .chosen({
             width: "150px",
             disable_search_threshold: 4 // if there are less than 4 shows, hide search
