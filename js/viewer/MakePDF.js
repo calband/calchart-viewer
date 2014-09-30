@@ -3,6 +3,8 @@
  */
 
  var SHOW, DOT, PDF;
+ const WIDTH = 216; // in millimeters
+ const HEIGHT = 279.5; // in millimeters
 
 /**
  * generate will generate a PDF for a specific dot, containing its movements,
@@ -31,7 +33,7 @@ var generate = function(show, dot) {
  * Draws the headers on the PDF. Includes:
  *      - Stuntsheet number
  *      - Dot number
- *      - "California Marching Band:"
+ *      - "California Marching Band: <show title>"
  *      - Page number
  */
 var _headers = function() {
