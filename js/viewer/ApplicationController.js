@@ -8,7 +8,7 @@ var TimedBeatsUtils = require("./TimedBeatsUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
-var generatePDF = require("../pdf/pdfGenerator");
+var generatePDF = require("./MakePDF");
 
 /**
  * The ApplicationController is the backbone of how functional components
