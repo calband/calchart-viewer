@@ -3,28 +3,18 @@
  */
 
 /**
- * The pdfGenerator will be the overall object that contains the methods to generate
- * a PDF.
+ * generatePDF will generate a PDF for a specific dot, containing its movements,
+ * positions, and continuities relevant to it.
  *
  * @param {Show} show
  * @param {String} dot
  *
- * @return {jsPDF} the PDF document for the dot
+ * The function will end with a save call, which will prompt a new window and/or
+ * a dialog box to download the generated PDF.
  */
-var pdfGenerator = function(show, dot) {
-    this._show = show;
-    this._dot = dot;
-    this._pdf = jsPDF();
-}
-
-/**
- * generatePDF will generate a PDF for a specific dot, containing its movements,
- * positions, and continuities relevant to it.
- *
- * @return {jsPDF} the PDF document for the dot
- */
-pdfGenerator.prototype.generatePDF = function() {
-    return this._pdf.save("show.pdf");
+var generate = function(show, dot) {
+    var pdf = jsPDF();
+    pdf.save("show.pdf");
 };
 
-module.exports = pdfGenerator;
+module.exports = generate;

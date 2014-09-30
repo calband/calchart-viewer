@@ -8,7 +8,7 @@ var TimedBeatsUtils = require("./TimedBeatsUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
-var pdfGenerator = require("../pdf/pdfGenerator");
+var generatePDF = require("../pdf/pdfGenerator");
 
 /**
  * The ApplicationController is the backbone of how functional components
@@ -132,7 +132,7 @@ ApplicationController.prototype._syncWithDelegate = function() {
 
 /**
  * Update the DOM with the correct stuntsheet number, beat number, and number
- * of beats in teh current stuntsheet depending on the state of the
+ * of beats in the current stuntsheet depending on the state of the
  * animationStateDelegate.
  */
 ApplicationController.prototype._updateUIWithAnimationState = function () {
@@ -148,6 +148,8 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
     }
     if (this._animationStateDelegate.getSelectedDot() !== null) {
         var selectedDot = this._animationStateDelegate.getSelectedDot();
+        $(".js-selected-dot-label").parent().removeClass("disabled");
+        $(".js-selected-dot-label").text(selectedDot);
         var currentSheet = this._animationStateDelegate.getCurrentSheet();
         var typeOfDot = currentSheet.getDotType(selectedDot);
         var continuities = currentSheet.getContinuityTexts(typeOfDot);
@@ -160,6 +162,7 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
             $(".js-dot-continuity").html("");
         }
     } else {
+        $(".js-selected-dot-label").parent().addClass("disabled");
         $(".js-dot-continuity").html("");
     }
 };
@@ -400,5 +403,13 @@ ApplicationController.prototype._updateAnimationControl = function() {
         }
     }
 };
+
+/**
+ * Passes relevant information to the PDF Generator module which will open a PDF
+ * document that contains the selected dot's continuity for the entire show.
+ */
+ApplicationController.prototype.generatePDF = function() {
+    generatePDF(this._show, this._animationStateDelegate.getSelectedDot());
+}
 
 module.exports = ApplicationController;
