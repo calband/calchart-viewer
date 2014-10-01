@@ -69,12 +69,12 @@ var _headers = function(page) {
     var totalPages = Math.ceil(totalSheets/4);
 
     var box = {
-        height: 10,
+        height: _getTextHeight(16) * 3,
         width: WIDTH * 2/3,
         offsetX: WIDTH * 1/6,
         offsetY: 5,
         paddingX: 3,
-        paddingY: 2,
+        paddingY: 1,
         style: "stroke",
         draw: function(x, y) {
             PDF.rect(x, y, this.width, this.height, this.style);
@@ -82,15 +82,24 @@ var _headers = function(page) {
     };
 
     var title = {
-        text: "California Marching Band: " + SHOW.getTitle(),
+        label: "California Marching Band:",
+        text: SHOW.getTitle(),
         size: 16,
         draw: function(y) {
             PDF.setFontSize(this.size);
-            PDF.text(this.text, this.x, y);
+            PDF.text(
+                this.label,
+                WIDTH/2 - _getTextWidth(this.label, this.size)/2,
+                y
+            );
+            PDF.text(
+                this.text,
+                WIDTH/2 - _getTextWidth(this.text, this.size)/2,
+                y + this.height + 1
+            );
         },
 
         init: function() {
-            this.x = WIDTH/2 - _getTextWidth(this.text, this.size)/2;
             this.height = _getTextHeight(this.size);
             return this;
         }
@@ -110,6 +119,7 @@ var _headers = function(page) {
         init: function() {
             this.width = _getTextWidth(this.text, this.size);
             this.height = _getTextHeight(this.size);
+            this.offsetCenter = box.height/2 + this.height/2;
             return this;
         }
     }.init();
@@ -131,10 +141,9 @@ var _headers = function(page) {
         }
     }.init();
     
-
     var baselines = {
-        top: box.offsetY + pageInfo.height + box.paddingY,
-        bottom: HEIGHT - (box.offsetY + box.paddingY + 1.5),
+        top: box.offsetY,
+        bottom: HEIGHT - (box.offsetY + box.height),
         left: box.offsetX + box.paddingX,
         right: box.offsetX + box.width - box.paddingX - pageInfo.width
     }
@@ -144,14 +153,14 @@ var _headers = function(page) {
     box.draw(box.offsetX, HEIGHT - (box.offsetY + box.height));
 
     /* Show titles */
-    title.draw(baselines.top);
-    title.draw(baselines.bottom);
+    title.draw(baselines.top + box.paddingY + title.height);
+    title.draw(baselines.bottom + box.paddingY + title.height);
 
     /* Page # Information */
-    pageInfo.draw(baselines.left, baselines.top);
-    pageInfo.draw(baselines.right, baselines.top);
-    pageInfo.draw(baselines.left, baselines.bottom);
-    pageInfo.draw(baselines.right, baselines.bottom);
+    pageInfo.draw(baselines.left, baselines.top + pageInfo.offsetCenter);
+    pageInfo.draw(baselines.right, baselines.top + pageInfo.offsetCenter);
+    pageInfo.draw(baselines.left, baselines.bottom + pageInfo.offsetCenter);
+    pageInfo.draw(baselines.right, baselines.bottom + pageInfo.offsetCenter);
 
     /* Stuntsheet and Dot Info */
     // top left
