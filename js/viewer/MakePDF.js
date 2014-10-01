@@ -2,7 +2,7 @@
  * @fileOverview This file will generate a PDF representation of dots and movements
  */
 
-var SHOW, DOT, PDF;
+var SHOW, DOT, PDF, SHEETS;
 // In millimeters
 const WIDTH = 215.9;
 const HEIGHT = 279.4;
@@ -31,6 +31,7 @@ var generate = function(show, dot) {
     PDF = jsPDF("portrait", "mm", "letter");
     SHOW = show;
     DOT = dot;
+    SHEETS = show.getSheets();
     for (var page = 1; page <= Math.ceil(SHOW.getNumSheets() / 4); page++) {
         if (page != 1) {
             PDF.addPage();
@@ -75,8 +76,7 @@ function _getTextHeight(size) {
  */
 var _headers = function(page) {
     // function objects
-    var totalSheets = SHOW.getNumSheets();
-    var totalPages = Math.ceil(totalSheets/4);
+    var totalPages = Math.ceil(SHEETS.length/4);
 
     var box = {
         height: _getTextHeight(16) * 3,
@@ -85,9 +85,8 @@ var _headers = function(page) {
         offsetY: 5,
         paddingX: 3,
         paddingY: 1,
-        style: "stroke",
         draw: function(x, y) {
-            PDF.rect(x, y, this.width, this.height, this.style);
+            PDF.rect(x, y, this.width, this.height);
         }
     };
 
@@ -122,8 +121,8 @@ var _headers = function(page) {
             var text = this.text.split("/");
             PDF.setFontSize(this.size);
             PDF.text(text[0], x, y - 1);
-            PDF.text("/", x + _getTextWidth(text[0], this.size) - .5, y);
-            PDF.text(text[1], x + _getTextWidth(text[1], this.size) + .5, y + 1);
+            PDF.text("/", x + _getTextWidth(text[0], this.size) - .3, y);
+            PDF.text(text[1], x + _getTextWidth(text[0], this.size) + .7, y + 1);
         },
 
         init: function() {
@@ -140,12 +139,13 @@ var _headers = function(page) {
         size: 14,
         sheet: (page - 1) * 4 + 1,
         draw: function(x, y) {
-            PDF.text("SS " + this.sheet + "/" + totalSheets, x, y);
+            PDF.text("SS " + this.sheet + "/" + SHEETS.length, x, y);
             PDF.text("Dot " + DOT, x, y + _getTextHeight(this.size));
         },
 
         init: function() {
-            this.width = _getTextWidth("Dot " + DOT, this.size);
+            // Wider width will probably be the stuntsheet counter
+            this.width = _getTextWidth("SS 00/00", this.size);
             this.height = _getTextHeight(this.size);
             return this;
         }
@@ -179,23 +179,23 @@ var _headers = function(page) {
         sheetInfo.marginY + sheetInfo.height
     );
     // bottom left
-    if (++sheetInfo.sheet <= totalSheets) {
+    if (++sheetInfo.sheet <= SHEETS.length) {
         sheetInfo.draw(
             sheetInfo.marginX,
             sheetInfo.marginY + sheetInfo.height + HEIGHT/2
         );
     }
     // top right
-    if (++sheetInfo.sheet <= totalSheets) {
+    if (++sheetInfo.sheet <= SHEETS.length) {
         sheetInfo.draw(
-            WIDTH - sheetInfo.width - sheetInfo.marginX,
+            WIDTH - sheetInfo.width,
             sheetInfo.marginY + sheetInfo.height
         );
     }
     // bottom right
-    if (++sheetInfo.sheet <= totalSheets) {
+    if (++sheetInfo.sheet <= SHEETS.length) {
         sheetInfo.draw(
-            WIDTH - sheetInfo.width - sheetInfo.marginX,
+            WIDTH - sheetInfo.width,
             sheetInfo.marginY + sheetInfo.height + HEIGHT/2
         );
     }
@@ -208,13 +208,81 @@ var _headers = function(page) {
  *      - Measure/beat number
  */
 var _dotContinuity = function(page) {
-    var sheet = (page - 1) * 4;
-    for (var i = 0; i < 4; i++, sheet++) {
-        if (sheet == SHOW.getNumSheets()) {
+    var box = {
+        height: _getTextHeight(12) * 4,
+        offsetTop: _getTextHeight(16) * 3 + 5,
+        offsetBottom: HEIGHT/2 + _getTextHeight(14) * 2 + 3,
+        paddingX: 2,
+        paddingY: 1,
+        marginX: 3,
+        marginY: 2,
+        draw: function(x, y) {
+            PDF.rect(x, y, this.width, this.height);
+        },
+
+        init: function() {
+            this.width = WIDTH/2 - this.marginX*2;
+            return this;
+        }
+    }.init();
+    var text = {
+        size: 10,
+        // need the (x,y) coordinates of the top left corner of box
+        draw: function(sheet, x, y) {
+            var size = this.size;
+            var dotType = sheet.getDotType(DOT);
+            var dotImage = DOT_DATA[dotType];
+            var continuities = sheet.getContinuityTexts(dotType);
+
+            PDF.addImage(
+                dotImage,
+                "JPEG",
+                x + box.paddingX,
+                y + box.paddingY
+            );
+            PDF.setFontSize(this.size);
+            PDF.text(
+                ":",
+                x + box.paddingX + 4,
+                y + box.paddingY + 3
+            );
+            PDF.text(
+                continuities,
+                x + box.paddingX + 6,
+                y + box.paddingY + 3.5
+            );
+        }
+    };
+    var sheets = []; // contains the sheets on this page, up to 4
+
+    for (var i = 0; i < 4; i++) {
+        var sheet = (page - 1) * 4 + i;
+        if (sheet == SHEETS.length) {
             break;
         }
-        var dotImage = DOT_DATA[SHOW.getSheet(sheet).getDotType(DOT)];
-        PDF.addImage(dotImage, "JPEG", WIDTH/2+i, HEIGHT/2);
+        sheets.push(SHEETS[sheet]);
+    }
+
+    // top left
+    box.draw(box.marginX, box.offsetTop + box.marginY);
+    text.draw(sheets[0], box.marginX, box.offsetTop + box.marginY);
+
+    // bottom left
+    if (sheets.length > 1) {
+        box.draw(box.marginX, box.offsetBottom + box.marginY);
+        text.draw(sheets[1], box.marginX, box.offsetBottom + box.marginY);
+    }
+
+    // top right
+    if (sheets.length > 2) {
+        box.draw(box.marginX + WIDTH/2, box.offsetTop + box.marginY);
+        text.draw(sheets[2], box.marginX + WIDTH/2, box.offsetTop + box.marginY);
+    }
+
+    // bottom right
+    if (sheets.length > 3) {
+        box.draw(box.marginX + WIDTH/2, box.offsetBottom + box.marginY);
+        text.draw(sheets[3], box.marginX + WIDTH/2, box.offsetBottom + box.marginY);
     }
 }
 
