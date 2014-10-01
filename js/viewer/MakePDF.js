@@ -67,6 +67,7 @@ var _headers = function(page) {
     // function objects
     var totalSheets = SHOW.getNumSheets();
     var totalPages = Math.ceil(totalSheets/4);
+
     var box = {
         height: 10,
         width: WIDTH * 2/3,
@@ -74,40 +75,44 @@ var _headers = function(page) {
         offsetY: 5,
         paddingX: 3,
         paddingY: 2,
-        style: "stroke"
+        style: "stroke",
+        draw: function(x, y) {
+            PDF.rect(x, y, this.width, this.height, this.style);
+        }
     };
 
     var title = {
         text: "California Marching Band: " + SHOW.getTitle(),
-        size: 16
-    };
-    title.x = WIDTH/2 - _getTextWidth(title.text, title.size)/2;
-    title.height = _getTextHeight(title.size);
+        size: 16,
+        draw: function(y) {
+            PDF.setFontSize(this.size);
+            PDF.text(this.text, this.x, y);
+        },
+
+        init: function() {
+            this.x = WIDTH/2 - _getTextWidth(this.text, this.size)/2;
+            this.height = _getTextHeight(this.size);
+            return this;
+        }
+    }.init();
 
     var pageInfo = {
         text: page + "/" + totalPages,
         size: 12,
         draw: function(x, y) {
             var text = this.text.split("/");
-            PDF.text(
-                text[0],
-                x,
-                y - 1
-            );
-            PDF.text(
-                "/",
-                x + _getTextWidth(text[0], this.size) - .5,
-                y
-            );
-            PDF.text(
-                text[1],
-                x + _getTextWidth(text[1], this.size) + .5,
-                y + 1
-            );
+            PDF.setFontSize(this.size);
+            PDF.text(text[0], x, y - 1);
+            PDF.text("/", x + _getTextWidth(text[0], this.size) - .5, y);
+            PDF.text(text[1], x + _getTextWidth(text[1], this.size) + .5, y + 1);
+        },
+
+        init: function() {
+            this.width = _getTextWidth(this.text, this.size);
+            this.height = _getTextHeight(this.size);
+            return this;
         }
-    };
-    pageInfo.width = _getTextWidth(pageInfo.text, pageInfo.size);
-    pageInfo.height = _getTextHeight(pageInfo.size);
+    }.init();
 
     var sheetInfo = {
         marginX: 4,
@@ -117,10 +122,15 @@ var _headers = function(page) {
         draw: function(x, y) {
             PDF.text("SS " + this.sheet + "/" + totalSheets, x, y);
             PDF.text("Dot " + DOT, x, y + _getTextHeight(this.size));
+        },
+
+        init: function() {
+            this.width = _getTextWidth("Dot " + DOT, this.size);
+            this.height = _getTextHeight(this.size);
+            return this;
         }
-    }
-    sheetInfo.width = _getTextWidth("Dot " + DOT, sheetInfo.size);
-    sheetInfo.height = _getTextHeight(sheetInfo.size);
+    }.init();
+    
 
     var baselines = {
         top: box.offsetY + pageInfo.height + box.paddingY,
@@ -130,60 +140,18 @@ var _headers = function(page) {
     }
 
     /* Rectangles */
-    // top
-    PDF.rect(
-        box.offsetX,
-        box.offsetY,
-        box.width,
-        box.height,
-        box.style
-    );
-    // bottom
-    PDF.rect(
-        box.offsetX,
-        HEIGHT - (box.offsetY + box.height),
-        box.width,
-        box.height,
-        box.style
-    );
+    box.draw(box.offsetX, box.offsetY);
+    box.draw(box.offsetX, HEIGHT - (box.offsetY + box.height));
 
     /* Show titles */
-    // top
-    PDF.setFontSize(title.size);
-    PDF.text(
-        title.text,
-        title.x,
-        baselines.top
-    );
-    // bottom
-    PDF.text(
-        title.text,
-        title.x,
-        baselines.bottom
-    );
+    title.draw(baselines.top);
+    title.draw(baselines.bottom);
 
     /* Page # Information */
-    // top left
-    PDF.setFontSize(pageInfo.size);
-    pageInfo.draw(
-        baselines.left,
-        baselines.top
-    );
-    // top right
-    pageInfo.draw(
-        baselines.right,
-        baselines.top
-    );
-    // bottom left
-    pageInfo.draw(
-        baselines.left,
-        baselines.bottom
-    );
-    // bottom right
-    pageInfo.draw(
-        baselines.right,
-        baselines.bottom
-    );
+    pageInfo.draw(baselines.left, baselines.top);
+    pageInfo.draw(baselines.right, baselines.top);
+    pageInfo.draw(baselines.left, baselines.bottom);
+    pageInfo.draw(baselines.right, baselines.bottom);
 
     /* Stuntsheet and Dot Info */
     // top left
