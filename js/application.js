@@ -72,4 +72,15 @@ $(document).ready(function () {
             applicationController.applyAnimationAction("selectDot", params.selected);
         }
     });
+
+    applicationController.getShows(2014);
+
+    $(".js-select-show")
+        .chosen({
+            width: "150px",
+            disable_search_threshold: 4 // if there are less than 4 shows, hide search
+        })
+        .change(function(evt, params) {
+            applicationController.autoloadShow(params.selected);
+        });
 });

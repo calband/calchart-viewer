@@ -52,6 +52,45 @@ ApplicationController.prototype.setShow = function (show) {
 };
 
 /**
+ * Sends a GET call to the Calchart server and retrieves all charts from the 
+ * given year and adds it to the HTML UI
+ * @param {int} the year of the desired shows
+ */
+ApplicationController.prototype.getShows = function(year) {
+    var url = "http://calchart-server.herokuapp.com/list/" + year;
+    $.getJSON(url, function(data) {
+        var options = data.shows.map(function(show) {
+            return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
+        }).join("");
+
+        $(".js-select-show").html("<option></option>" + options);
+        this[year + "_shows"] = data.shows;
+    });
+};
+
+/**
+ * Autoloads show from the Calchart server
+ * @param {String} show is the index_name of the show to get
+ */
+ApplicationController.prototype.autoloadShow = function(index_name) {
+    var url = "http://calchart-server.herokuapp.com/";
+    var _this = this;
+    $.getJSON(url + "chart/" + index_name, function(data) {
+        var response = JSON.stringify(data);
+        var viewer = ShowUtils.fromJSON(response);
+        _this.setShow(viewer);
+        _this._setFileInputText(".js-viewer-file-btn", index_name);
+    });
+
+    $.getJSON(url + "beats/" + index_name, function(data) {
+        var response = JSON.stringify(data);
+        var beats = TimedBeatsUtils.fromJSON(response);
+        _this._animator.setBeats(beats);
+        _this._setFileInputText(".js-beats-file-btn", index_name);
+    });
+};
+
+/**
  * Update the html ui with various properties about the show. Assumes that
  * this._show has already been loaded.
  */
@@ -203,6 +242,21 @@ ApplicationController.prototype.init = function () {
     });
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
+    $.ajaxSetup({ async: false });
+};
+
+/**
+ * Sets the text of the file input buttons to be the name of the file
+ * 
+ * @param {String} selector, i.e. ".js-beats-file-btn"
+ * @param {String} fileName
+ */
+ApplicationController.prototype._setFileInputText = function(selector, fileName) {
+    const MAX_LENGTH = 15;
+    if (fileName.length > MAX_LENGTH) {
+        fileName = fileName.substring(0, MAX_LENGTH + 1) + "...";
+    }
+    $(selector).text(fileName);
 };
 
 /**
@@ -281,10 +335,7 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
         try {
             var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
             _this._animator.setBeats(beats);
-            if (fileName.length > 20) {
-                fileName = fileName.substring(0, 21) + "...";
-            }
-            $(".js-beats-file-btn").text(fileName);
+            _this._setFileInputText(".js-beats-file-btn", fileName);
         } catch (err) {
             $(".js-beats-file").val("");
             if (err.name === "SyntaxError") {
@@ -307,10 +358,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
         try {
             var show = ShowUtils.fromJSON(fileContentsAsText);
             _this.setShow(show);
-            if (fileName.length > 20) {
-                fileName = fileName.substring(0, 21) + "...";
-            }
-            $(".js-viewer-file-btn").text(fileName);
+            _this._setFileInputText(".js-viewer-file-btn", fileName);
         } catch (err) {
             $(".js-viewer-file").val("");
             if (err.name === "SyntaxError") {
@@ -338,10 +386,7 @@ ApplicationController.prototype.getMusicFileHandler = function () {
                     _this.displayFileInputError("Please upload a valid audio file.");
                 } else {
                     _this._animator.setMusic(newSound);
-                    if (fileName.length > 20) {
-                        fileName = fileName.substring(0, 21) + "...";
-                    }
-                    $(".js-audio-file-btn").text(fileName);
+                    _this._setFileInputText(".js-audio-file-btn", fileName);
                 }
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);
