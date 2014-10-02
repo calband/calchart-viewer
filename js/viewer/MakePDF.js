@@ -1,11 +1,23 @@
 /**
  * @fileOverview This file will generate a PDF representation of dots and movements
+ *
+ * @constant WIDTH is the width of the PDF document, in millimeters
+ * @constant HEIGHT is the height of the PDF document, in millimeters
+ * @constant QUADRANT contains (x,y) coordinates for the top left corner of each quadrant
+ *      of the document. y coordinates offset by headers
+ * @constant DOT_DATA contains the JPEG image data for the different dot types
  */
 
 var SHOW, DOT, PDF, SHEETS;
 // In millimeters
 const WIDTH = 215.9;
 const HEIGHT = 279.4;
+const QUADRANT = [
+    {x: 0, y: 22},
+    {x: 0, y: HEIGHT/2 + 16},
+    {x: WIDTH/2, y: 22},
+    {x: WIDTH/2, y: HEIGHT/2 + 16}
+]
 const DOT_DATA = {
     "open": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AP6+fGHxi/an+Mvx2+MXwQ/ZKuvgB8NvCX7O3/CvtB+LP7Rnx08H/EX44+f8dvGPg62+J+pfs1+F/wBmvwb8Qf2adTb/AIRv4JfEP4DfGbW/2jJ/2hb/AMHQf8LO0j4S+Gvhh428W2vxL174N9B8FPjX8fdC+Puofsp/tWWHwf1LxvqXwfuvjX8Dvjj8FLXxp4P8K/tDeFfB3jTSvCfx9sNQ+AXizVfijq/7O3iD9nbV/ij+zvoN1a69+0P8XtO+N2nfF7SvH/gDVdEudE+J/wAMPhR5/q+kftD/ALKv7Q/7R3xP+GH7OPiD9qf4E/tT+IPhr8W/EXh74S/Er4S6B+0r4A/aV8P/AAl8Ifs+eK5I/Cn7Qfi/9n34Han+zBqfwO/Z9+BN1pupWvx2vfjf4Z+N9748VvAfjr4beOtP1D4IdB8HfB/x2+Mv7U9t+1r8b/g7/wAM7eEvht8APGHwM/Zz+E+vfEHwd4x+O0//AAvH4i/D7xl+0p4p/aU034YXXxD+CXhvOp/s0/s9Qfs56J8Gfjz8TvI8HX/xP8S/FvV7Xxb420H4afBv/9k=",
     "solid": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APtv/gvJ/wAHPPxC/wCCbX7UF3+xh+yL8HPg/wDEr4reAvD/AMOvFfxm+I3xrk+JmqeFfCGo+OdA1/xQnwhsPhr4Yb4V3OreIH8E6z8HviTa/FTRvjB4h8K22neLNV8B3ngx/FOn6jf+HvqD/g3x/wCDg7WP+Cu2sfFT4CfHv4WfD/4S/tNfCT4f2PxStrn4W33jufwJ8YfAlx471Tw14s13QvCfibTPEf8Awqz/AIVZ/wAJF8GPDmp6Z4j+M/jjWPiJrHjjUPE/hjT9E0XRNZ0bQ/yg/wCDjX/g3K/ba/a+/ba8UftzfsM+F/D/AMbLb42eH/hNo3xX+FOs/FnwP4H+IXhz4heB/A9/8O7jxZ4Tt/iJYfDj4dxfB+L4d/Dj4T2dzbXnxY8S/Ey5+JniXxNe2Xhr/hCRHJ4b+v8A/g2G/wCCDn7UH/BNr4hfGP8Aa6/bPtPD/gL4rfEv4Px/BT4c/Bnwp8RtA8c6j4Q8K6p8TB4n+JWofF5/DGgaz4JfxBq1z8K/g9rXwruvht8YfFmnW3hXxD4zs/Hmlaf4paw07w9//9k=",
@@ -32,16 +44,32 @@ var generate = function(show, dot) {
     SHOW = show;
     DOT = dot;
     SHEETS = show.getSheets();
-    for (var page = 1; page <= Math.ceil(SHOW.getNumSheets() / 4); page++) {
-        if (page != 1) {
+
+    for (var page = 0; page < Math.ceil(SHEETS.length / 4); page++) {
+        if (page != 0) {
             PDF.addPage();
         }
-        _headers(page);
-        _dotContinuity(page);
-        _individualContinuity();
-        _movementDiagram();
-        _birdseye();
-        _surroundingDots();
+        _headers(page + 1);
+
+        var sheets = []
+        for (var i = 0; i < 4; i++) {
+            var sheet = page * 4 + i;
+            if (sheet == SHEETS.length) {
+                break;
+            }
+            sheets.push(SHEETS[sheet]);
+        }
+
+        for (var i = 0; i < sheets.length; i++) {
+            var x = QUADRANT[i].x;
+            var y = QUADRANT[i].y;
+            var sheet = sheets[i];
+            _dotContinuity(x, y, sheet);
+            _individualContinuity(x, y);
+            _movementDiagram(x, y);
+            _birdseye(x, y);
+            _surroundingDots(x, y);
+        }
     }
     PDF.save("show.pdf");
 };
@@ -71,7 +99,7 @@ function _getTextHeight(size) {
  *      - "California Marching Band: <show title>"
  *      - Page number
  *
- * @param {int} page is the current page number
+ * @param {int} page is the current 1-indexed page number
  * @param {String} dot is the selected dot label
  */
 var _headers = function(page) {
@@ -202,21 +230,24 @@ var _headers = function(page) {
 }
 
 /**
- * Writes the continuites for the given dot type on the PDF. Includes:
+ * Writes one stuntsheet's continuity for the given dot type on the PDF. Includes:
  *      - Dot circle type
  *      - Overall Continuity
  *      - Measure/beat number
+ * @param {int} quadrantX  The coordinate of the top left corner
+ * @param {int} quadrantY  of the stuntsheet quadrant
+ * @param {Sheet} sheet the current sheet
  */
-var _dotContinuity = function(page) {
+var _dotContinuity = function(quadrantX, quadrantY, sheet) {
     var box = {
         height: _getTextHeight(12) * 4,
-        offsetTop: _getTextHeight(16) * 3 + 5,
-        offsetBottom: HEIGHT/2 + _getTextHeight(14) * 2 + 3,
         paddingX: 2,
         paddingY: 1,
         marginX: 3,
         marginY: 2,
-        draw: function(x, y) {
+        draw: function() {
+            var x = quadrantX + this.marginX;
+            var y = quadrantY + this.marginY;
             PDF.rect(x, y, this.width, this.height);
         },
 
@@ -226,10 +257,11 @@ var _dotContinuity = function(page) {
         }
     }.init();
     var text = {
+        x: quadrantX + box.marginX + box.paddingX,
+        y: quadrantY + box.marginY + box.paddingY,
         size: 10,
-        // need the (x,y) coordinates of the top left corner of box
-        draw: function(sheet, x, y) {
-            var size = this.size;
+
+        draw: function() {
             var dotType = sheet.getDotType(DOT);
             var dotImage = DOT_DATA[dotType];
             var continuities = sheet.getContinuityTexts(dotType);
@@ -237,53 +269,25 @@ var _dotContinuity = function(page) {
             PDF.addImage(
                 dotImage,
                 "JPEG",
-                x + box.paddingX,
-                y + box.paddingY
+                this.x,
+                this.y
             );
             PDF.setFontSize(this.size);
             PDF.text(
                 ":",
-                x + box.paddingX + 4,
-                y + box.paddingY + 3
+                this.x + 4,
+                this.y + 3
             );
             PDF.text(
                 continuities,
-                x + box.paddingX + 6,
-                y + box.paddingY + 3.5
+                this.x + 6,
+                this.y + 3.5
             );
         }
     };
-    var sheets = []; // contains the sheets on this page, up to 4
 
-    for (var i = 0; i < 4; i++) {
-        var sheet = (page - 1) * 4 + i;
-        if (sheet == SHEETS.length) {
-            break;
-        }
-        sheets.push(SHEETS[sheet]);
-    }
-
-    // top left
-    box.draw(box.marginX, box.offsetTop + box.marginY);
-    text.draw(sheets[0], box.marginX, box.offsetTop + box.marginY);
-
-    // bottom left
-    if (sheets.length > 1) {
-        box.draw(box.marginX, box.offsetBottom + box.marginY);
-        text.draw(sheets[1], box.marginX, box.offsetBottom + box.marginY);
-    }
-
-    // top right
-    if (sheets.length > 2) {
-        box.draw(box.marginX + WIDTH/2, box.offsetTop + box.marginY);
-        text.draw(sheets[2], box.marginX + WIDTH/2, box.offsetTop + box.marginY);
-    }
-
-    // bottom right
-    if (sheets.length > 3) {
-        box.draw(box.marginX + WIDTH/2, box.offsetBottom + box.marginY);
-        text.draw(sheets[3], box.marginX + WIDTH/2, box.offsetBottom + box.marginY);
-    }
+    box.draw();
+    text.draw();
 }
 
 /**
