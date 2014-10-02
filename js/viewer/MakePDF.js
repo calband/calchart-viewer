@@ -9,7 +9,6 @@
  */
 
 var SHOW, DOT, PDF, SHEETS;
-// In millimeters
 const WIDTH = 215.9;
 const HEIGHT = 279.4;
 const QUADRANT = [
@@ -245,6 +244,7 @@ var _dotContinuity = function(quadrantX, quadrantY, sheet) {
         paddingY: 1,
         marginX: 3,
         marginY: 2,
+
         draw: function() {
             var x = quadrantX + this.marginX;
             var y = quadrantY + this.marginY;
@@ -256,6 +256,7 @@ var _dotContinuity = function(quadrantX, quadrantY, sheet) {
             return this;
         }
     }.init();
+
     var text = {
         x: quadrantX + box.marginX + box.paddingX,
         y: quadrantY + box.marginY + box.paddingY,
