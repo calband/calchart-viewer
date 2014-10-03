@@ -59,7 +59,9 @@ $(document).ready(function () {
         applicationController.toggleAnimation();
     });
     $(".js-generate-continuity").click(function () {
-        console.log("click received");
+        if (this.className.indexOf("disabled") === -1) {
+            applicationController.generatePDF();
+        }
     });
     
     $(".js-dot-labels").chosen({
