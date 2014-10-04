@@ -104,8 +104,8 @@
                             "step_size": 1
                         },
                         // every beat, automatically goto the given coordinate, in steps, given from the
-                        // top left of the field. if the dot is already at this position, do
-                        // nothing
+                        // top left of the field. if the dot is already at this position, treat the movement
+                        // the same as a "stand".
                         // the direction that the dot will face each beat is given by the "facing" attribute,
                         // which measures the direction toward which the dot is facing in degrees, measured
                         // clockwise from an eastward direction
