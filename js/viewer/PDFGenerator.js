@@ -1,5 +1,6 @@
 /**
- * @fileOverview This file will generate a PDF representation of dots and movements
+ * @fileOverview This file will export a class that can generate a PDF representation
+ * of dots and movements
  *
  * @constant WIDTH is the width of the PDF document, in millimeters
  * @constant HEIGHT is the height of the PDF document, in millimeters
@@ -8,16 +9,16 @@
  * @constant DOT_DATA contains the JPEG image data for the different dot types
  */
 
-var SHOW, DOT, PDF, SHEETS;
-const WIDTH = 215.9;
-const HEIGHT = 279.4;
-const QUADRANT = [
-    {x: 0, y: 22},
-    {x: 0, y: HEIGHT/2 + 16},
-    {x: WIDTH/2, y: 22},
-    {x: WIDTH/2, y: HEIGHT/2 + 16}
+/* CONSTANTS: DON'T CHANGE */
+var WIDTH = 215.9;
+var HEIGHT = 279.4;
+var QUADRANT = [
+    {x: 0, y: 22},                 // top left
+    {x: 0, y: HEIGHT/2 + 16},      // bottom left
+    {x: WIDTH/2, y: 22},           // top right
+    {x: WIDTH/2, y: HEIGHT/2 + 16} // bottom right
 ]
-const DOT_DATA = {
+var DOT_DATA = {
     "open": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AP6+fGHxi/an+Mvx2+MXwQ/ZKuvgB8NvCX7O3/CvtB+LP7Rnx08H/EX44+f8dvGPg62+J+pfs1+F/wBmvwb8Qf2adTb/AIRv4JfEP4DfGbW/2jJ/2hb/AMHQf8LO0j4S+Gvhh428W2vxL174N9B8FPjX8fdC+Puofsp/tWWHwf1LxvqXwfuvjX8Dvjj8FLXxp4P8K/tDeFfB3jTSvCfx9sNQ+AXizVfijq/7O3iD9nbV/ij+zvoN1a69+0P8XtO+N2nfF7SvH/gDVdEudE+J/wAMPhR5/q+kftD/ALKv7Q/7R3xP+GH7OPiD9qf4E/tT+IPhr8W/EXh74S/Er4S6B+0r4A/aV8P/AAl8Ifs+eK5I/Cn7Qfi/9n34Han+zBqfwO/Z9+BN1pupWvx2vfjf4Z+N9748VvAfjr4beOtP1D4IdB8HfB/x2+Mv7U9t+1r8b/g7/wAM7eEvht8APGHwM/Zz+E+vfEHwd4x+O0//AAvH4i/D7xl+0p4p/aU034YXXxD+CXhvOp/s0/s9Qfs56J8Gfjz8TvI8HX/xP8S/FvV7Xxb420H4afBv/9k=",
     "solid": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APtv/gvJ/wAHPPxC/wCCbX7UF3+xh+yL8HPg/wDEr4reAvD/AMOvFfxm+I3xrk+JmqeFfCGo+OdA1/xQnwhsPhr4Yb4V3OreIH8E6z8HviTa/FTRvjB4h8K22neLNV8B3ngx/FOn6jf+HvqD/g3x/wCDg7WP+Cu2sfFT4CfHv4WfD/4S/tNfCT4f2PxStrn4W33jufwJ8YfAlx471Tw14s13QvCfibTPEf8Awqz/AIVZ/wAJF8GPDmp6Z4j+M/jjWPiJrHjjUPE/hjT9E0XRNZ0bQ/yg/wCDjX/g3K/ba/a+/ba8UftzfsM+F/D/AMbLb42eH/hNo3xX+FOs/FnwP4H+IXhz4heB/A9/8O7jxZ4Tt/iJYfDj4dxfB+L4d/Dj4T2dzbXnxY8S/Ey5+JniXxNe2Xhr/hCRHJ4b+v8A/g2G/wCCDn7UH/BNr4hfGP8Aa6/bPtPD/gL4rfEv4Px/BT4c/Bnwp8RtA8c6j4Q8K6p8TB4n+JWofF5/DGgaz4JfxBq1z8K/g9rXwruvht8YfFmnW3hXxD4zs/Hmlaf4paw07w9//9k=",
     "open-x": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AP6WvHP7Vf7XGj/tQfEn9mr4c+P/AIP6J8IfDvxg0PwVJ+3T+0J8F9b+JnhX4Z/tD/GfQPBPxO+Hf/BN3xv8FfhT8Xf2Xrm48Qah4J+M3w18UfAv9ta/8deGPhLr+neNPgv+xB4o8P8Axd/be8S3HxI+IvQfsl/taftHfHb9o7wz8Lfil4m+H+nfC3Tvh/8AEP40/AP4+fBb4eXXhbwJ/wAFQ/AnhW68HfD/AOIfjjwP8PPiD4x+N/i39mr4Afs1eLfjf8M7PStWvPiZ4q1j9vDWPFXwc/ab/Zk+Menfspad8Qvh98VPH/iZ8M/2h9V/aH/ab8Q+Hv2ZPjB8ev8Agnv8evjBZ+Jvjn8DPDV58Jfhl+0r+0D+0r8MvhL8Lf2adbtrnRP2lvil+z78O9T/AOCUGp/Dv9n3wdo/izwnrHjHw/8AG/8AaZ+N/h/WZYtG+M//AATK+M95Z/FD0D9lTwN+0/o/7XHgD4jftK/Db4weHfhDonwf+NP7Pf7CsfjXXNA+M/7Q/wAM/CvxM1v4RfFf41+CP+CkXxE+GPjb4zeCdQ8QXNz+y94FsP2KPjp4X+JXjTTtf+EvhjxB4Y/bf+NHiX9t74u/De3+Iv8A/9k=",
@@ -29,67 +30,74 @@ const DOT_DATA = {
 };
 
 /**
- * generate will generate a PDF for a specific dot, containing its movements,
- * positions, and continuities relevant to it.
+ * This PDFGenerator class will be able to generate the PDF representation of the given
+ * show, for the given dot.
  *
  * @param {Show} show
- * @param {String} dot
+ * @param {String} dot is the label of the selected dot
+ */
+var PDFGenerator = function(show, dot) {
+    this.pdf = jsPDF("portrait", "mm", "letter");
+    this.show = show;
+    this.dot = dot;
+    this.sheets = show.getSheets();
+};
+
+/**
+ * generate will generate a PDF for a specific dot, containing its movements,
+ * positions, and continuities relevant to it.
  *
  * The function will end with a save call, which will prompt a new window and/or
  * a dialog box to download the generated PDF.
  */
-var generate = function(show, dot) {
-    PDF = jsPDF("portrait", "mm", "letter");
-    SHOW = show;
-    DOT = dot;
-    SHEETS = show.getSheets();
-
-    for (var page = 0; page < Math.ceil(SHEETS.length / 4); page++) {
-        if (page != 0) {
-            PDF.addPage();
+PDFGenerator.prototype.generate = function() {
+    for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
+        if (pageNum != 0) {
+            this.pdf.addPage();
         }
-        _headers(page + 1);
 
-        var sheets = []
+        var pageSheets = []
         for (var i = 0; i < 4; i++) {
-            var sheet = page * 4 + i;
-            if (sheet == SHEETS.length) {
+            var sheet = pageNum * 4 + i;
+            if (sheet == this.sheets.length) {
                 break;
             }
-            sheets.push(SHEETS[sheet]);
+            pageSheets.push(this.sheets[sheet]);
         }
 
-        for (var i = 0; i < sheets.length; i++) {
+        this._headers(pageNum + 1);
+
+        for (var i = 0; i < pageSheets.length; i++) {
             var x = QUADRANT[i].x;
             var y = QUADRANT[i].y;
-            var sheet = sheets[i];
-            _dotContinuity(x, y, sheet);
-            _individualContinuity(x, y);
-            _movementDiagram(x, y);
-            _birdseye(x, y);
-            _surroundingDots(x, y);
+            var sheet = pageSheets[i];
+            this._dotContinuity(x, y, sheet);
+            this._individualContinuity(x, y);
+            this._movementDiagram(x, y);
+            this._birdseye(x, y);
+            this._surroundingDots(x, y);
         }
     }
-    PDF.save("show.pdf");
+    this.pdf.save("show.pdf");
 };
 
 /**
- * Returns the width of a String, in whatever units jsPDF is currently using
+ * Returns the width of a String, in whatever units this.pdf is currently using
  * @param {String} text
  * @param {int} size, font size the text will be in
  */
-function _getTextWidth(text, size) {
-    return PDF.getStringUnitWidth(text) * size/PDF.internal.scaleFactor
-}
+PDFGenerator.prototype._getTextWidth = function(text, size) {
+    return this.pdf.getStringUnitWidth(text) * size/this.pdf.internal.scaleFactor
+};
 
 /**
- * Returns the height of text in the current fontsize, in whatever units jsPDF is
+ * Returns the height of text in the current fontsize, in whatever units this.pdf is
  * currently using
  * @param {int} size, font size the text will be in
  */
-function _getTextHeight(size) {
-    return size/PDF.internal.scaleFactor;
-}
+PDFGenerator.prototype._getTextHeight = function(size) {
+    return size/this.pdf.internal.scaleFactor;
+};
 
 /**
  * Draws the headers on the PDF. Includes:
@@ -98,148 +106,165 @@ function _getTextHeight(size) {
  *      - "California Marching Band: <show title>"
  *      - Page number
  *
- * @param {int} page is the current 1-indexed page number
- * @param {String} dot is the selected dot label
+ * @param {int} pageNum is the current 1-indexed page number
  */
-var _headers = function(page) {
-    // function objects
-    var totalPages = Math.ceil(SHEETS.length/4);
+PDFGenerator.prototype._headers = function(pageNum) {
+    var totalPages = Math.ceil(this.sheets.length/4);
+    var _this = this; // for use in nested functions
 
-    var box = {
-        height: _getTextHeight(16) * 3,
+    var header = {
+        title: {
+            label: "California Marching Band:",
+            text: _this.show.getTitle(),
+            size: 16,
+
+            getX: function(text) {
+                return WIDTH/2 - _this._getTextWidth(text, this.size)/2;
+            },
+
+            getY: function() {
+                return header.y + header.paddingY + _this._getTextHeight(this.size);
+            },
+
+            getLineHeight: function() {
+                return _this._getTextHeight(this.size) + 1;
+            }
+        },
+
+        pageInfo: {
+            size: 12,
+
+            getWidth: function() {
+                return _this._getTextWidth(pageNum + "/" + totalPages, this.size);
+            },
+
+            getHeight: function() {
+                return _this._getTextHeight(this.size);
+            },
+
+            draw: function() {
+                var numWidth = _this._getTextWidth(String(pageNum), this.size);
+                _this.pdf.text(
+                    String(pageNum),
+                    this.x,
+                    this.y - 1
+                );
+                _this.pdf.text(
+                    "/",
+                    this.x + numWidth - .3,
+                    this.y
+                );
+                _this.pdf.text(
+                    String(totalPages),
+                    this.x + numWidth + .7,
+                    this.y + 1
+                );
+            }
+        },
+
+        x: WIDTH * 1/6,
+        y: 5,
         width: WIDTH * 2/3,
-        offsetX: WIDTH * 1/6,
-        offsetY: 5,
+        height: _this._getTextHeight(16) * 3,
         paddingX: 3,
         paddingY: 1,
-        draw: function(x, y) {
-            PDF.rect(x, y, this.width, this.height);
+
+        draw: function() {
+            /* box */
+            _this.pdf.rect(this.x, this.y, this.width, this.height);
+
+            /* title */
+            _this.pdf.setFontSize(this.title.size);
+            _this.pdf.text(
+                this.title.label,
+                this.title.getX(this.title.label),
+                this.title.getY()
+            );
+            _this.pdf.text(
+                this.title.text,
+                this.title.getX(this.title.text),
+                this.title.getY() + this.title.getLineHeight()
+            );
+
+            /* page info */
+            _this.pdf.setFontSize(this.pageInfo.size);
+            this.pageInfo.x = this.x + this.paddingX;
+            this.pageInfo.y = this.y + this.height/2 + this.pageInfo.getHeight()/2;
+            this.pageInfo.draw();
+
+            this.pageInfo.x = WIDTH * 5/6 - this.paddingX - this.pageInfo.getWidth();
+            this.pageInfo.draw();
         }
     };
-
-    var title = {
-        label: "California Marching Band:",
-        text: SHOW.getTitle(),
-        size: 16,
-        draw: function(y) {
-            PDF.setFontSize(this.size);
-            PDF.text(
-                this.label,
-                WIDTH/2 - _getTextWidth(this.label, this.size)/2,
-                y
-            );
-            PDF.text(
-                this.text,
-                WIDTH/2 - _getTextWidth(this.text, this.size)/2,
-                y + this.height + 1
-            );
-        },
-
-        init: function() {
-            this.height = _getTextHeight(this.size);
-            return this;
-        }
-    }.init();
-
-    var pageInfo = {
-        text: page + "/" + totalPages,
-        size: 12,
-        draw: function(x, y) {
-            var text = this.text.split("/");
-            PDF.setFontSize(this.size);
-            PDF.text(text[0], x, y - 1);
-            PDF.text("/", x + _getTextWidth(text[0], this.size) - .3, y);
-            PDF.text(text[1], x + _getTextWidth(text[0], this.size) + .7, y + 1);
-        },
-
-        init: function() {
-            this.width = _getTextWidth(this.text, this.size);
-            this.height = _getTextHeight(this.size);
-            this.offsetCenter = box.height/2 + this.height/2;
-            return this;
-        }
-    }.init();
 
     var sheetInfo = {
         marginX: 4,
         marginY: 3,
         size: 14,
-        sheet: (page - 1) * 4 + 1,
-        draw: function(x, y) {
-            PDF.text("SS " + this.sheet + "/" + SHEETS.length, x, y);
-            PDF.text("Dot " + DOT, x, y + _getTextHeight(this.size));
+        sheet: (pageNum - 1) * 4 + 1,
+
+        getTop: function() {
+            return this.marginY + this.height;
         },
 
-        init: function() {
-            // Wider width will probably be the stuntsheet counter
-            this.width = _getTextWidth("SS 00/00", this.size);
-            this.height = _getTextHeight(this.size);
-            return this;
+        getBottom: function() {
+            return this.getTop() + HEIGHT/2;
+        },
+
+        getLeft: function() {
+            return this.marginX;
+        },
+
+        getRight: function() {
+            return WIDTH - this.width;
+        },
+
+        hasNext: function() {
+            return ++this.sheet <= _this.sheets.length;
+        },
+
+        draw: function(x, y) {
+            _this.pdf.text("SS " + this.sheet + "/" + _this.sheets.length, x, y);
+            _this.pdf.text("Dot " + _this.dot, x, y + _this._getTextHeight(this.size));
         }
-    }.init();
-    
-    var baselines = {
-        top: box.offsetY,
-        bottom: HEIGHT - (box.offsetY + box.height),
-        left: box.offsetX + box.paddingX,
-        right: box.offsetX + box.width - box.paddingX - pageInfo.width
-    }
+    };
 
-    /* Rectangles */
-    box.draw(box.offsetX, box.offsetY);
-    box.draw(box.offsetX, HEIGHT - (box.offsetY + box.height));
-
-    /* Show titles */
-    title.draw(baselines.top + box.paddingY + title.height);
-    title.draw(baselines.bottom + box.paddingY + title.height);
-
-    /* Page # Information */
-    pageInfo.draw(baselines.left, baselines.top + pageInfo.offsetCenter);
-    pageInfo.draw(baselines.right, baselines.top + pageInfo.offsetCenter);
-    pageInfo.draw(baselines.left, baselines.bottom + pageInfo.offsetCenter);
-    pageInfo.draw(baselines.right, baselines.bottom + pageInfo.offsetCenter);
+    /* Title and Page information */
+    header.draw();
 
     /* Stuntsheet and Dot Info */
-    // top left
-    sheetInfo.draw(
-        sheetInfo.marginX,
-        sheetInfo.marginY + sheetInfo.height
-    );
-    // bottom left
-    if (++sheetInfo.sheet <= SHEETS.length) {
-        sheetInfo.draw(
-            sheetInfo.marginX,
-            sheetInfo.marginY + sheetInfo.height + HEIGHT/2
-        );
+    sheetInfo.height = _this._getTextHeight(sheetInfo.size);
+    sheetInfo.width = _this._getTextWidth("SS 00/00", sheetInfo.size);
+
+    sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
+
+    if (sheetInfo.hasNext()) {
+        sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
     }
-    // top right
-    if (++sheetInfo.sheet <= SHEETS.length) {
-        sheetInfo.draw(
-            WIDTH - sheetInfo.width,
-            sheetInfo.marginY + sheetInfo.height
-        );
+
+    if (sheetInfo.hasNext()) {
+        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
     }
-    // bottom right
-    if (++sheetInfo.sheet <= SHEETS.length) {
-        sheetInfo.draw(
-            WIDTH - sheetInfo.width,
-            sheetInfo.marginY + sheetInfo.height + HEIGHT/2
-        );
+
+    if (sheetInfo.hasNext()) {
+        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getBottom());
     }
-}
+};
 
 /**
  * Writes one stuntsheet's continuity for the given dot type on the PDF. Includes:
  *      - Dot circle type
  *      - Overall Continuity
  *      - Measure/beat number
- * @param {int} quadrantX  The coordinate of the top left corner
- * @param {int} quadrantY  of the stuntsheet quadrant
+ *
+ * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
+ * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  * @param {Sheet} sheet the current sheet
  */
-var _dotContinuity = function(quadrantX, quadrantY, sheet) {
+PDFGenerator.prototype._dotContinuity = function(quadrantX, quadrantY, sheet) {
+    var _this = this; // for use in nested functions
+
     var box = {
-        height: _getTextHeight(12) * 4,
         paddingX: 2,
         paddingY: 1,
         marginX: 3,
@@ -248,38 +273,48 @@ var _dotContinuity = function(quadrantX, quadrantY, sheet) {
         draw: function() {
             var x = quadrantX + this.marginX;
             var y = quadrantY + this.marginY;
-            PDF.rect(x, y, this.width, this.height);
-        },
-
-        init: function() {
-            this.width = WIDTH/2 - this.marginX*2;
-            return this;
+            var width = WIDTH/2 - this.marginX*2;
+            var height = _this._getTextHeight(text.size) * 5;
+            _this.pdf.rect(x, y, width, height);
+            text.draw(width);
         }
-    }.init();
+    };
 
     var text = {
         x: quadrantX + box.marginX + box.paddingX,
         y: quadrantY + box.marginY + box.paddingY,
         size: 10,
 
-        draw: function() {
-            var dotType = sheet.getDotType(DOT);
+        // width is the width of the containing box
+        draw: function(width) {
+            var dotType = sheet.getDotType(_this.dot);
             var dotImage = DOT_DATA[dotType];
-            var continuities = sheet.getContinuityTexts(dotType);
+            var maxWidth = width - box.paddingX*2 - 6;
+            var _size = this.size;
 
-            PDF.addImage(
+            var continuities = sheet.getContinuityTexts(dotType).map(function(text, i) {
+                var origSize = _size;
+                while (_this._getTextWidth(text, _size) > maxWidth) {
+                    _size--;
+                }
+
+                return text;
+            });
+
+            _this.pdf.addImage(
                 dotImage,
                 "JPEG",
                 this.x,
                 this.y
             );
-            PDF.setFontSize(this.size);
-            PDF.text(
+            _this.pdf.setFontSize(this.size);
+            _this.pdf.text(
                 ":",
                 this.x + 4,
                 this.y + 3
             );
-            PDF.text(
+            _this.pdf.setFontSize(_size);
+            _this.pdf.text(
                 continuities,
                 this.x + 6,
                 this.y + 3.5
@@ -288,8 +323,7 @@ var _dotContinuity = function(quadrantX, quadrantY, sheet) {
     };
 
     box.draw();
-    text.draw();
-}
+};
 
 /**
  * Writes the continuities for the selected dot on the PDF. Includes:
@@ -297,9 +331,9 @@ var _dotContinuity = function(quadrantX, quadrantY, sheet) {
  *      - Total beats
  *      - Border between general movements, e.g. Stand and Play vs. Continuity vs. FMHS
  */
-var _individualContinuity = function() {
+PDFGenerator.prototype._individualContinuity = function() {
 
-}
+};
 
 /**
  * Draws the diagram for a selected dot's movements. Includes:
@@ -311,9 +345,9 @@ var _individualContinuity = function() {
  *      - Zooming if big
  *      - Orientation EWNS; East is up
  */
-var _movementDiagram = function() {
+PDFGenerator.prototype._movementDiagram = function() {
 
-}
+};
 
 /**
  * Draws the overall bird's eye view of the field. Includes:
@@ -322,9 +356,9 @@ var _movementDiagram = function() {
  *      - Circle selected dot
  *      - Cross hairs for positions (4S N40, 2E WH)
  */
-var _birdseye = function() {
+PDFGenerator.prototype._birdseye = function() {
 
-}
+};
 
 /**
  * Draws the dots surrounding the selected dot. Includes:
@@ -334,8 +368,8 @@ var _birdseye = function() {
  *      - Dot labels
  *      - Dot types
  */
-var _surroundingDots = function() {
+PDFGenerator.prototype._surroundingDots = function() {
 
-}
+};
 
-module.exports = generate;
+module.exports = PDFGenerator;

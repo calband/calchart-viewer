@@ -59,7 +59,7 @@ $(document).ready(function () {
         applicationController.toggleAnimation();
     });
     $(".js-generate-continuity").click(function () {
-        if (this.className.indexOf("disabled") === -1) {
+        if (!$(this).hasClass("disabled")) {
             applicationController.generatePDF();
         }
     });

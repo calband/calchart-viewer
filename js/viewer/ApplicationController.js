@@ -8,7 +8,7 @@ var TimedBeatsUtils = require("./TimedBeatsUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
-var generatePDF = require("./MakePDF");
+var PDFGenerator = require("./PDFGenerator");
 
 /**
  * The ApplicationController is the backbone of how functional components
@@ -405,11 +405,11 @@ ApplicationController.prototype._updateAnimationControl = function() {
 };
 
 /**
- * Passes relevant information to the PDF Generator module which will open a PDF
+ * Passes relevant information to the PDFGenerator module which will open a PDF
  * document that contains the selected dot's continuity for the entire show.
  */
 ApplicationController.prototype.generatePDF = function() {
-    generatePDF(this._show, this._animationStateDelegate.getSelectedDot());
-}
+    new PDFGenerator(this._show, this._animationStateDelegate.getSelectedDot()).generate();
+};
 
 module.exports = ApplicationController;
