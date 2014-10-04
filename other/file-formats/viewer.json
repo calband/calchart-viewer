@@ -2,7 +2,8 @@
     // meta information about the file
     "meta": {
         "version": "1.0.0",
-        "index_name": "2013-pixar-show"
+        "index_name": "2013-pixar-show",
+        "type": "viewer"
     },
     // the information about the show
     "show": {
