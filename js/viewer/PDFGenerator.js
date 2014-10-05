@@ -270,13 +270,14 @@ PDFGenerator.prototype._dotContinuity = function(quadrantX, quadrantY, sheet) {
         marginX: 3,
         marginY: 2,
 
-        draw: function() {
+        getWidth: function() {
+            return WIDTH/2 - this.marginX * 2;
+        },
+
+        draw: function(height) {
             var x = quadrantX + this.marginX;
             var y = quadrantY + this.marginY;
-            var width = WIDTH/2 - this.marginX*2;
-            var height = _this._getTextHeight(text.size) * 5;
-            _this.pdf.rect(x, y, width, height);
-            text.draw(width);
+            _this.pdf.rect(x, y, this.getWidth(), height);
         }
     };
 
@@ -286,13 +287,13 @@ PDFGenerator.prototype._dotContinuity = function(quadrantX, quadrantY, sheet) {
         size: 10,
 
         // width is the width of the containing box
-        draw: function(width) {
+        draw: function() {
             var dotType = sheet.getDotType(_this.dot);
             var dotImage = DOT_DATA[dotType];
-            var maxWidth = width - box.paddingX*2 - 6;
+            var maxWidth = box.getWidth() - box.paddingX*2 - 6;
             var _size = this.size;
 
-            var continuities = sheet.getContinuityTexts(dotType).map(function(text, i) {
+            var continuities = sheet.getContinuityTexts(dotType).map(function(text) {
                 var origSize = _size;
                 while (_this._getTextWidth(text, _size) > maxWidth) {
                     _size--;
@@ -300,6 +301,10 @@ PDFGenerator.prototype._dotContinuity = function(quadrantX, quadrantY, sheet) {
 
                 return text;
             });
+
+            if (continuities.length > 4) {
+                _size -= 2;
+            }
 
             _this.pdf.addImage(
                 dotImage,
@@ -319,10 +324,13 @@ PDFGenerator.prototype._dotContinuity = function(quadrantX, quadrantY, sheet) {
                 this.x + 6,
                 this.y + 3.5
             );
+
+            var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 1;
+            box.draw(height);
         }
     };
 
-    box.draw();
+    text.draw();
 };
 
 /**
