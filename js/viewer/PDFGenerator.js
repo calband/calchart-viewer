@@ -68,17 +68,17 @@ PDFGenerator.prototype.generate = function() {
             pageSheets.push(this.sheets[sheet]);
         }
 
-        this._headers(pageNum + 1);
+        this._addHeaders(pageNum + 1);
 
         for (var i = 0; i < pageSheets.length; i++) {
             var x = QUADRANT[i].x;
             var y = QUADRANT[i].y;
             var sheet = pageSheets[i];
-            this._dotContinuity(x, y, sheet);
-            this._individualContinuity(x, y);
-            this._movementDiagram(x, y);
-            this._birdseye(x, y);
-            this._surroundingDots(x, y);
+            this._addDotContinuity(x, y, sheet);
+            this._addIndividualContinuity(x, y);
+            this._addMovementDiagram(x, y);
+            this._addBirdseye(x, y);
+            this._addSurroundingDots(x, y);
         }
     }
     this.pdf.save("show.pdf");
@@ -111,7 +111,7 @@ PDFGenerator.prototype._getTextHeight = function(size) {
  *
  * @param {int} pageNum is the current 1-indexed page number
  */
-PDFGenerator.prototype._headers = function(pageNum) {
+PDFGenerator.prototype._addHeaders = function(pageNum) {
     var totalPages = Math.ceil(this.sheets.length/4);
     var _this = this; // for use in nested functions
 
@@ -264,7 +264,7 @@ PDFGenerator.prototype._headers = function(pageNum) {
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  * @param {Sheet} sheet the current sheet
  */
-PDFGenerator.prototype._dotContinuity = function(quadrantX, quadrantY, sheet) {
+PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet) {
     var _this = this; // for use in nested functions
 
     var box = {
@@ -341,8 +341,11 @@ PDFGenerator.prototype._dotContinuity = function(quadrantX, quadrantY, sheet) {
  *      - Movements
  *      - Total beats
  *      - Border between general movements, e.g. Stand and Play vs. Continuity vs. FMHS
+ *
+ * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
+ * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  */
-PDFGenerator.prototype._individualContinuity = function() {
+PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY) {
 
 };
 
@@ -355,8 +358,11 @@ PDFGenerator.prototype._individualContinuity = function() {
  *      - Hashes if in viewport
  *      - Zooming if big
  *      - Orientation EWNS; East is up
+ *
+ * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
+ * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  */
-PDFGenerator.prototype._movementDiagram = function() {
+PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY) {
 
 };
 
@@ -366,8 +372,11 @@ PDFGenerator.prototype._movementDiagram = function() {
  *      - Form outline, continuous for 4-step EW, 2-step NS
  *      - Circle selected dot
  *      - Cross hairs for positions (4S N40, 2E WH)
+ *
+ * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
+ * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  */
-PDFGenerator.prototype._birdseye = function() {
+PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY) {
 
 };
 
@@ -378,8 +387,11 @@ PDFGenerator.prototype._birdseye = function() {
  *      - Solid line cross hairs; selected dot in middle
  *      - Dot labels
  *      - Dot types
+ *
+ * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
+ * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  */
-PDFGenerator.prototype._surroundingDots = function() {
+PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY) {
 
 };
 
