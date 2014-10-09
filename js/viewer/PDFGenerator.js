@@ -75,7 +75,7 @@ PDFGenerator.prototype.generate = function() {
             var y = QUADRANT[i].y;
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
-            this._addIndividualContinuity(x, y);
+            this._addIndividualContinuity(x, y, sheet);
             this._addMovementDiagram(x, y);
             this._addBirdseye(x, y);
             this._addSurroundingDots(x, y);
@@ -340,13 +340,35 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
  * Writes the continuities for the selected dot on the PDF. Includes:
  *      - Movements
  *      - Total beats
- *      - Border between general movements, e.g. Stand and Play vs. Continuity vs. FMHS
+ *      - Border between general movements, e.g. Stand and Play vs. Continuity
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Sheet} sheet the current stuntsheet
  */
-PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY) {
-
+PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY, sheet) {
+    var movements = sheet.getDotByLabel(this.dot).getMovementCommands();
+    var totalBeats = 0;
+    for (var i = 0; i < movements.length; i++) {
+        var movement = movements[i];
+        var type;
+        switch (movement.constructor.name) {
+            case "MovementCommandMove":
+                type = "move"; break;
+            case "MovementCommandStand":
+                type = "stand"; break;
+            case "MovementCommandMarkTime":
+                type = "mark"; break;
+            case "MovementCommandGoto":
+                type = "goto"; break;
+            case "MovementCommandArc":
+                type = "arc"; break;
+            case "MovementCommandEven":
+                type = "even"; break;
+            default:
+                throw new TypeError("Movement constructor unrecognized");
+        }
+    }
 };
 
 /**

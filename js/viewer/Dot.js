@@ -13,7 +13,7 @@
  *
  * @param {string} label The dot's label. This is also the label of
  *   the marcher associated with this dot.
- * @param {Array<MovemenetCommand>} movementCommands All of the MovementCommand
+ * @param {Array<MovementCommand>} movementCommands All of the MovementCommand
  *   objects that this Dot will execute. The commands must be sorted in the
  *   order in which they will be executed.
  */
@@ -30,6 +30,15 @@ var Dot = function(label, movementCommands) {
 Dot.prototype.getLabel = function() {
     return this._label;
 };
+
+/**
+ * Returns this dot's movement commands.
+ *
+ * @return {string} The dot's movements.
+ */
+Dot.prototype.getMovementCommands = function() {
+    return this._movements;
+}
 
 /**
  * Returns an AnimationState object that describes the Dot's
