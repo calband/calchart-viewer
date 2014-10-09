@@ -295,6 +295,7 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
             var dotImage = DOT_DATA[dotType];
             var maxWidth = box.getWidth() - box.paddingX*2 - 6;
             var _size = this.size;
+            var maxLines = (QUADRANT_HEIGHT / 5) / _getTextHeight(_size);
 
             var continuities = sheet.getContinuityTexts(dotType).map(function(text) {
                 var origSize = _size;
@@ -305,7 +306,7 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 return text;
             });
 
-            if (continuities.length > 4) {
+            if (continuities.length > maxLines) {
                 _size -= 2;
             }
 
