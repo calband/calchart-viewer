@@ -373,6 +373,13 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
                     textY + (textHeight + 1) * i
                 );
             }
+
+            var totalLabel = sheet.getDuration() + " beats total";
+            _this.pdf.text(
+                totalLabel,
+                quadrantX + this.width/2 - _this._getTextWidth(totalLabel, this.size)/2 - 3,
+                textY - textHeight + this.height
+            );
         }
     };
 
