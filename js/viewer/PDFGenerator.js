@@ -415,9 +415,10 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
                 text = "Move " + deltaX + dirX;
             }
         } else if (type === "MovementCommandMarkTime") {
-            if (movement.getBeatDuration() != 0) {
-                text = "MT " + movement.getBeatDuration() + orientation;
+            if (movement.getBeatDuration() == 0) {
+                continue;
             }
+            text = "MT " + movement.getBeatDuration() + orientation;
         } else if (type === "MovementCommandStand") {
             text = "Close " + movement.getBeatDuration() + orientation;
         } else if (type === "MovementCommandEven") {
