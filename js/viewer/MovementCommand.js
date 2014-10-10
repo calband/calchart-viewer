@@ -97,5 +97,26 @@ MovementCommand.prototype.getAnimationState = function(beatNum) {
     console.log("getAnimationState called");
 };
 
+/**
+ * Returns the orientation of this MovementCommand, however
+ * this MovementCommand interprets "orientation" as, or null if
+ * this MovementCommand doesn't interpret orientation
+ */
+MovementCommand.prototype.getOrientation = function() {
+    if (typeof this._orientation !== "undefined") {
+        return this._orientation;
+    } else if (this._movementIsCW !== "undefined") {
+        return this._movementIsCW ? "CW" : "CCW";
+    } else {
+        return null;
+    }
+};
+
+/**
+ * A class variable holding the name of the Class which
+ * constructed this object. Should be overwritten by subclasses.
+ */
+MovementCommand.prototype.type = "MovementCommand";
+
 
 module.exports = MovementCommand;

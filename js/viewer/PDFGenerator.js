@@ -14,12 +14,13 @@ var WIDTH = 215.9;
 var HEIGHT = 279.4;
 
 var QUADRANT = [
-    {x: 0, y: 22},                 // top left
-    {x: 0, y: HEIGHT/2 + 16},      // bottom left
-    {x: WIDTH/2, y: 22},           // top right
-    {x: WIDTH/2, y: HEIGHT/2 + 16} // bottom right
+    {x: 3, y: 24},                 // top left
+    {x: 3, y: HEIGHT/2 + 16},      // bottom left
+    {x: WIDTH/2 + 3, y: 24},           // top right
+    {x: WIDTH/2 + 3, y: HEIGHT/2 + 16} // bottom right
 ];
 var QUADRANT_HEIGHT = HEIGHT/2 - 22;
+var QUADRANT_WIDTH = WIDTH/2 - 6;
 
 var DOT_DATA = {
     "open": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AP6+fGHxi/an+Mvx2+MXwQ/ZKuvgB8NvCX7O3/CvtB+LP7Rnx08H/EX44+f8dvGPg62+J+pfs1+F/wBmvwb8Qf2adTb/AIRv4JfEP4DfGbW/2jJ/2hb/AMHQf8LO0j4S+Gvhh428W2vxL174N9B8FPjX8fdC+Puofsp/tWWHwf1LxvqXwfuvjX8Dvjj8FLXxp4P8K/tDeFfB3jTSvCfx9sNQ+AXizVfijq/7O3iD9nbV/ij+zvoN1a69+0P8XtO+N2nfF7SvH/gDVdEudE+J/wAMPhR5/q+kftD/ALKv7Q/7R3xP+GH7OPiD9qf4E/tT+IPhr8W/EXh74S/Er4S6B+0r4A/aV8P/AAl8Ifs+eK5I/Cn7Qfi/9n34Han+zBqfwO/Z9+BN1pupWvx2vfjf4Z+N9748VvAfjr4beOtP1D4IdB8HfB/x2+Mv7U9t+1r8b/g7/wAM7eEvht8APGHwM/Zz+E+vfEHwd4x+O0//AAvH4i/D7xl+0p4p/aU034YXXxD+CXhvOp/s0/s9Qfs56J8Gfjz8TvI8HX/xP8S/FvV7Xxb420H4afBv/9k=",
@@ -270,35 +271,33 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
     var box = {
         paddingX: 2,
         paddingY: 1,
-        marginX: 3,
-        marginY: 2,
-
-        getWidth: function() {
-            return WIDTH/2 - this.marginX * 2;
-        },
 
         draw: function(height) {
-            var x = quadrantX + this.marginX;
-            var y = quadrantY + this.marginY;
-            _this.pdf.rect(x, y, this.getWidth(), height);
+            _this.pdf.rect(quadrantX, quadrantY, QUADRANT_WIDTH, height);
         }
     };
 
     var text = {
-        x: quadrantX + box.marginX + box.paddingX,
-        y: quadrantY + box.marginY + box.paddingY,
+        x: quadrantX + box.paddingX,
+        y: quadrantY + box.paddingY,
         size: 10,
 
         // width is the width of the containing box
         draw: function() {
+            var _size = this.size;
             var dotType = sheet.getDotType(_this.dot);
             var dotImage = DOT_DATA[dotType];
-            var maxWidth = box.getWidth() - box.paddingX*2 - 6;
-            var _size = this.size;
-            var maxLines = (QUADRANT_HEIGHT / 5) / _getTextHeight(_size);
+            var maxWidth = QUADRANT_WIDTH - box.paddingX*2 - 6;
 
-            var continuities = sheet.getContinuityTexts(dotType).map(function(text) {
-                var origSize = _size;
+            var continuities = sheet.getContinuityTexts(dotType);
+
+            // fail-safe for sheets without Continuity Texts
+            if (typeof continuities === "undefined") {
+                box.draw(_this._getTextHeight(_size) + box.paddingY * 2 + 1);
+                return;
+            }
+
+            continuities = continuities.map(function(text) {
                 while (_this._getTextWidth(text, _size) > maxWidth) {
                     _size--;
                 }
@@ -306,6 +305,7 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 return text;
             });
 
+            var maxLines = (QUADRANT_HEIGHT/5) / _this._getTextHeight(_size);
             if (continuities.length > maxLines) {
                 _size -= 2;
             }
@@ -348,28 +348,99 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
  * @param {Sheet} sheet the current stuntsheet
  */
 PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY, sheet) {
+    var _this = this;
+
+    var box = {
+        height: QUADRANT_HEIGHT * 2/5,
+        width: QUADRANT_WIDTH / 2,
+        x: quadrantX,
+        y: quadrantY + QUADRANT_WIDTH / 5,
+        paddingX: 2,
+        paddingY: 1.5,
+        size: 10,
+        movements: [],
+
+        draw: function() {
+            _this.pdf.rect(this.x, this.y, this.height, this.width);
+            _this.pdf.setFontSize(this.size);
+            var textHeight = _this._getTextHeight(this.size);
+            var textY = this.y + this.paddingY + textHeight;
+            var textX = this.x + this.paddingX;
+            for (var i = 0; i < this.movements.length; i++) {
+                _this.pdf.text(
+                    this.movements[i],
+                    textX,
+                    textY + (textHeight + 1) * i
+                );
+            }
+        }
+    };
+
     var movements = sheet.getDotByLabel(this.dot).getMovementCommands();
-    var totalBeats = 0;
     for (var i = 0; i < movements.length; i++) {
         var movement = movements[i];
-        var type;
-        switch (movement.constructor.name) {
-            case "MovementCommandMove":
-                type = "move"; break;
-            case "MovementCommandStand":
-                type = "stand"; break;
-            case "MovementCommandMarkTime":
-                type = "mark"; break;
-            case "MovementCommandGoto":
-                type = "goto"; break;
-            case "MovementCommandArc":
-                type = "arc"; break;
-            case "MovementCommandEven":
-                type = "even"; break;
-            default:
-                throw new TypeError("Movement constructor unrecognized");
+        var type = movement.type;
+        var orientation = movement.getOrientation();
+        switch (orientation) {
+            case 0:
+                orientation = "E"; break;
+            case 90:
+                orientation = "S"; break;
+            case 180:
+                orientation = "W"; break;
+            case 270:
+                orientation = "N"; break;
         }
+        var start = movement.getStartPosition();
+        var end = movement.getEndPosition();
+        var deltaX = end.x - start.x;
+        var deltaY = end.y - start.y;
+        var dirX = (deltaX < 0) ? "S" : "N";
+        var dirY = (deltaY < 0) ? "W" : "E";
+        deltaX = Math.abs(deltaX);
+        deltaY = Math.abs(deltaY);
+
+        var text;
+        if (type === "MovementCommandMove") {
+            if (deltaX == 0) {
+                text = "Move " + deltaY + dirY;
+            } else {
+                text = "Move " + deltaX + dirX;
+            }
+        } else if (type === "MovementCommandMarkTime") {
+            if (movement.getBeatDuration() != 0) {
+                text = "MT " + movement.getBeatDuration() + orientation;
+            }
+        } else if (type === "MovementCommandStand") {
+            text = "Close " + movement.getBeatDuration() + orientation;
+        } else if (type === "MovementCommandEven") {
+            text = "Even ";
+            if (deltaX % 1 != 0 || deltaY % 1 != 0) {
+                text += (deltaX != 0) ? dirX : "";
+                text += (deltaY != 0) ? dirY : "";
+            } else {
+                var moveTexts = [];
+                if (deltaY != 0) {
+                    moveTexts.push(deltaY + dirY);
+                }
+                if (deltaX != 0) {
+                    moveTexts.push(deltaX + dirX);
+                }
+                text += moveTexts.join(", ");
+            }
+            var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
+            text += " (" + steps + " steps)";
+        } else if (type === "MovementCommandGoto") {
+            text = "See Continuity (" + movement.getBeatDuration() + " beats)";
+        } else if (type === "MovementCommandArc") {
+            text = "GT " + orientation +" 90" + " deg. (" + movement.getBeatDuration() + " steps)";
+        } else {
+            throw new TypeError("Class not recognized: " + type);
+        }
+        box.movements.push(text);
     }
+
+    box.draw();
 };
 
 /**

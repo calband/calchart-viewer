@@ -32,4 +32,6 @@ MovementCommandGoto.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._endX, this._endY, this._orientation);
 };
 
+MovementCommandGoto.prototype.type = "MovementCommandGoto";
+
 module.exports = MovementCommandGoto;

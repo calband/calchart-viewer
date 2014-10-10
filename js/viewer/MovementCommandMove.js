@@ -42,4 +42,6 @@ MovementCommandMove.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX + (this._deltaXPerStep * numSteps), this._startY + (this._deltaYPerStep * numSteps), this._orientation);
 };
 
+MovementCommandMove.prototype.type = "MovementCommandMove";
+
 module.exports = MovementCommandMove;

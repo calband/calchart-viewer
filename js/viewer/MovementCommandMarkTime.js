@@ -28,4 +28,6 @@ MovementCommandMarkTime.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX, this._startY, this._orientation);
 };
 
+MovementCommandMarkTime.prototype.type = "MovementCommandMarkTime";
+
 module.exports = MovementCommandMarkTime;

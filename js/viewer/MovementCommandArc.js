@@ -51,4 +51,10 @@ MovementCommandArc.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(finalX, finalY, MathUtils.toDegrees(finalOrientation));
 };
 
+MovementCommandArc.prototype.type = "MovementCommandArc";
+
+MovementCommandArc.prototype.getAngle = function() {
+    return MathUtils.toDegrees(this._numBeats * this._stepAngleDelta);
+};
+
 module.exports = MovementCommandArc;

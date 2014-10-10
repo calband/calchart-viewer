@@ -18,7 +18,7 @@ var AnimationState = require("./AnimationState");
  */
 var MovementCommandStand = function(x, y, orientation, beats) {
     this._orientation = orientation;
-    MovementCommand.apply(this, [x, y, beats]);
+    MovementCommand.apply(this, [x, y, x, y, beats]);
 };
 
 ClassUtils.extends(MovementCommandStand, MovementCommand);
@@ -26,5 +26,7 @@ ClassUtils.extends(MovementCommandStand, MovementCommand);
 MovementCommandStand.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX, this._startY, this._orientation);
 };
+
+MovementCommandStand.prototype.type = "MovementCommandStand";
 
 module.exports = MovementCommandStand;
