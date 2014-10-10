@@ -362,11 +362,19 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
 
         draw: function() {
             _this.pdf.rect(this.x, this.y, this.height, this.width);
-            _this.pdf.setFontSize(this.size);
             var textHeight = _this._getTextHeight(this.size);
             var textY = this.y + this.paddingY + textHeight;
             var textX = this.x + this.paddingX;
             for (var i = 0; i < this.movements.length; i++) {
+                var _size = this.size;
+                var maxWidth = this.width - this.paddingX * 2;
+                while (_this._getTextWidth(this.movements[i], _size) > maxWidth) {
+                    _size--;
+                    console.log(this.width);
+                    console.log(this.movements[i]);
+                }
+
+                _this.pdf.setFontSize(_size);
                 _this.pdf.text(
                     this.movements[i],
                     textX,
@@ -447,7 +455,6 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
         }
         box.movements.push(text);
     }
-
     box.draw();
 };
 
