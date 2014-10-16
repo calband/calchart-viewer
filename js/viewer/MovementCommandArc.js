@@ -33,6 +33,9 @@ var MovementCommandArc = function(startX, startY, centerX, centerY, angleToRotat
     this._centerY = centerY;
     this._radius = MathUtils.calcDistance(startX, startY, this._centerX, this._centerY);
     this._startAngle = MathUtils.calcAngleAbout(startX, startY, centerX, centerY);
+    if (isNaN(this._startAngle)) {
+        this._startAngle = 0;
+    }
     this._stepAngleDelta = MathUtils.toRadians(angleToRotate) / Math.floor(beats / this._beatsPerStep);
     this._movementIsCW = this._stepAngleDelta >= 0;
     this._orientationOffset = MathUtils.toRadians(facingOffset);
