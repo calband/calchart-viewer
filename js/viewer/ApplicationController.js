@@ -187,7 +187,7 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
     }
     if (this._animationStateDelegate.getSelectedDot() !== null) {
         var selectedDot = this._animationStateDelegate.getSelectedDot();
-        $(".js-selected-dot-label").parent().removeClass("disabled");
+        //$(".js-selected-dot-label").parent().removeClass("disabled");
         $(".js-selected-dot-label").text(selectedDot);
         var currentSheet = this._animationStateDelegate.getCurrentSheet();
         var typeOfDot = currentSheet.getDotType(selectedDot);
