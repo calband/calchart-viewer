@@ -256,7 +256,7 @@ ApplicationController.prototype.init = function () {
  * @param {String} fileName
  */
 ApplicationController.prototype._setFileInputText = function(selector, fileName) {
-    var MAX_LENGTH = 15;
+    var MAX_LENGTH = 16;
     if (fileName.length > MAX_LENGTH) {
         fileName = fileName.substring(0, MAX_LENGTH) + "...";
     }
