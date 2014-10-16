@@ -58,6 +58,11 @@ $(document).ready(function () {
     $(".js-animate").click(function () {
         applicationController.toggleAnimation();
     });
+
+    // for testing PDF
+    window.pdf = function() {
+        applicationController.generatePDF();
+    };
     $(".js-generate-continuity").click(function () {
         if (!$(this).hasClass("disabled")) {
             applicationController.generatePDF();
