@@ -27,6 +27,4 @@ MovementCommandStand.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX, this._startY, this._orientation);
 };
 
-MovementCommandStand.prototype.type = "MovementCommandStand";
-
 module.exports = MovementCommandStand;

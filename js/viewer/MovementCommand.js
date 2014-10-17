@@ -112,11 +112,4 @@ MovementCommand.prototype.getOrientation = function() {
     }
 };
 
-/**
- * A class variable holding the name of the Class which
- * constructed this object. Should be overwritten by subclasses.
- */
-MovementCommand.prototype.type = "MovementCommand";
-
-
 module.exports = MovementCommand;

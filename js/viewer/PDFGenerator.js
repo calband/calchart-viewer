@@ -33,6 +33,13 @@ var DOT_DATA = {
     "solid-backslash": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APpv/gtL/wAHK/x9/wCCW37UHxA/Yo/Z60L4P/tJfEnwr4g8O/EzxR8Ufjv4V8aaXB8IfCvxa0DU/Hth+y5qngX4a3Hwi0n4meIPBmk+IvAXjDwB+0F4Z8aabp0Hwb8T+Fvg98S/A3xD+O3gr4jfHrxh9wf8G+P/AAcHax/wV21j4qfAT49/Cz4f/CX9pr4SfD+x+KVtc/C2+8dz+BPjD4EuPHeqeGvFmu6F4T8TaZ4j/wCFWf8ACrP+Ei+DHhzU9M8R/GfxxrHxE1jxxqHifwxp+iaLoms6Nof5Qf8ABxr/AMG5X7bX7X37bXij9ub9hnwv4f8AjZbfGzw/8JtG+K/wp1n4s+B/A/xC8OfELwP4Hv8A4d3Hizwnb/ESw+HHw7i+D8Xw7+HHwns7m2vPix4l+Jlz8TPEvia9svDX/CEiOTw37/8A8G1H/BFr9qD/AIJbfH3Xv2hf22Ph/wCIPCvxJ/aS+D/ir4EfC/wx8M/EWgfFrwr8IYNL8aW/xK8d6X+1Jf8AgLTPEWk+DPEHxM0n4ReC/E37Pvj/AMH+PvE/wbg07TfHXw0+MXinwV8dviH8Bfhz4w//2Q=="
 };
 
+var MovementCommandEven = require('./MovementCommandEven');
+var MovementCommandMove = require('./MovementCommandMove');
+var MovementCommandStand = require('./MovementCommandStand');
+var MovementCommandGoto = require('./MovementCommandGoto');
+var MovementCommandMarkTime = require('./MovementCommandMarkTime');
+var MovementCommandArc = require('./MovementCommandArc');
+
 /**
  * This PDFGenerator class will be able to generate the PDF representation of the given
  * show, for the given dot.
@@ -394,7 +401,6 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
     var movements = sheet.getDotByLabel(this.dot).getMovementCommands();
     for (var i = 0; i < movements.length; i++) {
         var movement = movements[i];
-        var type = movement.type;
         var orientation = movement.getOrientation();
         switch (orientation) {
             case 0:
@@ -416,20 +422,20 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
         deltaY = Math.abs(deltaY);
 
         var text;
-        if (type === "MovementCommandMove") {
+        if (movement instanceof MovementCommandMove) {
             if (deltaX == 0) {
                 text = "Move " + deltaY + dirY;
             } else {
                 text = "Move " + deltaX + dirX;
             }
-        } else if (type === "MovementCommandMarkTime") {
+        } else if (movement instanceof MovementCommandMarkTime) {
             if (movement.getBeatDuration() == 0) {
                 continue;
             }
             text = "MT " + movement.getBeatDuration() + orientation;
-        } else if (type === "MovementCommandStand") {
+        } else if (movement instanceof MovementCommandStand) {
             text = "Close " + movement.getBeatDuration() + orientation;
-        } else if (type === "MovementCommandEven") {
+        } else if (movement instanceof MovementCommandEven) {
             text = "Even ";
             if (deltaX % 1 != 0 || deltaY % 1 != 0) {
                 text += (deltaX != 0) ? dirX : "";
@@ -446,9 +452,9 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
             }
             var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
             text += " (" + steps + " steps)";
-        } else if (type === "MovementCommandGoto") {
+        } else if (movement instanceof MovementCommandGoto) {
             text = "See Continuity (" + movement.getBeatDuration() + " beats)";
-        } else if (type === "MovementCommandArc") {
+        } else if (movement instanceof MovementCommandArc) {
             text = "GT " + orientation +" 90" + " deg. (" + movement.getBeatDuration() + " steps)";
         } else {
             throw new TypeError("Class not recognized: " + type);

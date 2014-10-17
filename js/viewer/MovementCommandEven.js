@@ -43,6 +43,4 @@ MovementCommandEven.prototype.getBeatsPerStep = function() {
     return this._beatsPerStep;
 }
 
-MovementCommandEven.prototype.type = "MovementCommandEven";
-
 module.exports = MovementCommandEven;
