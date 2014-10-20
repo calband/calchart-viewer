@@ -39,6 +39,10 @@ MovementCommandEven.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX + (this._deltaXPerStep * stepNum), this._startY + (this._deltaYPerStep * stepNum), this._orientation);
 };
 
+/**
+ * Returns the number of beats in this movement
+ * @return {int}
+ */
 MovementCommandEven.prototype.getBeatsPerStep = function() {
     return this._beatsPerStep;
 }

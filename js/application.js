@@ -61,6 +61,7 @@ $(document).ready(function () {
 
     // for testing PDF
     window.pdf = function() {
+        $(".js-dot-labels").trigger('change', {selected:"A0"});
         applicationController.generatePDF();
     };
     $(".js-generate-continuity").click(function () {

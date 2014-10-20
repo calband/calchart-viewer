@@ -9,6 +9,13 @@
  * @constant DOT_DATA contains the JPEG image data for the different dot types
  */
 
+var MovementCommandEven = require('./MovementCommandEven');
+var MovementCommandMove = require('./MovementCommandMove');
+var MovementCommandStand = require('./MovementCommandStand');
+var MovementCommandGoto = require('./MovementCommandGoto');
+var MovementCommandMarkTime = require('./MovementCommandMarkTime');
+var MovementCommandArc = require('./MovementCommandArc');
+
 /* CONSTANTS: DON'T CHANGE */
 var WIDTH = 215.9;
 var HEIGHT = 279.4;
@@ -32,13 +39,6 @@ var DOT_DATA = {
     "open-backslash": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AP6WvHP7Vf7XGj/tQfEn9mr4c+P/AIP6J8IfDvxg0PwVJ+3T+0J8F9b+JnhX4Z/tD/GfQPBPxO+Hf/BN3xv8FfhT8Xf2Xrm48Qah4J+M3w18UfAv9ta/8deGPhLr+neNPgv+xB4o8P8Axd/be8S3HxI+Iv1/8FPjX8fdC+Puofsp/tWWHwf1LxvqXwfuvjX8Dvjj8FLXxp4P8K/tDeFfB3jTSvCfx9sNQ+AXizVfijq/7O3iD9nbV/ij+zvoN1a69+0P8XtO+N2nfF7SvH/gDVdEudE+J/ww+FHj/wAQ/h58Xfgl8Xf2tNV0r9kv/htv9lL9tv8A4Q7xd8Uvhb4R8Y/BN/jZpvxsf4J+Gf2ZfiZ4d8RfDP8Aab8TfAn9njxj+yB4x/Z4+BPwUtZ4Lr416v8AF3TPi7q/xFsNQ+HXxB+FvxBs7z4JeQfsqeBv2n9H/a48AfEb9pX4bfGDw78IdE+D/wAaf2e/2FY/GuuaB8Z/2h/hn4V+Jmt/CL4r/GvwR/wUi+Inwx8bfGbwTqHiC5uf2XvAth+xR8dPC/xK8aadr/wl8MeIPDH7b/xo8S/tvfF34b2/xF//2Q==",
     "solid-backslash": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/APpv/gtL/wAHK/x9/wCCW37UHxA/Yo/Z60L4P/tJfEnwr4g8O/EzxR8Ufjv4V8aaXB8IfCvxa0DU/Hth+y5qngX4a3Hwi0n4meIPBmk+IvAXjDwB+0F4Z8aabp0Hwb8T+Fvg98S/A3xD+O3gr4jfHrxh9wf8G+P/AAcHax/wV21j4qfAT49/Cz4f/CX9pr4SfD+x+KVtc/C2+8dz+BPjD4EuPHeqeGvFmu6F4T8TaZ4j/wCFWf8ACrP+Ei+DHhzU9M8R/GfxxrHxE1jxxqHifwxp+iaLoms6Nof5Qf8ABxr/AMG5X7bX7X37bXij9ub9hnwv4f8AjZbfGzw/8JtG+K/wp1n4s+B/A/xC8OfELwP4Hv8A4d3Hizwnb/ESw+HHw7i+D8Xw7+HHwns7m2vPix4l+Jlz8TPEvia9svDX/CEiOTw37/8A8G1H/BFr9qD/AIJbfH3Xv2hf22Ph/wCIPCvxJ/aS+D/ir4EfC/wx8M/EWgfFrwr8IYNL8aW/xK8d6X+1Jf8AgLTPEWk+DPEHxM0n4ReC/E37Pvj/AMH+PvE/wbg07TfHXw0+MXinwV8dviH8Bfhz4w//2Q=="
 };
-
-var MovementCommandEven = require('./MovementCommandEven');
-var MovementCommandMove = require('./MovementCommandMove');
-var MovementCommandStand = require('./MovementCommandStand');
-var MovementCommandGoto = require('./MovementCommandGoto');
-var MovementCommandMarkTime = require('./MovementCommandMarkTime');
-var MovementCommandArc = require('./MovementCommandArc');
 
 /**
  * This PDFGenerator class will be able to generate the PDF representation of the given
@@ -89,7 +89,8 @@ PDFGenerator.prototype.generate = function() {
             this._addSurroundingDots(x, y);
         }
     }
-    this.pdf.save("show.pdf");
+    // CHANGE TO this.pdf.save LATER
+    this.pdf.output("dataurlnewwindow");
 };
 
 /**
@@ -313,8 +314,8 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
             });
 
             var maxLines = (QUADRANT_HEIGHT/5) / _this._getTextHeight(_size);
-            if (continuities.length > maxLines) {
-                _size -= 2;
+            while (continuities.length > maxLines) {
+                _size -= 1;
             }
 
             _this.pdf.addImage(
@@ -361,7 +362,7 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
         height: QUADRANT_HEIGHT * 2/5,
         width: QUADRANT_WIDTH / 2,
         x: quadrantX,
-        y: quadrantY + QUADRANT_WIDTH / 5,
+        y: quadrantY + QUADRANT_HEIGHT / 5,
         paddingX: 2,
         paddingY: 1.5,
         size: 10,
@@ -377,8 +378,6 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
                 var maxWidth = this.width - this.paddingX * 2;
                 while (_this._getTextWidth(this.movements[i], _size) > maxWidth) {
                     _size--;
-                    console.log(this.width);
-                    console.log(this.movements[i]);
                 }
 
                 _this.pdf.setFontSize(_size);
@@ -411,6 +410,11 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
                 orientation = "W"; break;
             case 270:
                 orientation = "N"; break;
+            case "CW":
+            case "CCW":
+                break;
+            default:
+                orientation = "";
         }
         var start = movement.getStartPosition();
         var end = movement.getEndPosition();
@@ -422,7 +426,26 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
         deltaY = Math.abs(deltaY);
 
         var text;
-        if (movement instanceof MovementCommandMove) {
+
+        // If movement is an Even, but behaves like a Move, treat as MovementCommandMove
+        var isMoveCommand = function() {
+            if (movement instanceof MovementCommandMove) {
+                return true;
+            }
+            if (movement instanceof MovementCommandEven) {
+                var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
+                if (steps == deltaX && deltaY == 0) {
+                    return true;
+                }
+                if (steps == deltaY && deltaX == 0) {
+                    return true;
+                }
+            }
+            return false;
+        }();
+
+        if (isMoveCommand) {
+            // MovementCommandMoves only move in one direction: X or Y
             if (deltaX == 0) {
                 text = "Move " + deltaY + dirY;
             } else {
@@ -437,10 +460,12 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
             text = "Close " + movement.getBeatDuration() + orientation;
         } else if (movement instanceof MovementCommandEven) {
             text = "Even ";
+            // If movement is a fraction of steps, simply say "NE" or "S"
             if (deltaX % 1 != 0 || deltaY % 1 != 0) {
                 text += (deltaX != 0) ? dirX : "";
                 text += (deltaY != 0) ? dirY : "";
             } else {
+                // End result will be concat. of directions, e.g. "Even 8E, 4S"
                 var moveTexts = [];
                 if (deltaY != 0) {
                     moveTexts.push(deltaY + dirY);
@@ -455,7 +480,7 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
         } else if (movement instanceof MovementCommandGoto) {
             text = "See Continuity (" + movement.getBeatDuration() + " beats)";
         } else if (movement instanceof MovementCommandArc) {
-            text = "GT " + orientation +" 90" + " deg. (" + movement.getBeatDuration() + " steps)";
+            text = "GT " + orientation + " " + movement.getAngle() + " deg. (" + movement.getBeatDuration() + " steps)";
         } else {
             throw new TypeError("Class not recognized: " + type);
         }

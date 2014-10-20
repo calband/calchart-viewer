@@ -101,6 +101,8 @@ MovementCommand.prototype.getAnimationState = function(beatNum) {
  * Returns the orientation of this MovementCommand, however
  * this MovementCommand interprets "orientation" as, or null if
  * this MovementCommand doesn't interpret orientation
+ *
+ * @return {int|String|null} The orientation in degrees, clockwise direction, or null
  */
 MovementCommand.prototype.getOrientation = function() {
     if (typeof this._orientation !== "undefined") {
