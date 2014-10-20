@@ -166,7 +166,7 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
                     this.x,
                     this.y - 1
                 );
-                this.x += _this._getTextWidth(String(pageNum), this.size) - .3;
+                this.x += _this._getTextWidth(String(pageNum), this.size);
                 _this.pdf.text(
                     "/",
                     this.x,
