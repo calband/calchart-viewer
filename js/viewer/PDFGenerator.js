@@ -258,11 +258,11 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
     sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
 
     if (sheetInfo.hasNext()) {
-        sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
+        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
     }
 
     if (sheetInfo.hasNext()) {
-        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
+        sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
     }
 
     if (sheetInfo.hasNext()) {
