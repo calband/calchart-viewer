@@ -175,8 +175,8 @@ ApplicationController.prototype._syncWithDelegate = function() {
  * animationStateDelegate.
  */
 ApplicationController.prototype._updateUIWithAnimationState = function () {
-    $(".js-stuntsheet-total").text(this._animationStateDelegate.getCurrentSheet().getDuration());
-    $(".js-beat-number").text(this._animationStateDelegate.getCurrentBeatNum() + 1);
+    $(".js-stuntsheet-total").text(this._animationStateDelegate.getCurrentSheet().getDuration() - 1);
+    $(".js-beat-number").text(this._animationStateDelegate.getCurrentBeatNum());
     var sheetNum = this._animationStateDelegate.getCurrentSheetNum() + 1;
     var sheetPage = sheetNum + "/" + this.getShow().getNumSheets();
     var sheetLabel = this._animationStateDelegate.getCurrentSheet().getSheetLabel();

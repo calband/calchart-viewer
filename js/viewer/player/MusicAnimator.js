@@ -113,14 +113,20 @@ MusicAnimator.prototype._loadBeatsOntoSound = function() {
  */
 MusicAnimator.prototype.start = function() {
     this.stop();
-    var overallBeat = 0;
+    var overallBeat = -1;
     var show = this._animStateDelegate.getShow();
     for (var sheet = 0; sheet < this._animStateDelegate.getCurrentSheetNum(); sheet++) {
         overallBeat += show.getSheet(sheet).getDuration();
     }
     overallBeat += this._animStateDelegate.getCurrentBeatNum();
     if (this._animStateDelegate.hasNextBeat() && overallBeat < this._beats.getNumBeats() - 1) {
-        this._sound.play(this._beats.getBeatTime(overallBeat));
+        if (overallBeat < 0) {
+            this._animStateDelegate.nextBeat();
+            $(".js-beat-number").text("1");
+            this._sound.play(0);
+        } else {
+            this._sound.play(this._beats.getBeatTime(overallBeat));
+        }
     } else {
         this._endOfShow();
     }
