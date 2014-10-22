@@ -478,6 +478,10 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
                 }
                 text += moveTexts.join(", ");
             }
+            // Error checking for an even move without movement in any direction
+            if (text === "Even ") {
+                text += "0";
+            }
             var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
             text += " (" + steps + " steps)";
         } else if (movement instanceof MovementCommandGoto) {
