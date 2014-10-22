@@ -58,7 +58,7 @@ ApplicationController.prototype.setShow = function (show) {
  * @param {int} the year of the desired shows
  */
 ApplicationController.prototype.getShows = function(year) {
-    var url = "http://calchart-server.herokuapp.com/list/" + year;
+    var url = "https://calchart-server.herokuapp.com/list/" + year;
     $.getJSON(url, function(data) {
         var options = data.shows.map(function(show) {
             return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
@@ -74,7 +74,7 @@ ApplicationController.prototype.getShows = function(year) {
  * @param {String} show is the index_name of the show to get
  */
 ApplicationController.prototype.autoloadShow = function(index_name) {
-    var url = "http://calchart-server.herokuapp.com/";
+    var url = "https://calchart-server.herokuapp.com/";
     var _this = this;
     $.getJSON(url + "chart/" + index_name, function(data) {
         var response = JSON.stringify(data);
