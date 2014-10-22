@@ -313,8 +313,8 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 return text;
             });
 
-            var maxLines = (QUADRANT_HEIGHT/5) / _this._getTextHeight(_size);
-            while (continuities.length > maxLines) {
+            var maxHeight = (QUADRANT_HEIGHT/5 - 2*box.paddingY - 3);
+            while (continuities.length * _this._getTextHeight(_size) > maxHeight) {
                 _size -= 1;
             }
 
@@ -325,19 +325,22 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 this.y
             );
             _this.pdf.setFontSize(this.size);
+            this.x += 4;
             _this.pdf.text(
                 ":",
-                this.x + 4,
+                this.x,
                 this.y + 3
             );
             _this.pdf.setFontSize(_size);
+            this.x += 2;
+            this.y += _this._getTextHeight(_size);
             _this.pdf.text(
                 continuities,
-                this.x + 6,
-                this.y + 3.5
+                this.x,
+                this.y
             );
 
-            var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 1;
+            var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 3;
             box.draw(height);
         }
     };
