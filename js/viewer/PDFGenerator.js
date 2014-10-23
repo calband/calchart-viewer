@@ -515,17 +515,18 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
 
     // draws box and field
     var box = {
-        height: QUADRANT_HEIGHT * 2/5 - 2*this._getTextHeight(12),
-        width: QUADRANT_WIDTH / 2 - 2*this._getTextWidth("S", 12),
+        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) - 1),
+        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1),
         x: quadrantX + QUADRANT_WIDTH / 2,
         y: quadrantY + QUADRANT_HEIGHT / 5,
         textSize: 12,
 
         // params are boundaries of viewport
-        // left, right are steps from North sideline; top, bottom are steps from West sideline
+        // left, right are steps from South sideline; top, bottom are steps from West sideline
         // scale is units per step
         draw: function(left, right, top, bottom, scale) {
             var textHeight = _this._getTextHeight(this.textSize);
+            var textWidth = _this._getTextWidth("S", this.textSize);
             _this.pdf.setFontSize(this.textSize);
             _this.pdf.text(
                 "E",
@@ -534,43 +535,67 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
             );
             _this.pdf.text(
                 "S",
-                this.x + QUADRANT_WIDTH/2 - _this._getTextWidth("S", this.textSize),
-                this.y + QUADRANT_HEIGHT / 5
+                this.x + QUADRANT_WIDTH/2 - textWidth,
+                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
             );
             _this.pdf.text(
                 "W",
                 this.x + QUADRANT_WIDTH / 4 - 2,
-                this.y + QUADRANT_HEIGHT * 2/5
+                this.y + QUADRANT_HEIGHT * 2/5 + textHeight
             );
             _this.pdf.text(
                 "N",
                 this.x,
-                this.y + QUADRANT_HEIGHT / 5
+                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
             );
-            this.x += _this._getTextWidth("N", this.textSize);
-            this.y += textHeight;
+            this.x += textWidth + 1;
+            this.y += textHeight + 1;
             _this.pdf.rect(
                 this.x,
                 this.y,
-                this.height,
-                this.width
+                this.width,
+                this.height
             );
             var westHash = bottom < 32 && top > 32;
             var eastHash = bottom < 52 && top > 52;
             var hashLength = 3;
 
             // position of first yardline in viewport
-            var i = this.x + (Math.ceil(left/8) * 8 - left) * scale;
-            for (; i < this.width; i += scale * 5) {
-                _this.pdf.line(i, this.y, i, this.y + this.height);
+            var i = (left - Math.floor(left/8) * 8) * scale;
+            var yardlineNum = Math.floor(left/8) * 5;
+            for (; i < this.width && yardlineNum <= 100; i += scale * 8, yardlineNum -= 5) {
+                _this.pdf.line(
+                    this.x + i, this.y,
+                    this.x + i, this.y + this.height
+                );
                 if (westHash) {
-                    var y = this.y + (32 - top) * scale;
-                    _this.pdf.line(i - hashLength/2, y, i + hashLength/2, y);
+                    var y = this.y + this.height - (32 - bottom) * scale;
+                    _this.pdf.line(
+                        this.x + i - hashLength/2, y,
+                        this.x + i + hashLength/2, y
+                    );
                 }
                 if (eastHash) {
-                    var y = this.y + (52 - top) * scale;
-                    _this.pdf.line(i - hashLength/2, y, i + hashLength/2, y);
+                    var y = this.y + this.height - (52 - bottom) * scale;
+                    _this.pdf.line(
+                        this.x + i - hashLength/2, y,
+                        this.x + i + hashLength/2, y
+                    );
                 }
+
+                var yardlineText = "";
+                if (yardlineNum < 50) {
+                    yardlineText = String(yardlineNum);
+                } else {
+                    yardlineText = String(100 - yardlineNum);
+                }
+                _this.pdf.setTextColor(150);
+                _this.pdf.text(
+                    yardlineText,
+                    this.x + i - _this._getTextWidth(yardlineText, this.textSize)/2,
+                    this.y + this.height - 1
+                );
+                _this.pdf.setTextColor(0);
             }
         },
 
@@ -578,18 +603,34 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
         lines: function(movements, x, y, scale) {
             x = this.x + x * scale;
             y = this.y + y * scale;
+            var spotRadius = 2;
+            _this.pdf.circle(x, y, spotRadius);
+            _this.pdf.setLineWidth(0.5);
             for (var i = 0; i < movements.length; i++) {
                 var movement = movements[i]; // 0: deltaX, 1: deltaY, 2: steps
-                var deltaX = movement[0];
-                var deltaY = movement[1];
+                // negative because orientation flipped
+                var deltaX = -movement[0] * scale;
+                var deltaY = -movement[1] * scale;
                 _this.pdf.line(x, y, x + deltaX, y + deltaY);
-                _this.pdf.setFontSize(this.textSize);
-                // offset step label off the line
-                var offsetX = (deltaY/deltaX < 0) ? -2 : 2;
-                _this.pdf.text(String(movement[2]), x + deltaX/2 + offsetX, y + deltaY/2 + 1);
+
+                // Labels for number of steps; doesn't look good, temporarily taken out
+                // _this.pdf.setFontSize(this.textSize);
+                // // offset step label off the line
+                // var offsetX = (deltaY/deltaX < 0) ? -2 : 2;
+                // _this.pdf.text(String(movement[2]), x + deltaX/2 + offsetX, y + deltaY/2 + 1);
+
                 x += deltaX;
                 y += deltaY;
             }
+            _this.pdf.setLineWidth(0.1);
+            _this.pdf.line(
+                x - spotRadius, y - spotRadius,
+                x + spotRadius, y + spotRadius
+            );
+            _this.pdf.line(
+                x + spotRadius, y - spotRadius,
+                x - spotRadius, y + spotRadius
+            );
         }
     };
 
@@ -646,11 +687,6 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
     var lines = [];
     for (var i = 0; i < movements.length; i++) {
         var movement = movements[i];
-        if (movement instanceof MovementCommandStand ||
-            movement instanceof MovementCommandMarkTime) {
-            continue;
-        }
-
         var endPosition = movement.getEndPosition();
         var x = endPosition.x - startPosition.x;
         var y = endPosition.y - startPosition.y;
@@ -667,12 +703,13 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
     // units per step
     var scale = box.width / viewport.width;
     // steps from sideline until start of viewport
-    var north = viewport.startX + viewport.maxX - viewport.getOverallX()/2 + viewport.width/2;
+    var south = viewport.startX + viewport.maxX - viewport.getOverallX()/2 - viewport.width/2;
     var west = viewport.startY + viewport.maxY - viewport.getOverallY()/2 - viewport.height/2;
+    var north = south + viewport.width;
+    var east = west + viewport.height;
     // orientation East up
-    box.draw(north, north - viewport.width, west + viewport.height, west, scale);
-    return;
-    box.lines(lines, viewport.startX - north, viewport.startY - west, scale);
+    box.draw(north, south, east, west, scale);
+    box.lines(lines, north - viewport.startX, east - viewport.startY, scale);
 };
 
 /**
@@ -684,6 +721,7 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Sheet} sheet
  */
 PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
 
@@ -699,6 +737,7 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Sheet} sheet
  */
 PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, sheet) {
 
