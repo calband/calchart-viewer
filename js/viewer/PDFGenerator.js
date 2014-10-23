@@ -21,9 +21,9 @@ var WIDTH = 215.9;
 var HEIGHT = 279.4;
 
 var QUADRANT = [
-    {x: 3, y: 24},                 // top left
-    {x: 3, y: HEIGHT/2 + 16},      // bottom left
+    {x: 3, y: 24},                     // top left
     {x: WIDTH/2 + 3, y: 24},           // top right
+    {x: 3, y: HEIGHT/2 + 16},          // bottom left
     {x: WIDTH/2 + 3, y: HEIGHT/2 + 16} // bottom right
 ];
 var QUADRANT_HEIGHT = HEIGHT/2 - 22;
@@ -147,7 +147,7 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
             size: 12,
 
             getWidth: function() {
-                return _this._getTextWidth(pageNum + "/" + totalPages, this.size);
+                return _this._getTextWidth("Page " + pageNum + "/" + totalPages, this.size);
             },
 
             getHeight: function() {
@@ -155,20 +155,27 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
             },
 
             draw: function() {
-                var numWidth = _this._getTextWidth(String(pageNum), this.size);
+                _this.pdf.text(
+                    "Page ",
+                    this.x,
+                    this.y
+                )
+                this.x += _this._getTextWidth("Page ", this.size);
                 _this.pdf.text(
                     String(pageNum),
                     this.x,
                     this.y - 1
                 );
+                this.x += _this._getTextWidth(String(pageNum), this.size);
                 _this.pdf.text(
                     "/",
-                    this.x + numWidth - .3,
+                    this.x,
                     this.y
                 );
+                this.x += _this._getTextWidth("/", this.size);
                 _this.pdf.text(
                     String(totalPages),
-                    this.x + numWidth + .7,
+                    this.x,
                     this.y + 1
                 );
             }
@@ -251,11 +258,11 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
     sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
 
     if (sheetInfo.hasNext()) {
-        sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
+        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
     }
 
     if (sheetInfo.hasNext()) {
-        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
+        sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
     }
 
     if (sheetInfo.hasNext()) {
