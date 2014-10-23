@@ -18,7 +18,7 @@ var AnimationState = require("./AnimationState");
  */
 var MovementCommandStand = function(x, y, orientation, beats) {
     this._orientation = orientation;
-    MovementCommand.apply(this, [x, y, beats]);
+    MovementCommand.apply(this, [x, y, x, y, beats]);
 };
 
 ClassUtils.extends(MovementCommandStand, MovementCommand);

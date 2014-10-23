@@ -28,7 +28,7 @@ var MovementCommandEven = function(startX, startY, endX, endY, orientation, beat
     var numSteps = Math.floor(beats / this._beatsPerStep);
     this._deltaXPerStep = (endX - startX) / numSteps;
     this._deltaYPerStep = (endY - startY) / numSteps;
-    
+
     MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
 };
 
@@ -38,5 +38,13 @@ MovementCommandEven.prototype.getAnimationState = function(beatNum) {
     var stepNum = Math.floor(beatNum / this._beatsPerStep);
     return new AnimationState(this._startX + (this._deltaXPerStep * stepNum), this._startY + (this._deltaYPerStep * stepNum), this._orientation);
 };
+
+/**
+ * Returns the number of beats in this movement
+ * @return {int}
+ */
+MovementCommandEven.prototype.getBeatsPerStep = function() {
+    return this._beatsPerStep;
+}
 
 module.exports = MovementCommandEven;

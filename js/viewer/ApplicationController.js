@@ -454,7 +454,9 @@ ApplicationController.prototype._updateAnimationControl = function() {
  * document that contains the selected dot's continuity for the entire show.
  */
 ApplicationController.prototype.generatePDF = function() {
-    new PDFGenerator(this._show, this._animationStateDelegate.getSelectedDot()).generate();
+    if (this._animationStateDelegate.getSelectedDot() !== undefined) {
+        new PDFGenerator(this._show, this._animationStateDelegate.getSelectedDot()).generate();
+    }
 };
 
 module.exports = ApplicationController;

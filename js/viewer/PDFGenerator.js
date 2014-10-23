@@ -9,17 +9,25 @@
  * @constant DOT_DATA contains the JPEG image data for the different dot types
  */
 
+var MovementCommandEven = require('./MovementCommandEven');
+var MovementCommandMove = require('./MovementCommandMove');
+var MovementCommandStand = require('./MovementCommandStand');
+var MovementCommandGoto = require('./MovementCommandGoto');
+var MovementCommandMarkTime = require('./MovementCommandMarkTime');
+var MovementCommandArc = require('./MovementCommandArc');
+
 /* CONSTANTS: DON'T CHANGE */
 var WIDTH = 215.9;
 var HEIGHT = 279.4;
 
 var QUADRANT = [
-    {x: 0, y: 22},                 // top left
-    {x: 0, y: HEIGHT/2 + 16},      // bottom left
-    {x: WIDTH/2, y: 22},           // top right
-    {x: WIDTH/2, y: HEIGHT/2 + 16} // bottom right
+    {x: 3, y: 24},                 // top left
+    {x: 3, y: HEIGHT/2 + 16},      // bottom left
+    {x: WIDTH/2 + 3, y: 24},           // top right
+    {x: WIDTH/2 + 3, y: HEIGHT/2 + 16} // bottom right
 ];
 var QUADRANT_HEIGHT = HEIGHT/2 - 22;
+var QUADRANT_WIDTH = WIDTH/2 - 6;
 
 var DOT_DATA = {
     "open": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QBARXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAALCAAQABABAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AP6+fGHxi/an+Mvx2+MXwQ/ZKuvgB8NvCX7O3/CvtB+LP7Rnx08H/EX44+f8dvGPg62+J+pfs1+F/wBmvwb8Qf2adTb/AIRv4JfEP4DfGbW/2jJ/2hb/AMHQf8LO0j4S+Gvhh428W2vxL174N9B8FPjX8fdC+Puofsp/tWWHwf1LxvqXwfuvjX8Dvjj8FLXxp4P8K/tDeFfB3jTSvCfx9sNQ+AXizVfijq/7O3iD9nbV/ij+zvoN1a69+0P8XtO+N2nfF7SvH/gDVdEudE+J/wAMPhR5/q+kftD/ALKv7Q/7R3xP+GH7OPiD9qf4E/tT+IPhr8W/EXh74S/Er4S6B+0r4A/aV8P/AAl8Ifs+eK5I/Cn7Qfi/9n34Han+zBqfwO/Z9+BN1pupWvx2vfjf4Z+N9748VvAfjr4beOtP1D4IdB8HfB/x2+Mv7U9t+1r8b/g7/wAM7eEvht8APGHwM/Zz+E+vfEHwd4x+O0//AAvH4i/D7xl+0p4p/aU034YXXxD+CXhvOp/s0/s9Qfs56J8Gfjz8TvI8HX/xP8S/FvV7Xxb420H4afBv/9k=",
@@ -75,13 +83,14 @@ PDFGenerator.prototype.generate = function() {
             var y = QUADRANT[i].y;
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
-            this._addIndividualContinuity(x, y);
+            this._addIndividualContinuity(x, y, sheet);
             this._addMovementDiagram(x, y);
             this._addBirdseye(x, y);
             this._addSurroundingDots(x, y);
         }
     }
-    this.pdf.save("show.pdf");
+    // CHANGE TO this.pdf.save LATER
+    this.pdf.output("dataurlnewwindow");
 };
 
 /**
@@ -270,34 +279,33 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
     var box = {
         paddingX: 2,
         paddingY: 1,
-        marginX: 3,
-        marginY: 2,
-
-        getWidth: function() {
-            return WIDTH/2 - this.marginX * 2;
-        },
 
         draw: function(height) {
-            var x = quadrantX + this.marginX;
-            var y = quadrantY + this.marginY;
-            _this.pdf.rect(x, y, this.getWidth(), height);
+            _this.pdf.rect(quadrantX, quadrantY, QUADRANT_WIDTH, height);
         }
     };
 
     var text = {
-        x: quadrantX + box.marginX + box.paddingX,
-        y: quadrantY + box.marginY + box.paddingY,
+        x: quadrantX + box.paddingX,
+        y: quadrantY + box.paddingY,
         size: 10,
 
         // width is the width of the containing box
         draw: function() {
+            var _size = this.size;
             var dotType = sheet.getDotType(_this.dot);
             var dotImage = DOT_DATA[dotType];
-            var maxWidth = box.getWidth() - box.paddingX*2 - 6;
-            var _size = this.size;
+            var maxWidth = QUADRANT_WIDTH - box.paddingX*2 - 6;
 
-            var continuities = sheet.getContinuityTexts(dotType).map(function(text) {
-                var origSize = _size;
+            var continuities = sheet.getContinuityTexts(dotType);
+
+            // fail-safe for sheets without Continuity Texts
+            if (typeof continuities === "undefined") {
+                box.draw(_this._getTextHeight(_size) + box.paddingY * 2 + 1);
+                return;
+            }
+
+            continuities = continuities.map(function(text) {
                 while (_this._getTextWidth(text, _size) > maxWidth) {
                     _size--;
                 }
@@ -305,8 +313,9 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 return text;
             });
 
-            if (continuities.length > 4) {
-                _size -= 2;
+            var maxHeight = (QUADRANT_HEIGHT/5 - 2*box.paddingY - 3);
+            while (continuities.length * _this._getTextHeight(_size) > maxHeight) {
+                _size -= 1;
             }
 
             _this.pdf.addImage(
@@ -316,19 +325,22 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 this.y
             );
             _this.pdf.setFontSize(this.size);
+            this.x += 4;
             _this.pdf.text(
                 ":",
-                this.x + 4,
+                this.x,
                 this.y + 3
             );
             _this.pdf.setFontSize(_size);
+            this.x += 2;
+            this.y += _this._getTextHeight(_size);
             _this.pdf.text(
                 continuities,
-                this.x + 6,
-                this.y + 3.5
+                this.x,
+                this.y
             );
 
-            var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 1;
+            var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 3;
             box.draw(height);
         }
     };
@@ -340,13 +352,148 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
  * Writes the continuities for the selected dot on the PDF. Includes:
  *      - Movements
  *      - Total beats
- *      - Border between general movements, e.g. Stand and Play vs. Continuity vs. FMHS
+ *      - Border between general movements, e.g. Stand and Play vs. Continuity
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Sheet} sheet the current stuntsheet
  */
-PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY) {
+PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY, sheet) {
+    var _this = this;
 
+    var box = {
+        height: QUADRANT_HEIGHT * 2/5,
+        width: QUADRANT_WIDTH / 2,
+        x: quadrantX,
+        y: quadrantY + QUADRANT_HEIGHT / 5,
+        paddingX: 2,
+        paddingY: 1.5,
+        size: 10,
+        movements: [],
+
+        draw: function() {
+            _this.pdf.rect(this.x, this.y, this.height, this.width);
+            var textHeight = _this._getTextHeight(this.size);
+            var textY = this.y + this.paddingY + textHeight;
+            var textX = this.x + this.paddingX;
+            for (var i = 0; i < this.movements.length; i++) {
+                var _size = this.size;
+                var maxWidth = this.width - this.paddingX * 2;
+                while (_this._getTextWidth(this.movements[i], _size) > maxWidth) {
+                    _size--;
+                }
+
+                _this.pdf.setFontSize(_size);
+                _this.pdf.text(
+                    this.movements[i],
+                    textX,
+                    textY + (textHeight + 1) * i
+                );
+            }
+
+            var totalLabel = sheet.getDuration() + " beats total";
+            _this.pdf.text(
+                totalLabel,
+                quadrantX + this.width/2 - _this._getTextWidth(totalLabel, this.size)/2 - 3,
+                textY - textHeight + this.height
+            );
+        }
+    };
+
+    var movements = sheet.getDotByLabel(this.dot).getMovementCommands();
+    for (var i = 0; i < movements.length; i++) {
+        var movement = movements[i];
+        var orientation = movement.getOrientation();
+        switch (orientation) {
+            case 0:
+                orientation = "E"; break;
+            case 90:
+                orientation = "S"; break;
+            case 180:
+                orientation = "W"; break;
+            case 270:
+                orientation = "N"; break;
+            case "CW":
+            case "CCW":
+                break;
+            default:
+                orientation = "";
+        }
+        var start = movement.getStartPosition();
+        var end = movement.getEndPosition();
+        var deltaX = end.x - start.x;
+        var deltaY = end.y - start.y;
+        var dirX = (deltaX < 0) ? "S" : "N";
+        var dirY = (deltaY < 0) ? "W" : "E";
+        deltaX = Math.abs(deltaX);
+        deltaY = Math.abs(deltaY);
+
+        var text;
+
+        // If movement is an Even, but behaves like a Move, treat as MovementCommandMove
+        var isMoveCommand = function() {
+            if (movement instanceof MovementCommandMove) {
+                return true;
+            }
+            if (movement instanceof MovementCommandEven) {
+                var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
+                if (steps == deltaX && deltaY == 0) {
+                    return true;
+                }
+                if (steps == deltaY && deltaX == 0) {
+                    return true;
+                }
+            }
+            return false;
+        }();
+
+        if (isMoveCommand) {
+            // MovementCommandMoves only move in one direction: X or Y
+            if (deltaX == 0) {
+                text = "Move " + deltaY + dirY;
+            } else {
+                text = "Move " + deltaX + dirX;
+            }
+        } else if (movement instanceof MovementCommandMarkTime) {
+            if (movement.getBeatDuration() == 0) {
+                continue;
+            }
+            text = "MT " + movement.getBeatDuration() + orientation;
+        } else if (movement instanceof MovementCommandStand) {
+            text = "Close " + movement.getBeatDuration() + orientation;
+        } else if (movement instanceof MovementCommandEven) {
+            text = "Even ";
+            // If movement is a fraction of steps, simply say "NE" or "S"
+            if (deltaX % 1 != 0 || deltaY % 1 != 0) {
+                text += (deltaX != 0) ? dirX : "";
+                text += (deltaY != 0) ? dirY : "";
+            } else {
+                // End result will be concat. of directions, e.g. "Even 8E, 4S"
+                var moveTexts = [];
+                if (deltaY != 0) {
+                    moveTexts.push(deltaY + dirY);
+                }
+                if (deltaX != 0) {
+                    moveTexts.push(deltaX + dirX);
+                }
+                text += moveTexts.join(", ");
+            }
+            // Error checking for an even move without movement in any direction
+            if (text === "Even ") {
+                text += "0";
+            }
+            var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
+            text += " (" + steps + " steps)";
+        } else if (movement instanceof MovementCommandGoto) {
+            text = "See Continuity (" + movement.getBeatDuration() + " beats)";
+        } else if (movement instanceof MovementCommandArc) {
+            text = "GT " + orientation + " " + movement.getAngle() + " deg. (" + movement.getBeatDuration() + " steps)";
+        } else {
+            throw new TypeError("Class not recognized: " + type);
+        }
+        box.movements.push(text);
+    }
+    box.draw();
 };
 
 /**
