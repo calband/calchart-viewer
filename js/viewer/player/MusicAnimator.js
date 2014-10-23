@@ -113,6 +113,7 @@ MusicAnimator.prototype._loadBeatsOntoSound = function() {
  */
 MusicAnimator.prototype.start = function() {
     this.stop();
+    // beat "0" of a given stuntsheet is really the last beat of the stuntsheet before
     var overallBeat = -1;
     var show = this._animStateDelegate.getShow();
     for (var sheet = 0; sheet < this._animStateDelegate.getCurrentSheetNum(); sheet++) {
