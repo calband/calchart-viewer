@@ -84,9 +84,9 @@ PDFGenerator.prototype.generate = function() {
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
             this._addIndividualContinuity(x, y, sheet);
-            this._addMovementDiagram(x, y);
-            this._addBirdseye(x, y);
-            this._addSurroundingDots(x, y);
+            this._addMovementDiagram(x, y, sheet);
+            this._addBirdseye(x, y, sheet);
+            this._addSurroundingDots(x, y, sheet);
         }
     }
     // CHANGE TO this.pdf.save LATER
@@ -508,9 +508,171 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Sheet} sheet
  */
-PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY) {
+PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, sheet) {
+    var _this = this;
 
+    // draws box and field
+    var box = {
+        height: QUADRANT_HEIGHT * 2/5 - 2*this._getTextHeight(12),
+        width: QUADRANT_WIDTH / 2 - 2*this._getTextWidth("S", 12),
+        x: quadrantX + QUADRANT_WIDTH / 2,
+        y: quadrantY + QUADRANT_HEIGHT / 5,
+        textSize: 12,
+
+        // params are boundaries of viewport
+        // left, right are steps from North sideline; top, bottom are steps from West sideline
+        // scale is units per step
+        draw: function(left, right, top, bottom, scale) {
+            var textHeight = _this._getTextHeight(this.textSize);
+            _this.pdf.setFontSize(this.textSize);
+            _this.pdf.text(
+                "E",
+                this.x + QUADRANT_WIDTH / 4 - 2,
+                this.y + textHeight
+            );
+            _this.pdf.text(
+                "S",
+                this.x + QUADRANT_WIDTH/2 - _this._getTextWidth("S", this.textSize),
+                this.y + QUADRANT_HEIGHT / 5
+            );
+            _this.pdf.text(
+                "W",
+                this.x + QUADRANT_WIDTH / 4 - 2,
+                this.y + QUADRANT_HEIGHT * 2/5
+            );
+            _this.pdf.text(
+                "N",
+                this.x,
+                this.y + QUADRANT_HEIGHT / 5
+            );
+            this.x += _this._getTextWidth("N", this.textSize);
+            this.y += textHeight;
+            _this.pdf.rect(
+                this.x,
+                this.y,
+                this.height,
+                this.width
+            );
+            var westHash = bottom < 32 && top > 32;
+            var eastHash = bottom < 52 && top > 52;
+            var hashLength = 3;
+
+            // position of first yardline in viewport
+            var i = this.x + (Math.ceil(left/8) * 8 - left) * scale;
+            for (; i < this.width; i += scale * 5) {
+                _this.pdf.line(i, this.y, i, this.y + this.height);
+                if (westHash) {
+                    var y = this.y + (32 - top) * scale;
+                    _this.pdf.line(i - hashLength/2, y, i + hashLength/2, y);
+                }
+                if (eastHash) {
+                    var y = this.y + (52 - top) * scale;
+                    _this.pdf.line(i - hashLength/2, y, i + hashLength/2, y);
+                }
+            }
+        },
+
+        // draws movement lines and labels starting at (x, y) in steps from edge of viewport
+        lines: function(movements, x, y, scale) {
+            x = this.x + x * scale;
+            y = this.y + y * scale;
+            for (var i = 0; i < movements.length; i++) {
+                var movement = movements[i]; // 0: deltaX, 1: deltaY, 2: steps
+                var deltaX = movement[0];
+                var deltaY = movement[1];
+                _this.pdf.line(x, y, x + deltaX, y + deltaY);
+                _this.pdf.setFontSize(this.textSize);
+                // offset step label off the line
+                var offsetX = (deltaY/deltaX < 0) ? -2 : 2;
+                _this.pdf.text(String(movement[2]), x + deltaX/2 + offsetX, y + deltaY/2 + 1);
+                x += deltaX;
+                y += deltaY;
+            }
+        }
+    };
+
+    var movements = sheet.getDotByLabel(this.dot).getMovementCommands();
+    var startPosition = movements[0].getStartPosition();
+
+    // calculates scale of viewport
+    var viewport = {
+        startX: startPosition.x,
+        startY: startPosition.y,
+        minX: 0, // minX <= 0, maximum movement South
+        minY: 0, // minY <= 0, maximum movement West
+        maxX: 0, // maxX >= 0, maximum movement North
+        maxY: 0, // maxY >= 0, maximum movement East
+        deltaX: 0, // overall change in NS
+        deltaY: 0, // overall change in EW
+        width: 20, // in steps
+        height: box.height/box.width * 20, // in steps, keeping height/width ratio
+        update: function(x, y) {
+            this.deltaX += x;
+            this.deltaY += y;
+            if (this.deltaX < this.minX) {
+                this.minX = this.deltaX;
+            } else if (this.deltaX > this.maxX) {
+                this.maxX = this.deltaX;
+            }
+
+            if (this.deltaY < this.minY) {
+                this.minY = this.deltaY;
+            } else if (this.deltaY > this.maxY) {
+                this.maxY = this.deltaY;
+            }
+        },
+        getOverallX: function() {
+            return this.maxX - this.minX;
+        },
+        getOverallY: function() {
+            return this.maxY - this.minY;
+        },
+        scale: function() {
+            var deltaX = this.getOverallX();
+            var deltaY = this.getOverallY();
+            if (deltaX > this.width - 2) {
+                this.width = deltaX + 2;
+                this.height = box.height/box.width * this.width;
+            }
+            if (deltaY > this.height - 2) {
+                this.height = deltaY + 2;
+                this.width = box.width/box.height * this.height;
+            }
+        }
+    };
+
+    var lines = [];
+    for (var i = 0; i < movements.length; i++) {
+        var movement = movements[i];
+        if (movement instanceof MovementCommandStand ||
+            movement instanceof MovementCommandMarkTime) {
+            continue;
+        }
+
+        var endPosition = movement.getEndPosition();
+        var x = endPosition.x - startPosition.x;
+        var y = endPosition.y - startPosition.y;
+        startPosition = endPosition;
+        var steps = movement.getBeatDuration();
+        if (movement instanceof MovementCommandEven) {
+            steps /= movement.getBeatsPerStep();
+        }
+        lines.push([x, y, steps]);
+        viewport.update(x, y);
+    }
+    viewport.scale();
+
+    // units per step
+    var scale = box.width / viewport.width;
+    // steps from sideline until start of viewport
+    var north = viewport.startX + viewport.maxX - viewport.getOverallX()/2 + viewport.width/2;
+    var west = viewport.startY + viewport.maxY - viewport.getOverallY()/2 - viewport.height/2;
+    // orientation East up
+    box.draw(north, north - viewport.width, west + viewport.height, west, scale);
+    return;
+    box.lines(lines, viewport.startX - north, viewport.startY - west, scale);
 };
 
 /**
@@ -523,7 +685,7 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY) {
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  */
-PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY) {
+PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
 
 };
 
@@ -538,7 +700,7 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY) {
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  */
-PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY) {
+PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, sheet) {
 
 };
 
