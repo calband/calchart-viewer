@@ -682,12 +682,12 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
         scale: function() {
             var deltaX = this.getOverallX();
             var deltaY = this.getOverallY();
-            if (deltaX > this.width - 2) {
-                this.width = deltaX + 2;
+            if (deltaX > this.width - 4) {
+                this.width = deltaX + 4;
                 this.height = box.height/box.width * this.width;
             }
-            if (deltaY > this.height - 2) {
-                this.height = deltaY + 2;
+            if (deltaY > this.height - 4) {
+                this.height = deltaY + 4;
                 this.width = box.width/box.height * this.height;
             }
         }
