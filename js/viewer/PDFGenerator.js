@@ -614,18 +614,20 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
             _this.pdf.circle(x, y, spotRadius);
             _this.pdf.setLineWidth(0.5);
             for (var i = 0; i < movements.length; i++) {
-                var movement = movements[i]; // 0: deltaX, 1: deltaY, 2: steps
+                // 0: deltaX, 1: deltaY, 2: midX, 3: midY
+                var movement = movements[i];
                 // negative because orientation flipped
                 var deltaX = -movement[0] * scale;
                 var deltaY = -movement[1] * scale;
-                _this.pdf.line(x, y, x + deltaX, y + deltaY);
 
-                // Labels for number of steps; doesn't look good, temporarily taken out
-                // _this.pdf.setFontSize(this.textSize);
-                // // offset step label off the line
-                // var offsetX = (deltaY/deltaX < 0) ? -2 : 2;
-                // _this.pdf.text(String(movement[2]), x + deltaX/2 + offsetX, y + deltaY/2 + 1);
-
+                if (movement[2] === undefined) {
+                    _this.pdf.line(x, y, x + deltaX, y + deltaY);
+                } else {
+                    var midX = -movement[2] * scale;
+                    var midY = -movement[3] * scale;
+                    var curve = [midX, midY, midX, midY, deltaX, deltaY];
+                    _this.pdf.lines([curve], x, y);
+                }
                 x += deltaX;
                 y += deltaY;
             }
@@ -697,13 +699,18 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
         var endPosition = movement.getEndPosition();
         var x = endPosition.x - startPosition.x;
         var y = endPosition.y - startPosition.y;
-        startPosition = endPosition;
-        var steps = movement.getBeatDuration();
-        if (movement instanceof MovementCommandEven) {
-            steps /= movement.getBeatsPerStep();
+
+        if (movement instanceof MovementCommandArc) {
+            var midBeat = movement.getBeatDuration() / 2;
+            var midPosition = movement.getAnimationState(midBeat);
+            var midX = midPosition.x - startPosition.x;
+            var midY = midPosition.y - startPosition.y;
+            lines.push([x, y, midX, midY]);
+        } else {
+            lines.push([x, y]);
         }
-        lines.push([x, y, steps]);
         viewport.update(x, y);
+        startPosition = endPosition;
     }
     viewport.scale();
 
