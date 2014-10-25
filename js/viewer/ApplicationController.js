@@ -176,7 +176,12 @@ ApplicationController.prototype._syncWithDelegate = function() {
  */
 ApplicationController.prototype._updateUIWithAnimationState = function () {
     $(".js-stuntsheet-total").text(this._animationStateDelegate.getCurrentSheet().getDuration());
-    $(".js-beat-number").text(this._animationStateDelegate.getCurrentBeatNum() + 1);
+    var currBeat = this._animationStateDelegate.getCurrentBeatNum();
+    if (currBeat === 0) {
+        $(".js-beat-number").text("Hup");
+    } else {
+        $(".js-beat-number").text(currBeat);
+    }
     var sheetNum = this._animationStateDelegate.getCurrentSheetNum() + 1;
     var sheetPage = sheetNum + "/" + this.getShow().getNumSheets();
     var sheetLabel = this._animationStateDelegate.getCurrentSheet().getSheetLabel();
