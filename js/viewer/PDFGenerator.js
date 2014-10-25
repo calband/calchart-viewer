@@ -597,13 +597,24 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
                     yardlineText = String(100 - yardlineNum);
                 }
                 _this.pdf.setTextColor(150);
-                _this.pdf.text(
-                    yardlineText,
-                    this.x + i - _this._getTextWidth(yardlineText, this.textSize)/2,
-                    this.y + this.height - 1
-                );
-                _this.pdf.setTextColor(0);
+                _this.pdf.setFontSize(8);
+
+                // only show the second character if the yardline is on the left border
+                if (i === 0) {
+                    _this.pdf.text(
+                        yardlineText[1],
+                        this.x,
+                        this.y + this.height - 1
+                    );
+                } else {
+                    _this.pdf.text(
+                        yardlineText,
+                        this.x + i - _this._getTextWidth(yardlineText, 8)/2,
+                        this.y + this.height - 1
+                    );
+                }
             }
+            _this.pdf.setTextColor(0);
         },
 
         // draws movement lines and labels starting at (x, y) in steps from edge of viewport
