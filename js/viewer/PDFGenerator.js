@@ -9,12 +9,13 @@
  * @constant DOT_DATA contains the JPEG image data for the different dot types
  */
 
-var MovementCommandEven = require('./MovementCommandEven');
-var MovementCommandMove = require('./MovementCommandMove');
-var MovementCommandStand = require('./MovementCommandStand');
-var MovementCommandGoto = require('./MovementCommandGoto');
-var MovementCommandMarkTime = require('./MovementCommandMarkTime');
-var MovementCommandArc = require('./MovementCommandArc');
+var MovementCommandEven = require("./MovementCommandEven");
+var MovementCommandMove = require("./MovementCommandMove");
+var MovementCommandStand = require("./MovementCommandStand");
+var MovementCommandGoto = require("./MovementCommandGoto");
+var MovementCommandMarkTime = require("./MovementCommandMarkTime");
+var MovementCommandArc = require("./MovementCommandArc");
+var MathUtils = require("./MathUtils");
 
 /* CONSTANTS: DON'T CHANGE */
 var WIDTH = 215.9;
@@ -625,7 +626,7 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
             _this.pdf.circle(x, y, spotRadius);
             _this.pdf.setLineWidth(0.5);
             for (var i = 0; i < movements.length; i++) {
-                // 0: deltaX, 1: deltaY, 2: midX, 3: midY
+                // 0: deltaX, 1: deltaY, 2: list of intermediate points (arcs)
                 var movement = movements[i];
                 // negative because orientation flipped
                 var deltaX = -movement[0] * scale;
@@ -633,14 +634,18 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
 
                 if (movement[2] === undefined) {
                     _this.pdf.line(x, y, x + deltaX, y + deltaY);
+                    x += deltaX;
+                    y += deltaY;
                 } else {
-                    var midX = -movement[2] * scale;
-                    var midY = -movement[3] * scale;
-                    var curve = [midX, midY, midX, midY, deltaX, deltaY];
-                    _this.pdf.lines([curve], x, y);
+                    var points = movement[2];
+                    for (var j = 0; j < points.length; j++) {
+                        deltaX = -points[j][0] * scale;
+                        deltaY = -points[j][1] * scale;
+                        _this.pdf.line(x, y, x + deltaX, y + deltaY);
+                        x += deltaX;
+                        y += deltaY;
+                    }
                 }
-                x += deltaX;
-                y += deltaY;
             }
             _this.pdf.setLineWidth(0.1);
             _this.pdf.line(
@@ -712,11 +717,8 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
         var y = endPosition.y - startPosition.y;
 
         if (movement instanceof MovementCommandArc) {
-            var midBeat = movement.getBeatDuration() / 2;
-            var midPosition = movement.getAnimationState(midBeat);
-            var midX = midPosition.x - startPosition.x;
-            var midY = midPosition.y - startPosition.y;
-            lines.push([x, y, midX, midY]);
+            var points = movement.getMiddlePoints(10);
+            lines.push([x, y, points]);
         } else {
             lines.push([x, y]);
         }

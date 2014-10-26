@@ -55,11 +55,33 @@ MovementCommandArc.prototype.getAnimationState = function(beatNum) {
 };
 
 /**
- * Returns the total angle of movement
+ * Returns the total angle of movement in degrees
  * @return {int} the rounded angle of movement
  */
 MovementCommandArc.prototype.getAngle = function() {
     return Math.abs(Math.floor(MathUtils.toDegrees(this._numBeats * this._stepAngleDelta)));
+};
+
+/**
+ * Returns a list of (deltaX, deltaY) pairs that lie along the arc
+ * @param {int} the number of intermediate points
+ * @return {Array<Array<int>>} an array of (deltaX, deltaY) pairs
+ */
+MovementCommandArc.prototype.getMiddlePoints = function(pointNum) {
+    var deltaAngle = this._stepAngleDelta * this._numBeats / pointNum;
+    var totalAngle = this._startAngle;
+    var prevX = this._startX;
+    var prevY = this._startY;
+    var points = [];
+    for (var i = 0; i < pointNum; i++) {
+        totalAngle += deltaAngle;
+        var x = this._radius * MathUtils.calcRotatedXPos(totalAngle) + this._centerX;
+        var y = this._radius * MathUtils.calcRotatedYPos(totalAngle) + this._centerY;
+        points.push([x - prevX, y - prevY]);
+        prevX = x;
+        prevY = y;
+    }
+    return points;
 };
 
 module.exports = MovementCommandArc;
