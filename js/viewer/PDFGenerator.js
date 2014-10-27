@@ -9,12 +9,13 @@
  * @constant DOT_DATA contains the JPEG image data for the different dot types
  */
 
-var MovementCommandEven = require('./MovementCommandEven');
-var MovementCommandMove = require('./MovementCommandMove');
-var MovementCommandStand = require('./MovementCommandStand');
-var MovementCommandGoto = require('./MovementCommandGoto');
-var MovementCommandMarkTime = require('./MovementCommandMarkTime');
-var MovementCommandArc = require('./MovementCommandArc');
+var MovementCommandEven = require("./MovementCommandEven");
+var MovementCommandMove = require("./MovementCommandMove");
+var MovementCommandStand = require("./MovementCommandStand");
+var MovementCommandGoto = require("./MovementCommandGoto");
+var MovementCommandMarkTime = require("./MovementCommandMarkTime");
+var MovementCommandArc = require("./MovementCommandArc");
+var MathUtils = require("./MathUtils");
 
 /* CONSTANTS: DON'T CHANGE */
 var WIDTH = 215.9;
@@ -84,9 +85,9 @@ PDFGenerator.prototype.generate = function() {
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
             this._addIndividualContinuity(x, y, sheet);
-            this._addMovementDiagram(x, y);
-            this._addBirdseye(x, y);
-            this._addSurroundingDots(x, y);
+            this._addMovementDiagram(x, y, sheet);
+            this._addBirdseye(x, y, sheet);
+            this._addSurroundingDots(x, y, sheet);
         }
     }
     // CHANGE TO this.pdf.save LATER
@@ -515,9 +516,227 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Sheet} sheet
  */
-PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY) {
+PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, sheet) {
+    var _this = this;
 
+    // draws box and field
+    var box = {
+        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) - 1),
+        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1),
+        x: quadrantX + QUADRANT_WIDTH / 2,
+        y: quadrantY + QUADRANT_HEIGHT / 5,
+        textSize: 12,
+
+        // params are boundaries of viewport
+        // left, right are steps from South sideline; top, bottom are steps from West sideline
+        // scale is units per step
+        draw: function(left, right, top, bottom, scale) {
+            var textHeight = _this._getTextHeight(this.textSize);
+            var textWidth = _this._getTextWidth("S", this.textSize);
+            _this.pdf.setFontSize(this.textSize);
+            _this.pdf.text(
+                "E",
+                this.x + QUADRANT_WIDTH / 4 - 2,
+                this.y + textHeight
+            );
+            _this.pdf.text(
+                "S",
+                this.x + QUADRANT_WIDTH/2 - textWidth,
+                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+            );
+            _this.pdf.text(
+                "W",
+                this.x + QUADRANT_WIDTH / 4 - 2,
+                this.y + QUADRANT_HEIGHT * 2/5 + textHeight
+            );
+            _this.pdf.text(
+                "N",
+                this.x,
+                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+            );
+            this.x += textWidth + 1;
+            this.y += textHeight + 1;
+            _this.pdf.rect(
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
+            var westHash = bottom < 32 && top > 32;
+            var eastHash = bottom < 52 && top > 52;
+            var hashLength = 3;
+
+            // position of first yardline in viewport
+            var i = (left - Math.floor(left/8) * 8) * scale;
+            var yardlineNum = Math.floor(left/8) * 5;
+            for (; i < this.width && yardlineNum <= 100; i += scale * 8, yardlineNum -= 5) {
+                _this.pdf.line(
+                    this.x + i, this.y,
+                    this.x + i, this.y + this.height
+                );
+                if (westHash) {
+                    var y = this.y + this.height - (32 - bottom) * scale;
+                    _this.pdf.line(
+                        this.x + i - hashLength/2, y,
+                        this.x + i + hashLength/2, y
+                    );
+                }
+                if (eastHash) {
+                    var y = this.y + this.height - (52 - bottom) * scale;
+                    _this.pdf.line(
+                        this.x + i - hashLength/2, y,
+                        this.x + i + hashLength/2, y
+                    );
+                }
+
+                var yardlineText = "";
+                if (yardlineNum < 50) {
+                    yardlineText = String(yardlineNum);
+                } else {
+                    yardlineText = String(100 - yardlineNum);
+                }
+                _this.pdf.setTextColor(150);
+                _this.pdf.setFontSize(8);
+
+                // only show the second character if the yardline is on the left border
+                if (i === 0) {
+                    _this.pdf.text(
+                        yardlineText[1],
+                        this.x,
+                        this.y + this.height - 1
+                    );
+                } else {
+                    _this.pdf.text(
+                        yardlineText,
+                        this.x + i - _this._getTextWidth(yardlineText, 8)/2,
+                        this.y + this.height - 1
+                    );
+                }
+            }
+            _this.pdf.setTextColor(0);
+        },
+
+        // draws movement lines and labels starting at (x, y) in steps from edge of viewport
+        lines: function(movements, x, y, scale) {
+            x = this.x + x * scale;
+            y = this.y + y * scale;
+            var spotRadius = 2;
+            _this.pdf.circle(x, y, spotRadius);
+            _this.pdf.setLineWidth(0.5);
+            for (var i = 0; i < movements.length; i++) {
+                // 0: deltaX, 1: deltaY, 2: list of intermediate points (arcs)
+                var movement = movements[i];
+                // negative because orientation flipped
+                var deltaX = -movement[0] * scale;
+                var deltaY = -movement[1] * scale;
+
+                if (movement[2] === undefined) {
+                    _this.pdf.line(x, y, x + deltaX, y + deltaY);
+                    x += deltaX;
+                    y += deltaY;
+                } else {
+                    var points = movement[2];
+                    for (var j = 0; j < points.length; j++) {
+                        deltaX = -points[j][0] * scale;
+                        deltaY = -points[j][1] * scale;
+                        _this.pdf.line(x, y, x + deltaX, y + deltaY);
+                        x += deltaX;
+                        y += deltaY;
+                    }
+                }
+            }
+            _this.pdf.setLineWidth(0.1);
+            _this.pdf.line(
+                x - spotRadius, y - spotRadius,
+                x + spotRadius, y + spotRadius
+            );
+            _this.pdf.line(
+                x + spotRadius, y - spotRadius,
+                x - spotRadius, y + spotRadius
+            );
+        }
+    };
+
+    var movements = sheet.getDotByLabel(this.dot).getMovementCommands();
+    var startPosition = movements[0].getStartPosition();
+
+    // calculates scale of viewport
+    var viewport = {
+        startX: startPosition.x,
+        startY: startPosition.y,
+        minX: 0, // minX <= 0, maximum movement South
+        minY: 0, // minY <= 0, maximum movement West
+        maxX: 0, // maxX >= 0, maximum movement North
+        maxY: 0, // maxY >= 0, maximum movement East
+        deltaX: 0, // overall change in NS
+        deltaY: 0, // overall change in EW
+        width: 20, // in steps
+        height: box.height/box.width * 20, // in steps, keeping height/width ratio
+        update: function(x, y) {
+            this.deltaX += x;
+            this.deltaY += y;
+            if (this.deltaX < this.minX) {
+                this.minX = this.deltaX;
+            } else if (this.deltaX > this.maxX) {
+                this.maxX = this.deltaX;
+            }
+
+            if (this.deltaY < this.minY) {
+                this.minY = this.deltaY;
+            } else if (this.deltaY > this.maxY) {
+                this.maxY = this.deltaY;
+            }
+        },
+        getOverallX: function() {
+            return this.maxX - this.minX;
+        },
+        getOverallY: function() {
+            return this.maxY - this.minY;
+        },
+        scale: function() {
+            var deltaX = this.getOverallX();
+            var deltaY = this.getOverallY();
+            if (deltaX > this.width - 4) {
+                this.width = deltaX + 4;
+                this.height = box.height/box.width * this.width;
+            }
+            if (deltaY > this.height - 4) {
+                this.height = deltaY + 4;
+                this.width = box.width/box.height * this.height;
+            }
+        }
+    };
+
+    var lines = [];
+    for (var i = 0; i < movements.length; i++) {
+        var movement = movements[i];
+        var endPosition = movement.getEndPosition();
+        var x = endPosition.x - startPosition.x;
+        var y = endPosition.y - startPosition.y;
+
+        if (movement instanceof MovementCommandArc) {
+            var points = movement.getMiddlePoints(10);
+            lines.push([x, y, points]);
+        } else {
+            lines.push([x, y]);
+        }
+        viewport.update(x, y);
+        startPosition = endPosition;
+    }
+    viewport.scale();
+
+    // units per step
+    var scale = box.width / viewport.width;
+    // steps from sideline until start of viewport
+    var south = viewport.startX + viewport.maxX - viewport.getOverallX()/2 - viewport.width/2;
+    var west = viewport.startY + viewport.maxY - viewport.getOverallY()/2 - viewport.height/2;
+    var north = south + viewport.width;
+    var east = west + viewport.height;
+    // orientation East up
+    box.draw(north, south, east, west, scale);
+    box.lines(lines, north - viewport.startX, east - viewport.startY, scale);
 };
 
 /**
@@ -529,8 +748,9 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY) {
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Sheet} sheet
  */
-PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY) {
+PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
 
 };
 
@@ -544,8 +764,9 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY) {
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Sheet} sheet
  */
-PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY) {
+PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, sheet) {
 
 };
 
