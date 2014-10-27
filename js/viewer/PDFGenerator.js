@@ -806,6 +806,29 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
     var scaleX = box.width / 160;
     var scaleY = box.height / 84;
 
+    // drawing hashes
+    this.pdf.setLineWidth(.2);
+    var numDashes = 21;
+    var dashLength = box.width / numDashes;
+    var westHash = startY + 32 * scaleY;
+    var eastHash = startY + 52 * scaleY;
+    for (var i = 0; i < numDashes; i++) {
+        if (i % 2 == 0) {
+            this.pdf.setDrawColor(150);
+        } else {
+            this.pdf.setDrawColor(255);
+        }
+        var x = startX + i * dashLength;
+        this.pdf.line(
+            x, westHash,
+            x + dashLength, westHash
+        );
+        this.pdf.line(
+            x, eastHash,
+            x + dashLength, eastHash
+        );
+    }
+
     this.pdf.setFillColor(210);
     for (var i = 0; i < dots.length; i++) {
         var dot = dots[i];
@@ -890,7 +913,6 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
     coordinates.y = startY + y + this._getTextHeight(coordinates.textSize)/4;
 
     this.pdf.setFillColor(0);
-    this.pdf.setLineWidth(.2);
     this.pdf.setDrawColor(180);
     this.pdf.setFontSize(coordinates.textSize);
 
