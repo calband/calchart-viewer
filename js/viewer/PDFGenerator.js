@@ -850,8 +850,9 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
 
     var coordinates = { textSize: 8 };
 
+    // Gives x-coordinates for current dot; i.e. "4S N40"
     var horizSteps = position.x % 8;
-    if (horizSteps > 4) {
+    if (horizSteps > 4) { // closer to North-side yardline
         var yardline = Math.ceil(position.x/8) * 5;
         if (yardline < 50) {
             yardline = "S" + yardline;
@@ -861,7 +862,7 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
             yardline = "N" + (100 - yardline);
         }
         coordinates.textX = horizSteps - 4 + "S " + yardline;
-    } else {
+    } else { // closer to South-side yardline
         var yardline = Math.floor(position.x/8) * 5;
         if (yardline < 50) {
             yardline = "S" + yardline;
@@ -878,6 +879,7 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
         }
     }
 
+    // Gives y-coordinates for current dot; i.e. "2E WH"
     vertSteps = position.y;
     if (vertSteps <= 16) { // closer to West sideline
         if (vertSteps === 0) {
@@ -925,6 +927,7 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
         startX + box.width, startY + y
     );
 
+    // Put coordinate texts on opposite side of the field as the selected dot
     if (position.y > 42) {
         this.pdf.text(
             coordinates.textX,
