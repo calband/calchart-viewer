@@ -593,25 +593,38 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
                 }
 
                 var yardlineText = "";
+                var yardTextSize = 8;
                 if (yardlineNum < 50) {
                     yardlineText = String(yardlineNum);
                 } else {
                     yardlineText = String(100 - yardlineNum);
                 }
                 _this.pdf.setTextColor(150);
-                _this.pdf.setFontSize(8);
+                _this.pdf.setFontSize(yardTextSize);
+                var halfTextWidth = _this._getTextWidth(yardlineText, yardTextSize)/2;
 
-                // only show the second character if the yardline is on the left border
-                if (i === 0) {
-                    _this.pdf.text(
-                        yardlineText[1],
-                        this.x,
-                        this.y + this.height - 1
-                    );
+                if (i < halfTextWidth) {
+                    // first character doesn't fit
+                    if (yardlineText.length > 1) {
+                        _this.pdf.text(
+                            yardlineText[1],
+                            this.x + i,
+                            this.y + this.height - 1
+                        );
+                    }
+                } else if (i > this.width - halfTextWidth) {
+                    // second character doesn't fit
+                    if (yardlineText.length > 1) {
+                        _this.pdf.text(
+                            yardlineText[0],
+                            this.x + i - halfTextWidth,
+                            this.y + this.height - 1
+                        );
+                    }
                 } else {
                     _this.pdf.text(
                         yardlineText,
-                        this.x + i - _this._getTextWidth(yardlineText, 8)/2,
+                        this.x + i - halfTextWidth,
                         this.y + this.height - 1
                     );
                 }
