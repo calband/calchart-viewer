@@ -78,6 +78,17 @@ PDFGenerator.prototype.generate = function() {
         }
 
         this._addHeaders(pageNum + 1);
+        // drawing lines between quadrants
+        this.pdf.setDrawColor(150);
+        this.pdf.line(
+            WIDTH/2, 24,
+            WIDTH/2, HEIGHT
+        );
+        this.pdf.line(
+            0, HEIGHT/2 + 2.5,
+            WIDTH, HEIGHT/2 + 2.5
+        );
+        this.pdf.setDrawColor(0);
 
         for (var i = 0; i < pageSheets.length; i++) {
             var x = QUADRANT[i].x;
