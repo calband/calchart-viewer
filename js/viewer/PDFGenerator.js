@@ -124,6 +124,41 @@ PDFGenerator.prototype._getTextHeight = function(size) {
 };
 
 /**
+ * Draws the dot for the given dot type at the given coordinates
+ * @param {String} dotType
+ * @param {int} x
+ * @param {int} y
+ */
+PDFGenerator.prototype._drawDot = function(dotType, x, y) {
+    var radius = 1.5;
+    this.pdf.setLineWidth(.1);
+    if (dotType.indexOf("open") != -1) {
+        this.pdf.setFillColor(255);
+        this.pdf.circle(x, y, radius, "FD");
+    } else {
+        this.pdf.setFillColor(0);
+        this.pdf.circle(x, y, radius, "FD");
+    }
+
+    radius += .1; // line radius sticks out of the circle
+    if (dotType.indexOf("backslash") != -1 || dotType.indexOf("x") != -1) {
+        this.pdf.line(
+            x - radius, y - radius,
+            x + radius, y + radius
+        );
+    }
+
+    if (dotType.indexOf("forwardslash") != -1 || dotType.indexOf("x") != -1) {
+        this.pdf.line(
+            x + radius, y - radius,
+            x - radius, y + radius
+        );
+    }
+    this.pdf.setLineWidth(.3);
+    this.pdf.setFillColor(0);
+};
+
+/**
  * Draws the headers on the PDF. Includes:
  *      - Stuntsheet number
  *      - Dot number
@@ -313,7 +348,6 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
         draw: function() {
             var _size = this.size;
             var dotType = sheet.getDotType(_this.dot);
-            var dotImage = DOT_DATA[dotType];
             var maxWidth = QUADRANT_WIDTH - box.paddingX*2 - 6;
 
             var continuities = sheet.getContinuityTexts(dotType);
@@ -337,18 +371,13 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 _size -= 1;
             }
 
-            _this.pdf.addImage(
-                dotImage,
-                "JPEG",
-                this.x,
-                this.y
-            );
             _this.pdf.setFontSize(this.size);
+            _this._drawDot(dotType, this.x + 1.5, this.y + 2);
             this.x += 4;
             _this.pdf.text(
                 ":",
                 this.x,
-                this.y + 3
+                this.y + _this._getTextHeight(this.size)
             );
             _this.pdf.setFontSize(_size);
             this.x += 2;
@@ -1040,6 +1069,7 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
             );
             _this.pdf.setDrawColor(150);
             _this.pdf.setLineWidth(.1);
+            // cross hairs for selected dot
             _this.pdf.line(
                 this.x + this.width/2, this.y,
                 this.x + this.width/2, this.y + this.height
@@ -1061,8 +1091,8 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
                 var x = dot.deltaX * scale + origin.x;
                 var y = dot.deltaY * scale + origin.y;
                 _this.pdf.setFontSize(this.labelSize);
-                _this.pdf.addImage(DOT_DATA[dot.type], "JPEG", x - 2, y - 2);
-                _this.pdf.text(dot.label, x - 3, y - 1.5);
+                _this._drawDot(dot.type, x, y);
+                _this.pdf.text(dot.label, x - 3, y - 2);
             }
         }
     };
