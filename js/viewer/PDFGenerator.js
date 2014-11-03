@@ -1018,7 +1018,6 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
     var _this = this;
     var box = {
         height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
-        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1.5),
         x: quadrantX + QUADRANT_WIDTH / 2 + 1,
         y: quadrantY + QUADRANT_HEIGHT * 3/5,
         textSize: 12,
@@ -1027,6 +1026,8 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
         draw: function(surroundingDots, start) {
             var textHeight = _this._getTextHeight(this.textSize);
             var textWidth = _this._getTextWidth("S", this.textSize);
+            var scale = this.height / 10; // 5 step radius for viewport
+            this.width = this.height; // make square
             _this.pdf.setFontSize(this.textSize);
             _this.pdf.text(
                 "E",
@@ -1035,7 +1036,7 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
             );
             _this.pdf.text(
                 "S",
-                this.x + QUADRANT_WIDTH/2 - textWidth,
+                this.x + QUADRANT_WIDTH/2 - textWidth - 4.5,
                 this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
             );
             _this.pdf.text(
@@ -1045,10 +1046,10 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
             );
             _this.pdf.text(
                 "N",
-                this.x + 1,
+                this.x + 4.5,
                 this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
             );
-            this.x += textWidth + 2;
+            this.x += QUADRANT_WIDTH/4 - this.width/2;
             this.y += textHeight + 2;
             _this.pdf.rect(
                 this.x,
@@ -1069,8 +1070,6 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
             );
             _this.pdf.setDrawColor(0);
             _this.pdf.setLineWidth(.3);
-            // 5 step radius for viewport; width scale same to keep aspect ratio
-            var scale = this.height / 10;
             var origin = {
                 x: this.x + this.width/2,
                 y: this.y + this.height/2
