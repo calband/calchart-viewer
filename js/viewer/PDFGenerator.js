@@ -380,7 +380,7 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
         movements: [],
 
         draw: function() {
-            _this.pdf.rect(this.x, this.y, this.height, this.width);
+            _this.pdf.rect(this.x, this.y, this.width, this.height);
             var textHeight = _this._getTextHeight(this.size);
             var textY = this.y + this.paddingY + textHeight;
             var textX = this.x + this.paddingX;
@@ -400,10 +400,11 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
             }
 
             var totalLabel = sheet.getDuration() + " beats total";
+            _this.pdf.setFontSize(this.size);
             _this.pdf.text(
                 totalLabel,
                 quadrantX + this.width/2 - _this._getTextWidth(totalLabel, this.size)/2 - 3,
-                textY - textHeight + this.height
+                this.y + this.height - this.paddingY
             );
         }
     };
@@ -523,9 +524,9 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
 
     // draws box and field
     var box = {
-        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) - 1),
-        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1),
-        x: quadrantX + QUADRANT_WIDTH / 2,
+        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
+        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1.5),
+        x: quadrantX + QUADRANT_WIDTH / 2 + 1,
         y: quadrantY + QUADRANT_HEIGHT / 5,
         textSize: 12,
 
@@ -538,7 +539,7 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
             _this.pdf.setFontSize(this.textSize);
             _this.pdf.text(
                 "E",
-                this.x + QUADRANT_WIDTH / 4 - 2,
+                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
                 this.y + textHeight
             );
             _this.pdf.text(
@@ -548,16 +549,16 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
             );
             _this.pdf.text(
                 "W",
-                this.x + QUADRANT_WIDTH / 4 - 2,
-                this.y + QUADRANT_HEIGHT * 2/5 + textHeight
+                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
+                this.y + QUADRANT_HEIGHT * 2/5 - 1
             );
             _this.pdf.text(
                 "N",
-                this.x,
+                this.x + 1,
                 this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
             );
-            this.x += textWidth + 1;
-            this.y += textHeight + 1;
+            this.x += textWidth + 2;
+            this.y += textHeight + 2;
             _this.pdf.rect(
                 this.x,
                 this.y,
@@ -592,25 +593,38 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
                 }
 
                 var yardlineText = "";
+                var yardTextSize = 8;
                 if (yardlineNum < 50) {
                     yardlineText = String(yardlineNum);
                 } else {
                     yardlineText = String(100 - yardlineNum);
                 }
                 _this.pdf.setTextColor(150);
-                _this.pdf.setFontSize(8);
+                _this.pdf.setFontSize(yardTextSize);
+                var halfTextWidth = _this._getTextWidth(yardlineText, yardTextSize)/2;
 
-                // only show the second character if the yardline is on the left border
-                if (i === 0) {
-                    _this.pdf.text(
-                        yardlineText[1],
-                        this.x,
-                        this.y + this.height - 1
-                    );
+                if (i < halfTextWidth) {
+                    // first character doesn't fit
+                    if (yardlineText.length > 1) {
+                        _this.pdf.text(
+                            yardlineText[1],
+                            this.x + i,
+                            this.y + this.height - 1
+                        );
+                    }
+                } else if (i > this.width - halfTextWidth) {
+                    // second character doesn't fit
+                    if (yardlineText.length > 1) {
+                        _this.pdf.text(
+                            yardlineText[0],
+                            this.x + i - halfTextWidth,
+                            this.y + this.height - 1
+                        );
+                    }
                 } else {
                     _this.pdf.text(
                         yardlineText,
-                        this.x + i - _this._getTextWidth(yardlineText, 8)/2,
+                        this.x + i - halfTextWidth,
                         this.y + this.height - 1
                     );
                 }
@@ -751,7 +765,212 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
  * @param {Sheet} sheet
  */
 PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
+    var _this = this;
 
+    var box = {
+        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
+        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1.5),
+        x: quadrantX,
+        y: quadrantY + QUADRANT_HEIGHT * 3/5,
+        textSize: 12,
+
+        draw: function() {
+            var textHeight = _this._getTextHeight(this.textSize);
+            var textWidth = _this._getTextWidth("S", this.textSize);
+            _this.pdf.setFontSize(this.textSize);
+            _this.pdf.text(
+                "W",
+                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
+                this.y + textHeight
+            );
+            _this.pdf.text(
+                "N",
+                this.x + QUADRANT_WIDTH/2 - textWidth,
+                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+            );
+            _this.pdf.text(
+                "E",
+                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
+                this.y + QUADRANT_HEIGHT * 2/5 - 1
+            );
+            _this.pdf.text(
+                "S",
+                this.x + 1,
+                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+            );
+            this.x += textWidth + 2;
+            this.y += textHeight + 2;
+            _this.pdf.rect(
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
+        }
+    };
+
+    box.draw();
+
+    var dots = sheet.getDots();
+    var currentDot = sheet.getDotByLabel(this.dot);
+    var startX = box.x;
+    var startY = box.y;
+    // units per step
+    var scaleX = box.width / 160;
+    var scaleY = box.height / 84;
+
+    // drawing hashes
+    this.pdf.setLineWidth(.2);
+    var numDashes = 21;
+    var dashLength = box.width / numDashes;
+    var westHash = startY + 32 * scaleY;
+    var eastHash = startY + 52 * scaleY;
+    for (var i = 0; i < numDashes; i++) {
+        if (i % 2 == 0) {
+            this.pdf.setDrawColor(150);
+        } else {
+            this.pdf.setDrawColor(255);
+        }
+        var x = startX + i * dashLength;
+        this.pdf.line(
+            x, westHash,
+            x + dashLength, westHash
+        );
+        this.pdf.line(
+            x, eastHash,
+            x + dashLength, eastHash
+        );
+    }
+
+    this.pdf.setFillColor(210);
+    for (var i = 0; i < dots.length; i++) {
+        var dot = dots[i];
+        if (dot === currentDot) { // skip currently selected dot
+            continue;
+        }
+        var position = dot.getAnimationState(0);
+        this.pdf.circle(
+            startX + position.x * scaleX,
+            startY + position.y * scaleY,
+            .5,
+            "F"
+        );
+    }
+
+    var position = currentDot.getAnimationState(0);
+    var x = position.x * scaleX;
+    var y = position.y * scaleY;
+
+    var coordinates = { textSize: 8 };
+
+    // Gives x-coordinates for current dot; i.e. "4S N40"
+    var horizSteps = position.x % 8;
+    if (horizSteps > 4) { // closer to North-side yardline
+        var yardline = Math.ceil(position.x/8) * 5;
+        if (yardline < 50) {
+            yardline = "S" + yardline;
+        } else if (yardline === 50) {
+            yardline = "50";
+        } else {
+            yardline = "N" + (100 - yardline);
+        }
+        coordinates.textX = horizSteps - 4 + "S " + yardline;
+    } else { // closer to South-side yardline
+        var yardline = Math.floor(position.x/8) * 5;
+        if (yardline < 50) {
+            yardline = "S" + yardline;
+        } else if (yardline === 50) {
+            yardline = "50";
+        } else {
+            yardline = "N" + (100 - yardline);
+        }
+
+        if (horizSteps === 0) {
+            coordinates.textX = yardline;
+        } else {
+            coordinates.textX = horizSteps + "N " + yardline;
+        }
+    }
+
+    // Gives y-coordinates for current dot; i.e. "2E WH"
+    vertSteps = position.y;
+    if (vertSteps <= 16) { // closer to West sideline
+        if (vertSteps === 0) {
+            coordinates.textY = "WS";
+        } else {
+            coordinates.textY = vertSteps + " WS";
+        }
+    } else if (vertSteps <= 32) { // West of West hash
+        if (vertSteps === 32) {
+            coordinates.textY = "WH";
+        } else {
+            coordinates.textY = 32 - vertSteps + "W WH";
+        }
+    } else if (vertSteps <= 40) { // East of West hash
+        coordinates.textY = vertSteps - 32 + "E WH";
+    } else if (vertSteps <= 52) { // West of East hash
+        if (vertSteps === 52) {
+            coordinates.textY = "EH";
+        } else {
+            coordinates.textY = 52 - vertSteps + "W EH";
+        }
+    } else if (vertSteps <= 68) { // East of East hash
+        coordinates.textY = vertSteps - 52 + "E EH";
+    } else { // Closer to East sideline
+        if (vertSteps === 84) {
+            coordinates.textY = "ES";
+        } else {
+            coordinates.textY = 84 - vertSteps + " ES";
+        }
+    }
+
+    coordinates.x = startX + x - this._getTextWidth(coordinates.textX, coordinates.textSize)/2;
+    coordinates.y = startY + y + this._getTextHeight(coordinates.textSize)/4;
+
+    this.pdf.setFillColor(0);
+    this.pdf.setDrawColor(180);
+    this.pdf.setFontSize(coordinates.textSize);
+
+    this.pdf.line(
+        startX + x, startY,
+        startX + x, startY + box.height
+    );
+    this.pdf.line(
+        startX, startY + y,
+        startX + box.width, startY + y
+    );
+
+    // Put coordinate texts on opposite side of the field as the selected dot
+    if (position.y > 42) {
+        this.pdf.text(
+            coordinates.textX,
+            coordinates.x,
+            startY + this._getTextHeight(coordinates.textSize)
+        );
+    } else {
+        this.pdf.text(
+            coordinates.textX,
+            coordinates.x,
+            startY + box.height - 1
+        );
+    }
+
+    if (position.x > 80) {
+        this.pdf.text(
+            coordinates.textY,
+            startX + 1,
+            coordinates.y
+        );
+    } else {
+        this.pdf.text(
+            coordinates.textY,
+            startX + box.width - this._getTextWidth(coordinates.textY, coordinates.textSize) - 1,
+            coordinates.y
+        );
+    }
+    this.pdf.circle(startX + x, startY + y, .5, 'F');
+    this.pdf.setLineWidth(.3);
+    this.pdf.setDrawColor(0);
 };
 
 /**
