@@ -1004,8 +1004,9 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
         x: quadrantX + QUADRANT_WIDTH / 2 + 1,
         y: quadrantY + QUADRANT_HEIGHT * 3/5,
         textSize: 12,
+        labelSize: 7,
 
-        draw: function() {
+        draw: function(surroundingDots, start) {
             var textHeight = _this._getTextHeight(this.textSize);
             var textWidth = _this._getTextWidth("S", this.textSize);
             _this.pdf.setFontSize(this.textSize);
@@ -1037,23 +1038,55 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
                 this.width,
                 this.height
             );
+            _this.pdf.setDrawColor(150);
+            _this.pdf.setLineWidth(.1);
+            _this.pdf.line(
+                this.x + this.width/2, this.y,
+                this.x + this.width/2, this.y + this.height
+            );
+            _this.pdf.line(
+                this.x, this.y + this.height/2,
+                this.x + this.width, this.y + this.height/2
+            );
+            _this.pdf.setDrawColor(0);
+            _this.pdf.setLineWidth(.3);
+            // 5 step radius for viewport; width scale same to keep aspect ratio
+            var scale = this.height / 10;
+            var origin = {
+                x: this.x + this.width/2,
+                y: this.y + this.height/2
+            };
+            for (var i = 0; i < surroundingDots.length; i++) {
+                var dot = surroundingDots[i];
+                var x = dot.deltaX * scale + origin.x;
+                var y = dot.deltaY * scale + origin.y;
+                _this.pdf.setFontSize(this.labelSize);
+                _this.pdf.addImage(DOT_DATA[dot.type], "JPEG", x - 2, y - 2);
+                _this.pdf.text(dot.label, x - 3, y - 1.5);
+            }
         }
     };
 
-    var currentDot = sheet.getDotByLabel(this.dot);
-    var start = currentDot.getAnimationState(0);
+    var start = sheet.getDotByLabel(this.dot).getAnimationState(0);
     var allDots = sheet.getDots();
     var surroundingDots = [];
     for (var i = 0; i < allDots.length; i++) {
         var position = allDots[i].getAnimationState(0);
-        var x = Math.abs(position.x - start.x);
-        var y = Math.abs(position.y - start.y);
-        if (x <= 4 && y <= 4) {
-            surroundingDots.push(allDots[i]);
+        var x = start.x - position.x;
+        var y = start.y - position.y;
+        // keep dots within 4 steps
+        if (Math.abs(x) <= 4 && Math.abs(y) <= 4) {
+            var label = allDots[i].getLabel();
+            surroundingDots.push({
+                deltaX: x,
+                deltaY: y,
+                label: label,
+                type: sheet.getDotType(label)
+            });
         }
     }
 
-    box.draw();
+    box.draw(surroundingDots);
 };
 
 module.exports = PDFGenerator;
