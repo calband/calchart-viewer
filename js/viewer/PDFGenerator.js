@@ -986,7 +986,63 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
  * @param {Sheet} sheet
  */
 PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, sheet) {
+    var _this = this;
+    var box = {
+        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
+        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1.5),
+        x: quadrantX + QUADRANT_WIDTH / 2 + 1,
+        y: quadrantY + QUADRANT_HEIGHT * 3/5,
+        textSize: 12,
 
+        draw: function() {
+            var textHeight = _this._getTextHeight(this.textSize);
+            var textWidth = _this._getTextWidth("S", this.textSize);
+            _this.pdf.setFontSize(this.textSize);
+            _this.pdf.text(
+                "E",
+                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
+                this.y + textHeight
+            );
+            _this.pdf.text(
+                "S",
+                this.x + QUADRANT_WIDTH/2 - textWidth,
+                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+            );
+            _this.pdf.text(
+                "W",
+                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
+                this.y + QUADRANT_HEIGHT * 2/5 - 1
+            );
+            _this.pdf.text(
+                "N",
+                this.x + 1,
+                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+            );
+            this.x += textWidth + 2;
+            this.y += textHeight + 2;
+            _this.pdf.rect(
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
+        }
+    };
+
+    var currentDot = sheet.getDotByLabel(this.dot);
+    var start = currentDot.getAnimationState(0);
+    var allDots = sheet.getDots();
+    var surroundingDots = [];
+    for (var i = 0; i < allDots.length; i++) {
+        var position = allDots[i].getAnimationState(0);
+        var x = Math.abs(position.x - start.x);
+        var y = Math.abs(position.y - start.y);
+        if (x <= 4 && y <= 4) {
+            surroundingDots.push(allDots[i]);
+        }
+    }
+
+    box.draw();
 };
 
 module.exports = PDFGenerator;
