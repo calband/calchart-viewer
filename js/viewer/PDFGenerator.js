@@ -157,17 +157,17 @@ PDFGenerator.prototype._drawDot = function(dotType, x, y) {
  */
 PDFGenerator.prototype._getContinuityTexts = function() {
     var showContinuities = [];
-    for (var i = 0; i < this.sheets.length; i++) {
+    var dotLabel = this.dot;
+    this.sheets.forEach(function(sheet) {
         var continuities = [];
-        var movements = this.sheets[i].getDotByLabel(this.dot).getMovementCommands();
-        movements.forEach(function(movement) {
+        sheet.getDotByLabel(dotLabel).getMovementCommands().forEach(function(movement) {
             var text = movement.getContinuityText();
             if (text !== "") {
                 continuities.push(text);
             }
         });
         showContinuities.push(continuities);
-    }
+    });
     return showContinuities;
 };
 
