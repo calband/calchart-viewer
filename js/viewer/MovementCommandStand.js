@@ -27,4 +27,29 @@ MovementCommandStand.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX, this._startY, this._orientation);
 };
 
+/**
+ * Returns the continuity text for this movement
+ * @return {String} the continuity text in the form of "Close 16E"
+ */
+MovementCommandStand.prototype.getContinuityText = function() {
+    var orientation = this._orientation;
+    switch (orientation) {
+        case 0:
+            orientation = "E";
+            break;
+        case 90:
+            orientation = "N";
+            break;
+        case 180:
+            orientation = "W";
+            break;
+        case 270:
+            orientation = "S";
+            break;
+        default:
+            orientation = "";
+    }
+    return "Close " + this._numBeats + orientation;
+};
+
 module.exports = MovementCommandStand;

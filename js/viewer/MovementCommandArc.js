@@ -55,14 +55,6 @@ MovementCommandArc.prototype.getAnimationState = function(beatNum) {
 };
 
 /**
- * Returns the total angle of movement in degrees
- * @return {int} the rounded angle of movement
- */
-MovementCommandArc.prototype.getAngle = function() {
-    return Math.abs(Math.floor(MathUtils.toDegrees(this._numBeats * this._stepAngleDelta)));
-};
-
-/**
  * Returns a list of (deltaX, deltaY) pairs that lie along the arc
  * @param {int} the number of intermediate points
  * @return {Array<Array<int>>} an array of (deltaX, deltaY) pairs
@@ -82,6 +74,17 @@ MovementCommandArc.prototype.getMiddlePoints = function(pointNum) {
         prevY = y;
     }
     return points;
+};
+
+/**
+ * Returns the continuity text for this movement
+ * @return {String} the continuity text in the form of "GT CW 90 deg. (16 steps)"
+ */
+MovementCommandArc.prototype.getContinuityText = function() {
+    var steps = this._numBeats / this._beatsPerStep;
+    var orientation = (this._movementIsCW) ? "CW" : "CCW";
+    var angle = Math.abs(Math.floor(MathUtils.toDegrees(this._numBeats * this._stepAngleDelta)));
+    return "GT " + orientation + " " + angle + " deg. (" + steps + " steps)";
 };
 
 module.exports = MovementCommandArc;

@@ -93,7 +93,6 @@ PDFGenerator.prototype.generate = function() {
             this._addSurroundingDots(x, y, sheet);
         }
     }
-    this.pdf.addPage();
     this._addEndSheet(continuityTexts, movements);
     // CHANGE TO this.pdf.save LATER
     this.pdf.output("dataurlnewwindow");
@@ -154,103 +153,19 @@ PDFGenerator.prototype._drawDot = function(dotType, x, y) {
 
 /**
  * Returns all of the selected dot's individual continuity texts
- * @returns {Array<Array<String>>} an Array of continuity texts for each sheet
+ * @return {Array<Array<String>>} an Array of continuity texts for each sheet
  */
 PDFGenerator.prototype._getContinuityTexts = function() {
     var showContinuities = [];
-    function isMoveCommand(movement) {
-        if (movement instanceof MovementCommandMove) {
-            return true;
-        }
-        if (movement instanceof MovementCommandEven) {
-            var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
-            if (steps == deltaX && deltaY == 0) {
-                return true;
-            }
-            if (steps == deltaY && deltaX == 0) {
-                return true;
-            }
-        }
-        return false;
-    };
     for (var i = 0; i < this.sheets.length; i++) {
         var continuities = [];
         var movements = this.sheets[i].getDotByLabel(this.dot).getMovementCommands();
-        for (var j = 0; j < movements.length; j++) {
-            var movement = movements[j];
-            var orientation = movement.getOrientation();
-            switch (orientation) {
-                case 0:
-                    orientation = "E"; break;
-                case 90:
-                    orientation = "S"; break;
-                case 180:
-                    orientation = "W"; break;
-                case 270:
-                    orientation = "N"; break;
-                case "CW":
-                case "CCW":
-                    break;
-                default:
-                    orientation = "";
+        movements.forEach(function(movement) {
+            var text = movement.getContinuityText();
+            if (text !== "") {
+                continuities.push(text);
             }
-            var start = movement.getStartPosition();
-            var end = movement.getEndPosition();
-            var deltaX = end.x - start.x;
-            var deltaY = end.y - start.y;
-            var dirX = (deltaX < 0) ? "S" : "N";
-            var dirY = (deltaY < 0) ? "W" : "E";
-            deltaX = Math.abs(deltaX);
-            deltaY = Math.abs(deltaY);
-
-            var text;
-
-            if (isMoveCommand(movement)) {
-                // MovementCommandMoves only move in one direction: X or Y
-                if (deltaX == 0) {
-                    text = "Move " + deltaY + dirY;
-                } else {
-                    text = "Move " + deltaX + dirX;
-                }
-            } else if (movement instanceof MovementCommandMarkTime) {
-                if (movement.getBeatDuration() == 0) {
-                    continue;
-                }
-                text = "MT " + movement.getBeatDuration() + orientation;
-            } else if (movement instanceof MovementCommandStand) {
-                text = "Close " + movement.getBeatDuration() + orientation;
-            } else if (movement instanceof MovementCommandEven) {
-                text = "Even ";
-                // If movement is a fraction of steps, simply say "NE" or "S"
-                if (deltaX % 1 != 0 || deltaY % 1 != 0) {
-                    text += (deltaX != 0) ? dirX : "";
-                    text += (deltaY != 0) ? dirY : "";
-                } else {
-                    // End result will be concat. of directions, e.g. "Even 8E, 4S"
-                    var moveTexts = [];
-                    if (deltaY != 0) {
-                        moveTexts.push(deltaY + dirY);
-                    }
-                    if (deltaX != 0) {
-                        moveTexts.push(deltaX + dirX);
-                    }
-                    text += moveTexts.join(", ");
-                }
-                // Error checking for an even move without movement in any direction
-                if (text === "Even ") {
-                    text += "0";
-                }
-                var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
-                text += " (" + steps + " steps)";
-            } else if (movement instanceof MovementCommandGoto) {
-                text = "See Continuity (" + movement.getBeatDuration() + " beats)";
-            } else if (movement instanceof MovementCommandArc) {
-                text = "GT " + orientation + " " + movement.getAngle() + " deg. (" + movement.getBeatDuration() + " steps)";
-            } else {
-                throw new TypeError("Class not recognized: " + type);
-            }
-            continuities.push(text);
-        }
+        });
         showContinuities.push(continuities);
     }
     return showContinuities;
@@ -259,7 +174,7 @@ PDFGenerator.prototype._getContinuityTexts = function() {
 /**
  * Returns a list of movements for each stuntsheet, which are changes in position with
  * respect to the previous position
- * @returns {Array<Array<Objects>>} where each element is a list of movements for each
+ * @return {Array<Array<Objects>>} where each element is a list of movements for each
  *   stuntsheet. The Object contains:
  *      - {Coordinate} startPosition
  *      - {int} deltaX
@@ -1146,6 +1061,7 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
  * @param {Array<Array<Object>>} movements a list of movement objects grouped by stuntsheet
  */
 PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
+    this.pdf.addPage();
     this.pdf.line(
         WIDTH/2, 0,
         WIDTH/2, HEIGHT
