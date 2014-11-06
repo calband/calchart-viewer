@@ -87,8 +87,14 @@ PDFGenerator.prototype.generate = function() {
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
             this._addIndividualContinuity(x, y, continuityTexts[i], sheet.getDuration());
-            var startPosition = sheet.getDotByLabel(this.dot).getAnimationState(0);
-            this._addMovementDiagram(x, y, movements[i], startPosition);
+            this._addMovementDiagram(
+                sheet.getDotByLabel(this.dot).getAnimationState(0),
+                movements[i],
+                x + QUADRANT_WIDTH / 2 + 1,
+                y + QUADRANT_HEIGHT / 5,
+                QUADRANT_WIDTH / 2,
+                QUADRANT_HEIGHT * 2/5
+            );
             this._addBirdseye(x, y, sheet);
             this._addSurroundingDots(x, y, sheet);
         }
@@ -518,21 +524,23 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
  *      - Zooming if big
  *      - Orientation EWNS; East is up
  *
- * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
- * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {Coordinate} start is the starting position for this dot
  * @param {Array<Objects>} movements, where each item is an object containing values for
  *      deltaX and deltaY for each movement
- * @param {Coordinate} start is the starting position for this dot
+ * @param {int} x  The x-coordinate of the top left corner of the movement diagram area
+ * @param {int} y  The y-coordinate of the top left corner of the movement diagram area
+ * @param {double} width The width of the containing box
+ * @param {double} height The height of the containing box
  */
-PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, movements, start) {
+PDFGenerator.prototype._addMovementDiagram = function(start, movements, x, y, width, height) {
     var _this = this;
 
     // draws box and field
     var box = {
-        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
-        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1.5),
-        x: quadrantX + QUADRANT_WIDTH / 2 + 1,
-        y: quadrantY + QUADRANT_HEIGHT / 5,
+        x: x,
+        y: y,
+        width: width - 2 * (this._getTextWidth("S", 12) + 1.5),
+        height: height - 2 * (this._getTextHeight(12) + 2),
         textSize: 12,
 
         // params are boundaries of viewport
@@ -1066,6 +1074,9 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
         WIDTH/2, 0,
         WIDTH/2, HEIGHT
     );
+    for (var i = 0; i < this.sheets.length; i++) {
+
+    }
 };
 
 module.exports = PDFGenerator;
