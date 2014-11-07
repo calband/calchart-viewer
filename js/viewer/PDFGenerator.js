@@ -455,8 +455,8 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 this.y
             );
 
-            var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 3;
-            box.draw(height);
+            //var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 3;
+            box.draw(QUADRANT_HEIGHT/5 - 1.5);
         }
     };
 
