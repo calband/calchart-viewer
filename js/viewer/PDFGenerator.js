@@ -86,9 +86,15 @@ PDFGenerator.prototype.generate = function() {
             var y = QUADRANT[i].y;
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
-            this._addIndividualContinuity(x, y, continuityTexts[i], sheet.getDuration());
+            this._addIndividualContinuity(
+                continuityTexts[i],
+                sheet.getDuration(),
+                x,
+                y + QUADRANT_HEIGHT / 5,
+                QUADRANT_WIDTH / 2,
+                QUADRANT_HEIGHT * 2/5
+            );
             this._addMovementDiagram(
-                sheet.getDotByLabel(this.dot).getAnimationState(0),
                 movements[i],
                 x + QUADRANT_WIDTH / 2 + 1,
                 y + QUADRANT_HEIGHT / 5,
@@ -463,19 +469,21 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
  *      - Total beats
  *      - Border between general movements, e.g. Stand and Play vs. Continuity
  *
- * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
- * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  * @param {Array<String>} continuities, a list of continuities for a sheet
  * @param {int} duration the beats in this sheet
+ * @param {int} x  The x-coordinate of the top left corner of the continuity box
+ * @param {int} y  The y-coordinate of the top left corner of the continuity box
+ * @param {double} width The width of the continuity box
+ * @param {double} height The height of the continuity box
  */
-PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY, continuities, duration) {
+PDFGenerator.prototype._addIndividualContinuity = function(continuities, duration, x, y, width, height) {
     var _this = this;
 
     var box = {
-        height: QUADRANT_HEIGHT * 2/5,
-        width: QUADRANT_WIDTH / 2,
-        x: quadrantX,
-        y: quadrantY + QUADRANT_HEIGHT / 5,
+        height: height,
+        width: width,
+        x: x,
+        y: y,
         paddingX: 2,
         paddingY: 1.5,
         size: 10,
@@ -505,7 +513,7 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
             _this.pdf.setFontSize(this.size);
             _this.pdf.text(
                 totalLabel,
-                quadrantX + this.width/2 - _this._getTextWidth(totalLabel, this.size)/2 - 3,
+                x + this.width/2 - _this._getTextWidth(totalLabel, this.size)/2 - 3,
                 this.y + this.height - this.paddingY
             );
         }
@@ -524,23 +532,22 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
  *      - Zooming if big
  *      - Orientation EWNS; East is up
  *
- * @param {Coordinate} start is the starting position for this dot
  * @param {Array<Objects>} movements, where each item is an object containing values for
- *      deltaX and deltaY for each movement
+ *      deltaX and deltaY for each movement and the starting Coordinate
  * @param {int} x  The x-coordinate of the top left corner of the movement diagram area
  * @param {int} y  The y-coordinate of the top left corner of the movement diagram area
  * @param {double} width The width of the containing box
  * @param {double} height The height of the containing box
  */
-PDFGenerator.prototype._addMovementDiagram = function(start, movements, x, y, width, height) {
+PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, height) {
     var _this = this;
 
     // draws box and field
     var box = {
         x: x,
         y: y,
-        width: width - 2 * (this._getTextWidth("S", 12) + 1.5),
-        height: height - 2 * (this._getTextHeight(12) + 2),
+        width: width - 2 * (_this._getTextWidth("S", 12) + 1.5),
+        height: height - 2 * (_this._getTextHeight(12) + 2),
         textSize: 12,
 
         // params are boundaries of viewport
@@ -552,23 +559,23 @@ PDFGenerator.prototype._addMovementDiagram = function(start, movements, x, y, wi
             _this.pdf.setFontSize(this.textSize);
             _this.pdf.text(
                 "E",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
+                this.x + this.width / 2 + textWidth,
                 this.y + textHeight
             );
             _this.pdf.text(
                 "S",
-                this.x + QUADRANT_WIDTH/2 - textWidth,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.x + this.width + textWidth + 3,
+                this.y + this.height / 2 + textHeight * 3/2
             );
             _this.pdf.text(
                 "W",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
-                this.y + QUADRANT_HEIGHT * 2/5 - 1
+                this.x + this.width / 2 + textWidth,
+                this.y + 2 * textHeight + this.height + 2
             );
             _this.pdf.text(
                 "N",
                 this.x + 1,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.y + this.height / 2 + textHeight * 3/2
             );
             this.x += textWidth + 2;
             this.y += textHeight + 2;
@@ -578,6 +585,7 @@ PDFGenerator.prototype._addMovementDiagram = function(start, movements, x, y, wi
                 this.width,
                 this.height
             );
+
             var westHash = bottom < 32 && top > 32;
             var eastHash = bottom < 52 && top > 52;
             var hashLength = 3;
@@ -649,7 +657,7 @@ PDFGenerator.prototype._addMovementDiagram = function(start, movements, x, y, wi
         lines: function(x, y, scale) {
             x = this.x + x * scale;
             y = this.y + y * scale;
-            var spotRadius = 2;
+            var spotRadius = this.height / 15;
             _this.pdf.circle(x, y, spotRadius);
             _this.pdf.setLineWidth(0.5);
             for (var i = 0; i < movements.length; i++) {
@@ -674,6 +682,7 @@ PDFGenerator.prototype._addMovementDiagram = function(start, movements, x, y, wi
         }
     };
 
+    var start = movements[0].startPosition;
     // calculates scale of viewport
     var viewport = {
         startX: start.x,
@@ -1074,8 +1083,53 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
         WIDTH/2, 0,
         WIDTH/2, HEIGHT
     );
+    var padding = 1;
+    var textSize = 10;
+    var textHeight = this._getTextHeight(textSize);
+    var labelSize = 20;
+    var labelWidth = this._getTextWidth("SS00", labelSize) + padding;
+    var labelHeight = this._getTextHeight(labelSize);
+    var diagramSize = 30;
+    var continuitySize = WIDTH/2 - diagramSize - labelWidth - padding * 4;
+    var x = 0;
+    var y = 10;
     for (var i = 0; i < this.sheets.length; i++) {
-
+        var height = diagramSize;
+        var continuityHeight = (continuityTexts[i].length + 1) * textHeight + 2*padding;
+        if (continuityHeight > diagramSize) {
+            height = continuityHeight;
+        }
+        if (y + height > HEIGHT) {
+            if (x == 0) {
+                x = WIDTH/2 + padding;
+            } else {
+                this.pdf.addPage();
+                x = 0;
+            }
+            y = 10;
+        }
+        this.pdf.setFontSize(labelSize);
+        this.pdf.text(
+            "SS" + (i + 1),
+            x + padding,
+            y + padding + labelHeight
+        );
+        this._addIndividualContinuity(
+            continuityTexts[i],
+            this.sheets[i].getDuration(),
+            x + labelWidth + padding,
+            y + padding,
+            continuitySize,
+            height
+        );
+        this._addMovementDiagram(
+            movements[i],
+            x + labelWidth + continuitySize + padding * 3,
+            y + padding,
+            diagramSize,
+            diagramSize
+        );
+        y += height + 2 * padding;
     }
 };
 
