@@ -162,8 +162,8 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
 
     var header = {
         title: {
-            label: "California Marching Band:",
             text: _this.show.getTitle(),
+            label: "Dot " + _this.dot,
             size: 16,
 
             getX: function(text) {
@@ -172,10 +172,6 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
 
             getY: function() {
                 return header.y + header.paddingY + _this._getTextHeight(this.size);
-            },
-
-            getLineHeight: function() {
-                return _this._getTextHeight(this.size) + 1;
             }
         },
 
@@ -231,14 +227,15 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
             /* title */
             _this.pdf.setFontSize(this.title.size);
             _this.pdf.text(
-                this.title.label,
-                this.title.getX(this.title.label),
-                this.title.getY()
-            );
-            _this.pdf.text(
                 this.title.text,
                 this.title.getX(this.title.text),
-                this.title.getY() + this.title.getLineHeight()
+                this.title.getY()
+            );
+            _this.pdf.setFontSize(this.title.size - 3);
+            _this.pdf.text(
+                this.title.label,
+                this.title.getX(this.title.label),
+                this.title.getY() + _this._getTextHeight(this.title.size - 3) + 2
             );
 
             /* page info */
@@ -280,7 +277,6 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
 
         draw: function(x, y) {
             _this.pdf.text("SS " + this.sheet + "/" + _this.sheets.length, x, y);
-            _this.pdf.text("Dot " + _this.dot, x, y + _this._getTextHeight(this.size));
         }
     };
 
