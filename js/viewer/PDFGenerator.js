@@ -87,7 +87,7 @@ PDFGenerator.prototype.generate = function() {
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
             this._addIndividualContinuity(
-                continuityTexts[i],
+                continuityTexts[pageNum * 4 + i],
                 sheet.getDuration(),
                 x,
                 y + QUADRANT_HEIGHT / 5,
@@ -95,7 +95,7 @@ PDFGenerator.prototype.generate = function() {
                 QUADRANT_HEIGHT * 2/5
             );
             this._addMovementDiagram(
-                movements[i],
+                movements[pageNum * 4 + i],
                 x + QUADRANT_WIDTH / 2 + 1,
                 y + QUADRANT_HEIGHT / 5,
                 QUADRANT_WIDTH / 2,
@@ -209,7 +209,6 @@ PDFGenerator.prototype._getMovements = function() {
                         deltaX: move[0],
                         deltaY: move[1]
                     });
-                    startPosition = move.getEndPosition();
                 });
             } else {
                 lines.push({
@@ -538,8 +537,9 @@ PDFGenerator.prototype._addIndividualContinuity = function(continuities, duratio
  * @param {int} y  The y-coordinate of the top left corner of the movement diagram area
  * @param {double} width The width of the containing box
  * @param {double} height The height of the containing box
+ * @param {boolean} isEndSheet
  */
-PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, height) {
+PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, height, isEndSheet) {
     var _this = this;
 
     // draws box and field
@@ -567,11 +567,13 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                 this.x + this.width + textWidth + 3,
                 this.y + this.height / 2 + textHeight * 3/2
             );
-            _this.pdf.text(
-                "W",
-                this.x + this.width / 2 + textWidth,
-                this.y + 2 * textHeight + this.height + 2
-            );
+            if (!isEndSheet) {
+                _this.pdf.text(
+                    "W",
+                    this.x + this.width / 2 + textWidth,
+                    this.y + 2 * textHeight + this.height + 2
+                );
+            }
             _this.pdf.text(
                 "N",
                 this.x + 1,
@@ -1083,53 +1085,59 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
         WIDTH/2, 0,
         WIDTH/2, HEIGHT
     );
-    var padding = 1;
+    var paddingX = 2;
+    var paddingY = .5;
     var textSize = 10;
     var textHeight = this._getTextHeight(textSize);
     var labelSize = 20;
-    var labelWidth = this._getTextWidth("SS00", labelSize) + padding;
+    var labelWidth = this._getTextWidth("00", labelSize) + paddingX * 2;
     var labelHeight = this._getTextHeight(labelSize);
     var diagramSize = 30;
-    var continuitySize = WIDTH/2 - diagramSize - labelWidth - padding * 4;
+    var continuitySize = WIDTH/2 - diagramSize - labelWidth - paddingX * 4;
     var x = 0;
     var y = 10;
     for (var i = 0; i < this.sheets.length; i++) {
-        var height = diagramSize;
-        var continuityHeight = (continuityTexts[i].length + 1) * textHeight + 2*padding;
-        if (continuityHeight > diagramSize) {
+        var height = diagramSize - 5;
+        var continuityHeight = (continuityTexts[i].length + 1) * (textHeight + 1) + 2*paddingY;
+        if (continuityHeight > height) {
             height = continuityHeight;
         }
         if (y + height > HEIGHT) {
             if (x == 0) {
-                x = WIDTH/2 + padding;
+                x = WIDTH/2 + paddingX;
             } else {
                 this.pdf.addPage();
+                this.pdf.line(
+                    WIDTH/2, 0,
+                    WIDTH/2, HEIGHT
+                );
                 x = 0;
             }
             y = 10;
         }
         this.pdf.setFontSize(labelSize);
         this.pdf.text(
-            "SS" + (i + 1),
-            x + padding,
-            y + padding + labelHeight
+            String(i + 1),
+            x + paddingX * 2,
+            y + paddingY + labelHeight
         );
         this._addIndividualContinuity(
             continuityTexts[i],
             this.sheets[i].getDuration(),
-            x + labelWidth + padding,
-            y + padding,
+            x + labelWidth + paddingX,
+            y + paddingY,
             continuitySize,
             height
         );
         this._addMovementDiagram(
             movements[i],
-            x + labelWidth + continuitySize + padding * 3,
-            y + padding,
+            x + labelWidth + continuitySize + paddingX * 2,
+            y + paddingY,
             diagramSize,
-            diagramSize
+            diagramSize,
+            true
         );
-        y += height + 2 * padding;
+        y += height + 2 * paddingY;
     }
 };
 
