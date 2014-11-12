@@ -644,8 +644,8 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                     if (yardlineText.length > 1) {
                         _this.pdf.text(
                             yardlineText[0],
-                            this.x + i - halfTextWidth - .2,
-                            this.y + this.height - 1
+                            this.x + i - halfTextWidth - .5,
+                            this.y + this.height - 2
                         );
                     }
                 }
@@ -654,8 +654,8 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                     if (yardlineText.length > 1) {
                         _this.pdf.text(
                             yardlineText[1],
-                            this.x + i + .2,
-                            this.y + this.height - 1
+                            this.x + i + .5,
+                            this.y + this.height - 2
                         );
                     }
                 }

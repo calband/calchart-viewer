@@ -58,12 +58,16 @@ MovementCommandEven.prototype.getContinuityText = function() {
     var dirX = (deltaX < 0) ? "S" : "N";
     var dirY = (deltaY < 0) ? "W" : "E";
     var steps = this._numBeats / this._beatsPerStep;
+    deltaX = Math.abs(deltaX);
+    deltaY = Math.abs(deltaY);
 
     // Check if movement only in one direction and same number of steps as change in position
     if (deltaX == 0 && deltaY == steps) {
-        return "Move " + Math.abs(deltaY) + dirY;
+        return "Move " + steps + " " + dirY;
     } else if (deltaY == 0 && deltaX == steps) {
-        return "Move " + Math.abs(deltaX) + dirX;
+        return "Move " + steps + " " + dirX;
+    } else if (deltaY == deltaX && deltaX == steps) { // Diagonal
+        return "Move " + steps + " " + dirX + dirY;
     }
 
     var text = "Even ";
