@@ -598,6 +598,17 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
             // position of first yardline in viewport
             var i = (left - Math.floor(left/8) * 8) * scale;
             var yardlineNum = Math.floor(left/8) * 5;
+
+            // 4-step line before first line
+            if (i - scale * 4 > 0) {
+                _this.pdf.setDrawColor(200);
+                _this.pdf.line(
+                    this.x + i - scale * 4, this.y,
+                    this.x + i - scale * 4, this.y + this.height
+                );
+                _this.pdf.setDrawColor(0);
+            }
+
             for (; i < this.width && yardlineNum <= 100; i += scale * 8, yardlineNum -= 5) {
                 _this.pdf.line(
                     this.x + i, this.y,
@@ -647,6 +658,16 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                             this.y + this.height - 1
                         );
                     }
+                }
+
+                // 4-step line after yardline 
+                if (i + scale * 4 < this.width) {
+                    _this.pdf.setDrawColor(200);
+                    _this.pdf.line(
+                        this.x + i + scale * 4, this.y,
+                        this.x + i + scale * 4, this.y + this.height
+                    );
+                    _this.pdf.setDrawColor(0);
                 }
             }
             _this.pdf.setTextColor(0);
