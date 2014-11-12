@@ -549,6 +549,7 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
         width: width - 2 * (_this._getTextWidth("S", 12) + 1.5),
         height: height - 2 * (_this._getTextHeight(12) + 2),
         textSize: 12,
+        yardTextSize: height * 11/47.1,
 
         // params are boundaries of viewport
         // left, right are steps from South sideline; top, bottom are steps from West sideline
@@ -557,23 +558,25 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
             var textHeight = _this._getTextHeight(this.textSize);
             var textWidth = _this._getTextWidth("S", this.textSize);
             _this.pdf.setFontSize(this.textSize);
-            _this.pdf.text(
-                "E",
-                this.x + this.width / 2 + textWidth,
-                this.y + textHeight
-            );
-            _this.pdf.text(
-                "S",
-                this.x + this.width + textWidth + 3,
-                this.y + this.height / 2 + textHeight * 3/2
-            );
-            if (!isEndSheet) {
+            if (isEndSheet) {
+                this.y -= textHeight;
+            } else {
+                _this.pdf.text(
+                    "E",
+                    this.x + this.width / 2 + textWidth,
+                    this.y + textHeight
+                );
                 _this.pdf.text(
                     "W",
                     this.x + this.width / 2 + textWidth,
                     this.y + 2 * textHeight + this.height + 2
                 );
             }
+            _this.pdf.text(
+                "S",
+                this.x + this.width + textWidth + 3,
+                this.y + this.height / 2 + textHeight * 3/2
+            );
             _this.pdf.text(
                 "N",
                 this.x + 1,
@@ -616,15 +619,14 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                 }
 
                 var yardlineText = "";
-                var yardTextSize = 11;
                 if (yardlineNum < 50) {
                     yardlineText = String(yardlineNum);
                 } else {
                     yardlineText = String(100 - yardlineNum);
                 }
                 _this.pdf.setTextColor(150);
-                _this.pdf.setFontSize(yardTextSize);
-                var halfTextWidth = _this._getTextWidth(yardlineText, yardTextSize)/2;
+                _this.pdf.setFontSize(this.yardTextSize);
+                var halfTextWidth = _this._getTextWidth(yardlineText, this.yardTextSize)/2;
 
                 if (i > halfTextWidth) {
                     // include first character if room
@@ -1092,7 +1094,7 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
     var x = 0;
     var y = 10;
     for (var i = 0; i < this.sheets.length; i++) {
-        var height = diagramSize - 5;
+        var height = diagramSize - 9;
         var continuityHeight = (continuityTexts[i].length + 1) * (textHeight + 1) + 2*paddingY;
         if (continuityHeight > height) {
             height = continuityHeight;
