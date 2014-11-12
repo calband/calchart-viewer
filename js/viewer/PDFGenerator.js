@@ -616,7 +616,7 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                 }
 
                 var yardlineText = "";
-                var yardTextSize = 8;
+                var yardTextSize = 11;
                 if (yardlineNum < 50) {
                     yardlineText = String(yardlineNum);
                 } else {
@@ -626,30 +626,25 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                 _this.pdf.setFontSize(yardTextSize);
                 var halfTextWidth = _this._getTextWidth(yardlineText, yardTextSize)/2;
 
-                if (i < halfTextWidth) {
-                    // first character doesn't fit
-                    if (yardlineText.length > 1) {
-                        _this.pdf.text(
-                            yardlineText[1],
-                            this.x + i,
-                            this.y + this.height - 1
-                        );
-                    }
-                } else if (i > this.width - halfTextWidth) {
-                    // second character doesn't fit
+                if (i > halfTextWidth) {
+                    // include first character if room
                     if (yardlineText.length > 1) {
                         _this.pdf.text(
                             yardlineText[0],
-                            this.x + i - halfTextWidth,
+                            this.x + i - halfTextWidth - .2,
                             this.y + this.height - 1
                         );
                     }
-                } else {
-                    _this.pdf.text(
-                        yardlineText,
-                        this.x + i - halfTextWidth,
-                        this.y + this.height - 1
-                    );
+                }
+                if (i < this.width - halfTextWidth) {
+                    // include second character if room
+                    if (yardlineText.length > 1) {
+                        _this.pdf.text(
+                            yardlineText[1],
+                            this.x + i + .2,
+                            this.y + this.height - 1
+                        );
+                    }
                 }
             }
             _this.pdf.setTextColor(0);
