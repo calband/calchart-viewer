@@ -56,17 +56,16 @@ MovementCommandArc.prototype.getAnimationState = function(beatNum) {
 
 /**
  * Returns a list of (deltaX, deltaY) pairs that lie along the arc
- * @param {int} the number of intermediate points
+ *
  * @return {Array<Array<int>>} an array of (deltaX, deltaY) pairs
  */
-MovementCommandArc.prototype.getMiddlePoints = function(pointNum) {
-    var deltaAngle = this._stepAngleDelta * this._numBeats / pointNum;
+MovementCommandArc.prototype.getMiddlePoints = function() {
     var totalAngle = this._startAngle;
     var prevX = this._startX;
     var prevY = this._startY;
     var points = [];
-    for (var i = 0; i < pointNum; i++) {
-        totalAngle += deltaAngle;
+    for (var i = 0; i < this._numBeats / this._beatsPerStep; i++) {
+        totalAngle += this._stepAngleDelta;
         var x = this._radius * MathUtils.calcRotatedXPos(totalAngle) + this._centerX;
         var y = this._radius * MathUtils.calcRotatedYPos(totalAngle) + this._centerY;
         points.push([x - prevX, y - prevY]);

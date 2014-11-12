@@ -203,7 +203,7 @@ PDFGenerator.prototype._getMovements = function() {
             var endPosition = movement.getEndPosition();
             if (movement instanceof MovementCommandArc) {
                 // each item is an Array of (deltaX, deltaY) pairs
-                movement.getMiddlePoints(10).forEach(function(move) {
+                movement.getMiddlePoints().forEach(function(move) {
                     lines.push({
                         startPosition: startPosition,
                         deltaX: move[0],
