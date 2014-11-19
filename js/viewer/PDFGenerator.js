@@ -252,7 +252,7 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
     var sheetInfo = {
         marginX: 4,
         marginY: 3,
-        size: 14,
+        size: 28,
         sheet: (pageNum - 1) * 4 + 1,
 
         getTop: function() {
@@ -276,16 +276,17 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
         },
 
         draw: function(x, y) {
-            _this.pdf.text("SS " + this.sheet + "/" + _this.sheets.length, x, y);
+            _this.pdf.text("SS " + this.sheet, x, y);
         }
     };
 
     /* Title and Page information */
     header.draw();
 
-    /* Stuntsheet and Dot Info */
+    /* Stuntsheet */
     sheetInfo.height = _this._getTextHeight(sheetInfo.size);
-    sheetInfo.width = _this._getTextWidth("SS 00/00", sheetInfo.size);
+    sheetInfo.width = _this._getTextWidth("SS 00", sheetInfo.size) + sheetInfo.marginX;
+    _this.pdf.setFontSize(sheetInfo.size);
 
     sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
 
