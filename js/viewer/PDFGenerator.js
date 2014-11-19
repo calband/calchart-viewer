@@ -827,18 +827,16 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
 
     var dots = sheet.getDots();
     var currentDot = sheet.getDotByLabel(this.dot);
+    var scale = box.width / 160; // units per step
     var startX = box.x;
-    var startY = box.y;
-    // units per step
-    var scaleX = box.width / 160;
-    var scaleY = box.height / 84;
+    var startY = box.y + (box.height - scale * 84) / 2;
 
     // drawing hashes
     this.pdf.setLineWidth(.2);
     var numDashes = 21;
     var dashLength = box.width / numDashes;
-    var westHash = startY + 32 * scaleY;
-    var eastHash = startY + 52 * scaleY;
+    var westHash = startY + 32 * scale;
+    var eastHash = startY + 52 * scale;
     for (var i = 0; i < numDashes; i++) {
         if (i % 2 == 0) {
             this.pdf.setDrawColor(150);
@@ -864,16 +862,16 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
         }
         var position = dot.getAnimationState(0);
         this.pdf.circle(
-            startX + position.x * scaleX,
-            startY + position.y * scaleY,
+            startX + position.x * scale,
+            startY + position.y * scale,
             .5,
             "F"
         );
     }
 
     var position = currentDot.getAnimationState(0);
-    var x = position.x * scaleX;
-    var y = position.y * scaleY;
+    var x = position.x * scale;
+    var y = position.y * scale;
 
     var coordinates = { textSize: 8 };
 
@@ -946,29 +944,21 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
     this.pdf.setFontSize(coordinates.textSize);
 
     this.pdf.line(
-        startX + x, startY,
-        startX + x, startY + box.height
+        startX + x, box.y,
+        startX + x, box.y + box.height
     );
     this.pdf.line(
         startX, startY + y,
         startX + box.width, startY + y
     );
 
-    // Put coordinate texts on opposite side of the field as the selected dot
-    if (position.y > 42) {
-        this.pdf.text(
-            coordinates.textX,
-            coordinates.x,
-            startY + this._getTextHeight(coordinates.textSize)
-        );
-    } else {
-        this.pdf.text(
-            coordinates.textX,
-            coordinates.x,
-            startY + box.height - 1
-        );
-    }
+    this.pdf.text(
+        coordinates.textX,
+        coordinates.x,
+        box.y + this._getTextHeight(coordinates.textSize)
+    );
 
+    // Put vertical coordinate text on opposite side of the field
     if (position.x > 80) {
         this.pdf.text(
             coordinates.textY,
