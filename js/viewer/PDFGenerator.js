@@ -186,7 +186,7 @@ PDFGenerator.prototype._getContinuityTexts = function() {
 /**
  * Returns a list of movements for each stuntsheet, which are changes in position with
  * respect to the previous position
- * @return {Array<Array<Objects>>} where each element is a list of movements for each
+ * @return {Array<Array<Object>>} where each element is a list of movements for each
  *   stuntsheet. The Object contains:
  *      - {Coordinate} startPosition
  *      - {int} deltaX
@@ -454,7 +454,6 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 this.y
             );
 
-            //var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 3;
             box.draw(QUADRANT_HEIGHT/5 - 1.5);
         }
     };
