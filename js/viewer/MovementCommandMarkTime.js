@@ -33,24 +33,7 @@ MovementCommandMarkTime.prototype.getAnimationState = function(beatNum) {
  * @return {String} the continuity text in the form "MT 16 E"
  */
 MovementCommandMarkTime.prototype.getContinuityText = function() {
-    var orientation = this._orientation;
-    switch (orientation) {
-        case 0:
-            orientation = "E";
-            break;
-        case 90:
-            orientation = "S";
-            break;
-        case 180:
-            orientation = "W";
-            break;
-        case 270:
-            orientation = "N";
-            break;
-        default:
-            orientation = "";
-    }
-    return (this._numBeats == 0) ? "" : "MT " + this._numBeats + " " + orientation;
+    return (this._numBeats == 0) ? "" : "MT " + this._numBeats + " " + this.getOrientation();
 };
 
 module.exports = MovementCommandMarkTime;
