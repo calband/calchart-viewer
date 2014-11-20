@@ -148,6 +148,87 @@ PDFGenerator.prototype._drawDot = function(dotType, x, y) {
 };
 
 /**
+ * Returns the text that will be shown for the given x-coordinate in
+ * the form of "4N N40" to mean "4 steps North of the North-40"
+ *
+ * @param {int} x, the x-coordinate
+ * @return {String} the display text for the x-coordinate
+ */
+PDFGenerator.prototype._getXCoordinateText = function(x) {
+    var steps = x % 8;
+    var yardline = Math.floor(x / 8) * 5;
+
+    if (steps > 4) { // closer to North-side yardline
+        yardline += 5;
+        steps -= 4;
+    }
+
+    if (yardline < 50) {
+        yardline = "S" + yardline;
+    } else if (yardline == 50) {
+        yardline = "50";
+    } else {
+        yardline = "N" + (100 - yardline);
+    }
+
+    if (steps > 4) {
+        return steps + "S " + yardline;
+    } else if (steps == 0) {
+        return yardline;
+    } else {
+        return steps + "N " + yardline;
+    }
+};
+
+/**
+ * Returns the text that will be shown for the given y-coordinate in
+ * the form of "8E EH" to mean "8 steps East of the East Hash"
+ *
+ * @param {int} y, the y-coordinate
+ * @return {String} the display text for the y-coordinate
+ */
+PDFGenerator.prototype._getYCoordinateText = function(y) {
+    // West Sideline
+    if (y == 0) {
+        return "WS";
+    }
+    // Near West Sideline
+    if (y <= 16) {
+        return y + " WS";
+    }
+    // West of West Hash
+    if (y < 32) {
+        return (32 - y) + "W WH";
+    }
+    // West Hash
+    if (y == 32) {
+        return "WH";
+    }
+    // East of West Hash
+    if (y <= 40) {
+        return (y - 32) + "E WH";
+    }
+    // West of East Hash
+    if (y < 52) {
+        return (52 - y) + "W EH";
+    }
+    // East Hash
+    if (y == 52) {
+        return "EH";
+    }
+    // East of East Hash
+    if (y <= 68) {
+        return (y - 52) + "E EH";
+    }
+    // Near East Sideline
+    if (y < 84) {
+        return (84 - y) + " ES";
+    }
+    // East Sideline
+    return "ES";
+};
+
+/**
  * Draws the headers on the PDF. Includes:
  *      - Stuntsheet number
  *      - Dot number
@@ -777,6 +858,35 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
     // orientation East up
     box.draw(north, south, east, west, scale);
     box.lines(lines, north - viewport.startX, east - viewport.startY, scale);
+
+    // drawing lines denoting vertical position
+    function drawPosition(x, y) {
+        var lineY = box.y + (east - y) * scale;
+        var text = _this._getYCoordinateText(y);
+        _this.pdf.line(
+            box.x, lineY,
+            box.x + box.width, lineY
+        );
+        if (north - x < (north - south) / 2) {
+            _this.pdf.text(
+                text,
+                box.x + box.width - _this._getTextWidth(text, 8),
+                lineY - .5
+            );
+        } else {
+            _this.pdf.text(
+                text,
+                box.x + .5,
+                lineY - .5
+            );
+        }
+    };
+
+    var endPosition = startPosition;
+    drawPosition(viewport.startX, viewport.startY);
+    if (endPosition.y != viewport.startY) {
+        drawPosition(endPosition.x, endPosition.y);
+    }
 };
 
 /**
@@ -887,68 +997,11 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
     var x = position.x * scaleX;
     var y = position.y * scaleY;
 
-    var coordinates = { textSize: 8 };
-
-    // Gives x-coordinates for current dot; i.e. "4S N40"
-    var horizSteps = position.x % 8;
-    if (horizSteps > 4) { // closer to North-side yardline
-        var yardline = Math.ceil(position.x/8) * 5;
-        if (yardline < 50) {
-            yardline = "S" + yardline;
-        } else if (yardline === 50) {
-            yardline = "50";
-        } else {
-            yardline = "N" + (100 - yardline);
-        }
-        coordinates.textX = horizSteps - 4 + "S " + yardline;
-    } else { // closer to South-side yardline
-        var yardline = Math.floor(position.x/8) * 5;
-        if (yardline < 50) {
-            yardline = "S" + yardline;
-        } else if (yardline === 50) {
-            yardline = "50";
-        } else {
-            yardline = "N" + (100 - yardline);
-        }
-
-        if (horizSteps === 0) {
-            coordinates.textX = yardline;
-        } else {
-            coordinates.textX = horizSteps + "N " + yardline;
-        }
-    }
-
-    // Gives y-coordinates for current dot; i.e. "2E WH"
-    vertSteps = position.y;
-    if (vertSteps <= 16) { // closer to West sideline
-        if (vertSteps === 0) {
-            coordinates.textY = "WS";
-        } else {
-            coordinates.textY = vertSteps + " WS";
-        }
-    } else if (vertSteps <= 32) { // West of West hash
-        if (vertSteps === 32) {
-            coordinates.textY = "WH";
-        } else {
-            coordinates.textY = 32 - vertSteps + "W WH";
-        }
-    } else if (vertSteps <= 40) { // East of West hash
-        coordinates.textY = vertSteps - 32 + "E WH";
-    } else if (vertSteps <= 52) { // West of East hash
-        if (vertSteps === 52) {
-            coordinates.textY = "EH";
-        } else {
-            coordinates.textY = 52 - vertSteps + "W EH";
-        }
-    } else if (vertSteps <= 68) { // East of East hash
-        coordinates.textY = vertSteps - 52 + "E EH";
-    } else { // Closer to East sideline
-        if (vertSteps === 84) {
-            coordinates.textY = "ES";
-        } else {
-            coordinates.textY = 84 - vertSteps + " ES";
-        }
-    }
+    var coordinates = {
+        textSize: 8,
+        textX: this._getXCoordinateText(position.x),
+        textY: this._getYCoordinateText(position.y)
+    };
 
     coordinates.x = startX + x - this._getTextWidth(coordinates.textX, coordinates.textSize)/2;
     coordinates.y = startY + y + this._getTextHeight(coordinates.textSize)/4;
