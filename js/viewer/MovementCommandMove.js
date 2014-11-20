@@ -44,7 +44,7 @@ MovementCommandMove.prototype.getAnimationState = function(beatNum) {
 
 /**
  * Returns the continuity text for this movement
- * @return {String} the continuity text in the form "Move 4E"
+ * @return {String} the continuity text in the form "Move 4 E"
  */
 MovementCommandMove.prototype.getContinuityText = function() {
     var deltaX = this._endX - this._startX;
@@ -53,9 +53,9 @@ MovementCommandMove.prototype.getContinuityText = function() {
     var dirY = (deltaY < 0) ? "W" : "E";
     // This movement can only move in one direction
     if (deltaX == 0) {
-        return "Move " + Math.abs(deltaY) + dirY;
+        return "Move " + Math.abs(deltaY) + " " + dirY;
     } else {
-        return "Move " + Math.abs(deltaX) + dirX;
+        return "Move " + Math.abs(deltaX) + " " + dirX;
     }
 };
 

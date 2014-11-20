@@ -49,7 +49,7 @@ MovementCommandEven.prototype.getBeatsPerStep = function() {
 
 /**
  * Returns the continuity text for this movement
- * @return {String} the continuity text in the form "Even 8E, 4S" or "Move 8E" if
+ * @return {String} the continuity text in the form "Even 8 E, 4 S" or "Move 8 E" if
  * in one direction
  */
 MovementCommandEven.prototype.getContinuityText = function() {
@@ -79,10 +79,10 @@ MovementCommandEven.prototype.getContinuityText = function() {
         // End result will be concat. of directions, e.g. "Even 8E, 4S"
         var moveTexts = [];
         if (deltaY != 0) {
-            moveTexts.push(Math.abs(deltaY) + dirY);
+            moveTexts.push(Math.abs(deltaY) + " " + dirY);
         }
         if (deltaX != 0) {
-            moveTexts.push(Math.abs(deltaX) + dirX);
+            moveTexts.push(Math.abs(deltaX) + " " + dirX);
         }
         text += moveTexts.join(", ");
     }
