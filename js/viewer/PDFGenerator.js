@@ -565,33 +565,28 @@ PDFGenerator.prototype._addIndividualContinuity = function(continuities, duratio
     var textHeight = this._getTextHeight(box.size);
     var textY = box.y + box.paddingY;
     var textX = box.x + box.paddingX;
-    var maxWidth = box.width - box.paddingX * 2;
-    var longestWidth = 0;
-    var deltaY = 0;
+    var maxWidth = 0; // keeps track of longest continuity length
+    var deltaY = 0; // keeps track of total height of all continuities
 
     this.pdf.rect(box.x, box.y, box.width, box.height);
+    this.pdf.setFontSize(box.size);
     for (var i = 0; i < continuities.length; i++) {
         var continuity = continuities[i];
-        var _size = box.size;
-        var length;
-        while ((length = this._getTextWidth(continuity, _size)) > maxWidth) {
-            _size--;
+        var length = this._getTextWidth(continuity, box.size);
+        if (length > maxWidth) {
+            maxWidth = length;
         }
-        if (length > longestWidth) {
-            longestWidth = length;
-        }
-        deltaY += this._getTextHeight(_size) + .7;
+        deltaY += this._getTextHeight(box.size) + .7;
         if (deltaY > box.height - textHeight - box.paddingY) {
-            if (longestWidth < box.width/2) {
+            if (maxWidth < box.width/2) {
                 textX += box.width/2;
-                deltaY = this._getTextHeight(_size) + .7;
+                deltaY = this._getTextHeight(box.size) + .7;
             } else {
                 this.pdf.text("...", textX, textY);
                 break;
             }
         }
 
-        this.pdf.setFontSize(_size);
         this.pdf.text(
             continuity,
             textX,
@@ -600,7 +595,6 @@ PDFGenerator.prototype._addIndividualContinuity = function(continuities, duratio
     }
 
     var totalLabel = duration + " beats total";
-    this.pdf.setFontSize(box.size);
     this.pdf.text(
         totalLabel,
         x + box.width/2 - this._getTextWidth(totalLabel, box.size)/2 - 3,
