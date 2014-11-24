@@ -38,7 +38,7 @@ Dot.prototype.getLabel = function() {
  */
 Dot.prototype.getMovementCommands = function() {
     return this._movements;
-}
+};
 
 /**
  * Returns an AnimationState object that describes the Dot's
