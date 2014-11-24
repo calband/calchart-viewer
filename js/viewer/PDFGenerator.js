@@ -553,49 +553,59 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
  * @param {double} height The height of the continuity box
  */
 PDFGenerator.prototype._addIndividualContinuity = function(continuities, duration, x, y, width, height) {
-    var _this = this;
-
     var box = {
         height: height,
         width: width,
         x: x,
         y: y,
         paddingX: 2,
-        paddingY: 1.5,
-        size: 10,
-
-        draw: function() {
-            _this.pdf.rect(this.x, this.y, this.width, this.height);
-            var textHeight = _this._getTextHeight(this.size);
-            var textY = this.y + this.paddingY + textHeight;
-            var textX = this.x + this.paddingX;
-            for (var i = 0; i < continuities.length; i++) {
-                var continuity = continuities[i];
-                var _size = this.size;
-                var maxWidth = this.width - this.paddingX * 2;
-                while (_this._getTextWidth(continuity, _size) > maxWidth) {
-                    _size--;
-                }
-
-                _this.pdf.setFontSize(_size);
-                _this.pdf.text(
-                    continuity,
-                    textX,
-                    textY + (textHeight + 1) * i
-                );
-            }
-
-            var totalLabel = duration + " beats total";
-            _this.pdf.setFontSize(this.size);
-            _this.pdf.text(
-                totalLabel,
-                x + this.width/2 - _this._getTextWidth(totalLabel, this.size)/2 - 3,
-                this.y + this.height - this.paddingY
-            );
-        }
+        paddingY: 1,
+        size: 10
     };
+    var textHeight = this._getTextHeight(box.size);
+    var textY = box.y + box.paddingY;
+    var textX = box.x + box.paddingX;
+    var maxWidth = box.width - box.paddingX * 2;
+    var longestWidth = 0;
+    var deltaY = 0;
 
-    box.draw();
+    this.pdf.rect(box.x, box.y, box.width, box.height);
+    for (var i = 0; i < continuities.length; i++) {
+        var continuity = continuities[i];
+        var _size = box.size;
+        var length;
+        while ((length = this._getTextWidth(continuity, _size)) > maxWidth) {
+            _size--;
+        }
+        if (length > longestWidth) {
+            longestWidth = length;
+        }
+        deltaY += this._getTextHeight(_size) + .7;
+        if (deltaY > box.height - textHeight - box.paddingY) {
+            if (longestWidth < box.width/2) {
+                textX += box.width/2;
+                deltaY = this._getTextHeight(_size) + .7;
+            } else {
+                this.pdf.text("...", textX, textY);
+                break;
+            }
+        }
+
+        this.pdf.setFontSize(_size);
+        this.pdf.text(
+            continuity,
+            textX,
+            textY + deltaY
+        );
+    }
+
+    var totalLabel = duration + " beats total";
+    this.pdf.setFontSize(box.size);
+    this.pdf.text(
+        totalLabel,
+        x + box.width/2 - this._getTextWidth(totalLabel, box.size)/2 - 3,
+        box.y + box.height - box.paddingY
+    );
 };
 
 /**
