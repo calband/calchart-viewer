@@ -106,7 +106,7 @@ PDFGenerator.prototype.generate = function() {
         }
     }
     this._addEndSheet(continuityTexts, movements);
-    // CHANGE TO this.pdf.save LATER
+
     this.pdf.output("dataurlnewwindow");
 };
 

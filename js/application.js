@@ -59,14 +59,6 @@ $(document).ready(function () {
         applicationController.toggleAnimation();
     });
 
-    // for testing PDF
-    window.pdf = function() {
-        if ($(".js-dot-labels").val() === "") {
-            var dot = applicationController.getShow().getDotLabels()[0];
-            $(".js-dot-labels").trigger('change', {selected:dot});
-        }
-        applicationController.generatePDF();
-    };
     $(".js-generate-continuity").click(function () {
         if (!$(this).hasClass("disabled")) {
             applicationController.generatePDF();
