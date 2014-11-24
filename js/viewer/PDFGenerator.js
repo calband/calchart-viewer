@@ -171,6 +171,7 @@ PDFGenerator.prototype._drawDot = function(dotType, x, y) {
  * @return {String} the display text for the x-coordinate
  */
 PDFGenerator.prototype._getXCoordinateText = function(x) {
+    x = Math.round(x);
     var steps = x % 8;
     var yardline = Math.floor(x / 8) * 5;
 
