@@ -712,29 +712,28 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                 } else {
                     yardlineText = String(100 - yardlineNum);
                 }
+                if (yardlineText.length == 1) {
+                    yardlineText = "0" + yardlineText;
+                }
                 _this.pdf.setTextColor(150);
                 _this.pdf.setFontSize(this.yardTextSize);
                 var halfTextWidth = _this._getTextWidth(yardlineText, this.yardTextSize)/2;
 
                 if (i > halfTextWidth) {
                     // include first character if room
-                    if (yardlineText.length > 1) {
-                        _this.pdf.text(
-                            yardlineText[0],
-                            this.x + i - halfTextWidth - .5,
-                            this.y + this.height - 2
-                        );
-                    }
+                    _this.pdf.text(
+                        yardlineText[0],
+                        this.x + i - halfTextWidth - .5,
+                        this.y + this.height - 2
+                    );
                 }
                 if (i < this.width - halfTextWidth) {
                     // include second character if room
-                    if (yardlineText.length > 1) {
-                        _this.pdf.text(
-                            yardlineText[1],
-                            this.x + i + .5,
-                            this.y + this.height - 2
-                        );
-                    }
+                    _this.pdf.text(
+                        yardlineText[1],
+                        this.x + i + .5,
+                        this.y + this.height - 2
+                    );
                 }
 
                 // 4-step line after yardline 
@@ -841,7 +840,7 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
     var east = west + viewport.height;
     // orientation East up
     box.draw(north, south, east, west, scale);
-    box.lines(lines, north - viewport.startX, east - viewport.startY, scale);
+    box.lines(north - viewport.startX, east - viewport.startY, scale);
 
     // drawing lines denoting vertical position
     function drawPosition(x, y) {
@@ -851,6 +850,7 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
             box.x, lineY,
             box.x + box.width, lineY
         );
+        _this.pdf.setFontSize(8);
         if (north - x < (north - south) / 2) {
             _this.pdf.text(
                 text,
@@ -866,10 +866,12 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
         }
     };
 
-    var endPosition = startPosition;
     drawPosition(viewport.startX, viewport.startY);
-    if (endPosition.y != viewport.startY) {
-        drawPosition(endPosition.x, endPosition.y);
+    if (viewport.deltaY != 0) {
+        drawPosition(
+            viewport.startX + viewport.deltaX,
+            viewport.startY + viewport.deltaY
+        );
     }
 };
 
