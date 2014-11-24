@@ -98,19 +98,34 @@ MovementCommand.prototype.getAnimationState = function(beatNum) {
 };
 
 /**
- * Returns the orientation of this MovementCommand, however
- * this MovementCommand interprets "orientation" as, or null if
- * this MovementCommand doesn't interpret orientation
- *
- * @return {int|String|null} The orientation in degrees, clockwise direction, or null
+ * Returns the continuity text associated with this movement
+ * @return {String} the text displayed for this movement
+ */
+MovementCommand.prototype.getContinuityText = function() {
+    console.log("getContinuityText called");
+};
+
+/**
+ * Returns this movement's orientation (E,W,N,S). If the orientation isn't one of
+ * 0, 90, 180, or 270, returns an empty String
+ * @return {String} the orientation or an empty String if invalid orientation
  */
 MovementCommand.prototype.getOrientation = function() {
-    if (typeof this._orientation !== "undefined") {
-        return this._orientation;
-    } else if (this._movementIsCW !== "undefined") {
-        return this._movementIsCW ? "CW" : "CCW";
-    } else {
-        return null;
+    switch (this._orientation) {
+        case 0:
+            return "E";
+            break;
+        case 90:
+            return "S";
+            break;
+        case 180:
+            return "W";
+            break;
+        case 270:
+            return "N";
+            break;
+        default:
+            return "";
     }
 };
 

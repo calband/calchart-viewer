@@ -42,4 +42,21 @@ MovementCommandMove.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX + (this._deltaXPerStep * numSteps), this._startY + (this._deltaYPerStep * numSteps), this._orientation);
 };
 
+/**
+ * Returns the continuity text for this movement
+ * @return {String} the continuity text in the form "Move 4 E"
+ */
+MovementCommandMove.prototype.getContinuityText = function() {
+    var deltaX = this._endX - this._startX;
+    var deltaY = this._endY - this._startY;
+    var dirX = (deltaX < 0) ? "S" : "N";
+    var dirY = (deltaY < 0) ? "W" : "E";
+    // This movement can only move in one direction
+    if (deltaX == 0) {
+        return "Move " + Math.abs(deltaY) + " " + dirY;
+    } else {
+        return "Move " + Math.abs(deltaX) + " " + dirX;
+    }
+};
+
 module.exports = MovementCommandMove;
