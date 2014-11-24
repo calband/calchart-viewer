@@ -171,6 +171,7 @@ PDFGenerator.prototype._drawDot = function(dotType, x, y) {
  * @return {String} the display text for the x-coordinate
  */
 PDFGenerator.prototype._getXCoordinateText = function(x) {
+    x = Math.round(x * 10) / 10;
     var steps = x % 8;
     var yardline = Math.floor(x / 8) * 5;
 
@@ -204,6 +205,7 @@ PDFGenerator.prototype._getXCoordinateText = function(x) {
  * @return {String} the display text for the y-coordinate
  */
 PDFGenerator.prototype._getYCoordinateText = function(y) {
+    y = Math.round(y * 10) / 10;
     // West Sideline
     if (y == 0) {
         return "WS";
