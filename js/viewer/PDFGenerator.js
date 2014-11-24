@@ -171,7 +171,6 @@ PDFGenerator.prototype._drawDot = function(dotType, x, y) {
  * @return {String} the display text for the x-coordinate
  */
 PDFGenerator.prototype._getXCoordinateText = function(x) {
-    x = Math.round(x * 10) / 10;
     var steps = x % 8;
     var yardline = Math.floor(x / 8) * 5;
 
@@ -179,6 +178,7 @@ PDFGenerator.prototype._getXCoordinateText = function(x) {
         yardline += 5;
         steps -= 4;
     }
+    steps = Math.round(steps * 10) / 10;
 
     if (yardline < 50) {
         yardline = "S" + yardline;
@@ -205,18 +205,21 @@ PDFGenerator.prototype._getXCoordinateText = function(x) {
  * @return {String} the display text for the y-coordinate
  */
 PDFGenerator.prototype._getYCoordinateText = function(y) {
-    y = Math.round(y * 10) / 10;
+    function round(val) {
+        return Math.round(val * 10) / 10;
+    };
+
     // West Sideline
     if (y == 0) {
         return "WS";
     }
     // Near West Sideline
     if (y <= 16) {
-        return y + " WS";
+        return round(y) + " WS";
     }
     // West of West Hash
     if (y < 32) {
-        return (32 - y) + "W WH";
+        return round(32 - y) + "W WH";
     }
     // West Hash
     if (y == 32) {
@@ -224,11 +227,11 @@ PDFGenerator.prototype._getYCoordinateText = function(y) {
     }
     // East of West Hash
     if (y <= 40) {
-        return (y - 32) + "E WH";
+        return round(y - 32) + "E WH";
     }
     // West of East Hash
     if (y < 52) {
-        return (52 - y) + "W EH";
+        return round(52 - y) + "W EH";
     }
     // East Hash
     if (y == 52) {
@@ -236,11 +239,11 @@ PDFGenerator.prototype._getYCoordinateText = function(y) {
     }
     // East of East Hash
     if (y <= 68) {
-        return (y - 52) + "E EH";
+        return round(y - 52) + "E EH";
     }
     // Near East Sideline
     if (y < 84) {
-        return (84 - y) + " ES";
+        return round(84 - y) + " ES";
     }
     // East Sideline
     return "ES";
