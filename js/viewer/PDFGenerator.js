@@ -204,6 +204,7 @@ PDFGenerator.prototype._getXCoordinateText = function(x) {
  * @return {String} the display text for the y-coordinate
  */
 PDFGenerator.prototype._getYCoordinateText = function(y) {
+    y = Math.round(y);
     // West Sideline
     if (y == 0) {
         return "WS";
