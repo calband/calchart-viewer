@@ -52,6 +52,8 @@ var PDFGenerator = function(show, dot) {
  * a dialog box to download the generated PDF.
  */
 PDFGenerator.prototype.generate = function() {
+    var continuityTexts = this._getContinuityTexts();
+    var movements = this._getMovements();
     for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
         if (pageNum != 0) {
             this.pdf.addPage();
@@ -84,12 +86,26 @@ PDFGenerator.prototype.generate = function() {
             var y = QUADRANT[i].y;
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
-            this._addIndividualContinuity(x, y, sheet);
-            this._addMovementDiagram(x, y, sheet);
+            this._addIndividualContinuity(
+                continuityTexts[pageNum * 4 + i],
+                sheet.getDuration(),
+                x,
+                y + QUADRANT_HEIGHT / 5,
+                QUADRANT_WIDTH / 2,
+                QUADRANT_HEIGHT * 2/5
+            );
+            this._addMovementDiagram(
+                movements[pageNum * 4 + i],
+                x + QUADRANT_WIDTH / 2 + 1,
+                y + QUADRANT_HEIGHT / 5,
+                QUADRANT_WIDTH / 2,
+                QUADRANT_HEIGHT * 2/5
+            );
             this._addBirdseye(x, y, sheet);
             this._addSurroundingDots(x, y, sheet);
         }
     }
+    this._addEndSheet(continuityTexts, movements);
     // CHANGE TO this.pdf.save LATER
     this.pdf.output("dataurlnewwindow");
 };
@@ -226,6 +242,67 @@ PDFGenerator.prototype._getYCoordinateText = function(y) {
     }
     // East Sideline
     return "ES";
+};
+
+/*
+ * Returns all of the selected dot's individual continuity texts
+ * @return {Array<Array<String>>} an Array of continuity texts for each sheet
+ */
+PDFGenerator.prototype._getContinuityTexts = function() {
+    var showContinuities = [];
+    var dotLabel = this.dot;
+    this.sheets.forEach(function(sheet) {
+        var continuities = [];
+        sheet.getDotByLabel(dotLabel).getMovementCommands().forEach(function(movement) {
+            var text = movement.getContinuityText();
+            if (text !== "") {
+                continuities.push(text);
+            }
+        });
+        showContinuities.push(continuities);
+    });
+    return showContinuities;
+};
+
+/**
+ * Returns a list of movements for each stuntsheet, which are changes in position with
+ * respect to the previous position
+ * @return {Array<Array<Object>>} where each element is a list of movements for each
+ *   stuntsheet. The Object contains:
+ *      - {Coordinate} startPosition
+ *      - {int} deltaX
+ *      - {int} deltaY
+ */
+PDFGenerator.prototype._getMovements = function() {
+    var moves = [];
+    var dotLabel = this.dot;
+    this.sheets.forEach(function(sheet) {
+        var lines = [];
+        var movements = sheet.getDotByLabel(dotLabel).getMovementCommands();
+        var startPosition = movements[0].getStartPosition();
+        movements.forEach(function(movement) {
+            var endPosition = movement.getEndPosition();
+            if (movement instanceof MovementCommandArc) {
+                // each item is an Array of (deltaX, deltaY) pairs
+                movement.getMiddlePoints().forEach(function(move) {
+                    lines.push({
+                        startPosition: startPosition,
+                        deltaX: move[0],
+                        deltaY: move[1]
+                    });
+                });
+            } else {
+                lines.push({
+                    startPosition: startPosition,
+                    deltaX: endPosition.x - startPosition.x,
+                    deltaY: endPosition.y - startPosition.y
+                });
+            }
+            startPosition = endPosition;
+        });
+        moves.push(lines);
+    });
+    return moves;
 };
 
 /**
@@ -455,8 +532,7 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
                 this.y
             );
 
-            var height = _this._getTextHeight(_size) * continuities.length + 2*box.paddingY + 3;
-            box.draw(height);
+            box.draw(QUADRANT_HEIGHT/5 - 1.5);
         }
     };
 
@@ -469,146 +545,56 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
  *      - Total beats
  *      - Border between general movements, e.g. Stand and Play vs. Continuity
  *
- * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
- * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
- * @param {Sheet} sheet the current stuntsheet
+ * @param {Array<String>} continuities, a list of continuities for a sheet
+ * @param {int} duration the beats in this sheet
+ * @param {int} x  The x-coordinate of the top left corner of the continuity box
+ * @param {int} y  The y-coordinate of the top left corner of the continuity box
+ * @param {double} width The width of the continuity box
+ * @param {double} height The height of the continuity box
  */
-PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY, sheet) {
+PDFGenerator.prototype._addIndividualContinuity = function(continuities, duration, x, y, width, height) {
     var _this = this;
 
     var box = {
-        height: QUADRANT_HEIGHT * 2/5,
-        width: QUADRANT_WIDTH / 2,
-        x: quadrantX,
-        y: quadrantY + QUADRANT_HEIGHT / 5,
+        height: height,
+        width: width,
+        x: x,
+        y: y,
         paddingX: 2,
         paddingY: 1.5,
         size: 10,
-        movements: [],
 
         draw: function() {
             _this.pdf.rect(this.x, this.y, this.width, this.height);
             var textHeight = _this._getTextHeight(this.size);
             var textY = this.y + this.paddingY + textHeight;
             var textX = this.x + this.paddingX;
-            for (var i = 0; i < this.movements.length; i++) {
+            for (var i = 0; i < continuities.length; i++) {
+                var continuity = continuities[i];
                 var _size = this.size;
                 var maxWidth = this.width - this.paddingX * 2;
-                while (_this._getTextWidth(this.movements[i], _size) > maxWidth) {
+                while (_this._getTextWidth(continuity, _size) > maxWidth) {
                     _size--;
                 }
 
                 _this.pdf.setFontSize(_size);
                 _this.pdf.text(
-                    this.movements[i],
+                    continuity,
                     textX,
                     textY + (textHeight + 1) * i
                 );
             }
 
-            var totalLabel = sheet.getDuration() + " beats total";
+            var totalLabel = duration + " beats total";
             _this.pdf.setFontSize(this.size);
             _this.pdf.text(
                 totalLabel,
-                quadrantX + this.width/2 - _this._getTextWidth(totalLabel, this.size)/2 - 3,
+                x + this.width/2 - _this._getTextWidth(totalLabel, this.size)/2 - 3,
                 this.y + this.height - this.paddingY
             );
         }
     };
 
-    var movements = sheet.getDotByLabel(this.dot).getMovementCommands();
-    for (var i = 0; i < movements.length; i++) {
-        var movement = movements[i];
-        var orientation = movement.getOrientation();
-        switch (orientation) {
-            case 0:
-                orientation = "E"; break;
-            case 90:
-                orientation = "S"; break;
-            case 180:
-                orientation = "W"; break;
-            case 270:
-                orientation = "N"; break;
-            case "CW":
-            case "CCW":
-                break;
-            default:
-                orientation = "";
-        }
-        var start = movement.getStartPosition();
-        var end = movement.getEndPosition();
-        var deltaX = end.x - start.x;
-        var deltaY = end.y - start.y;
-        var dirX = (deltaX < 0) ? "S" : "N";
-        var dirY = (deltaY < 0) ? "W" : "E";
-        deltaX = Math.abs(deltaX);
-        deltaY = Math.abs(deltaY);
-
-        var text;
-
-        // If movement is an Even, but behaves like a Move, treat as MovementCommandMove
-        var isMoveCommand = function() {
-            if (movement instanceof MovementCommandMove) {
-                return true;
-            }
-            if (movement instanceof MovementCommandEven) {
-                var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
-                if (steps == deltaX && deltaY == 0) {
-                    return true;
-                }
-                if (steps == deltaY && deltaX == 0) {
-                    return true;
-                }
-            }
-            return false;
-        }();
-
-        if (isMoveCommand) {
-            // MovementCommandMoves only move in one direction: X or Y
-            if (deltaX == 0) {
-                text = "Move " + deltaY + dirY;
-            } else {
-                text = "Move " + deltaX + dirX;
-            }
-        } else if (movement instanceof MovementCommandMarkTime) {
-            if (movement.getBeatDuration() == 0) {
-                continue;
-            }
-            text = "MT " + movement.getBeatDuration() + orientation;
-        } else if (movement instanceof MovementCommandStand) {
-            text = "Close " + movement.getBeatDuration() + orientation;
-        } else if (movement instanceof MovementCommandEven) {
-            text = "Even ";
-            // If movement is a fraction of steps, simply say "NE" or "S"
-            if (deltaX % 1 != 0 || deltaY % 1 != 0) {
-                text += (deltaX != 0) ? dirX : "";
-                text += (deltaY != 0) ? dirY : "";
-            } else {
-                // End result will be concat. of directions, e.g. "Even 8E, 4S"
-                var moveTexts = [];
-                if (deltaY != 0) {
-                    moveTexts.push(deltaY + dirY);
-                }
-                if (deltaX != 0) {
-                    moveTexts.push(deltaX + dirX);
-                }
-                text += moveTexts.join(", ");
-            }
-            // Error checking for an even move without movement in any direction
-            if (text === "Even ") {
-                text += "0";
-            }
-            var steps = movement.getBeatDuration() / movement.getBeatsPerStep();
-            text += " (" + steps + " steps)";
-        } else if (movement instanceof MovementCommandGoto) {
-            text = "See Continuity (" + movement.getBeatDuration() + " beats)";
-        } else if (movement instanceof MovementCommandArc) {
-            text = "GT " + orientation + " " + movement.getAngle() + " deg. (" + movement.getBeatDuration() + " steps)";
-        } else {
-            throw new TypeError("Class not recognized: " + type);
-        }
-        box.movements.push(text);
-    }
     box.draw();
 };
 
@@ -622,20 +608,25 @@ PDFGenerator.prototype._addIndividualContinuity = function(quadrantX, quadrantY,
  *      - Zooming if big
  *      - Orientation EWNS; East is up
  *
- * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
- * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
- * @param {Sheet} sheet
+ * @param {Array<Objects>} movements, where each item is an object containing values for
+ *      deltaX and deltaY for each movement and the starting Coordinate
+ * @param {int} x  The x-coordinate of the top left corner of the movement diagram area
+ * @param {int} y  The y-coordinate of the top left corner of the movement diagram area
+ * @param {double} width The width of the containing box
+ * @param {double} height The height of the containing box
+ * @param {boolean} isEndSheet
  */
-PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, sheet) {
+PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, height, isEndSheet) {
     var _this = this;
 
     // draws box and field
     var box = {
-        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
-        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1.5),
-        x: quadrantX + QUADRANT_WIDTH / 2 + 1,
-        y: quadrantY + QUADRANT_HEIGHT / 5,
+        x: x,
+        y: y,
+        width: width - 2 * (_this._getTextWidth("S", 12) + 1.5),
+        height: height - 2 * (_this._getTextHeight(12) + 2),
         textSize: 12,
+        yardTextSize: height * 11/47.1,
 
         // params are boundaries of viewport
         // left, right are steps from South sideline; top, bottom are steps from West sideline
@@ -644,25 +635,29 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
             var textHeight = _this._getTextHeight(this.textSize);
             var textWidth = _this._getTextWidth("S", this.textSize);
             _this.pdf.setFontSize(this.textSize);
-            _this.pdf.text(
-                "E",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
-                this.y + textHeight
-            );
+            if (isEndSheet) {
+                this.y -= textHeight;
+            } else {
+                _this.pdf.text(
+                    "E",
+                    this.x + this.width / 2 + textWidth,
+                    this.y + textHeight
+                );
+                _this.pdf.text(
+                    "W",
+                    this.x + this.width / 2 + textWidth,
+                    this.y + 2 * textHeight + this.height + 2
+                );
+            }
             _this.pdf.text(
                 "S",
-                this.x + QUADRANT_WIDTH/2 - textWidth,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
-            );
-            _this.pdf.text(
-                "W",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
-                this.y + QUADRANT_HEIGHT * 2/5 - 1
+                this.x + this.width + textWidth + 3,
+                this.y + this.height / 2 + textHeight * 3/2
             );
             _this.pdf.text(
                 "N",
                 this.x + 1,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.y + this.height / 2 + textHeight * 3/2
             );
             this.x += textWidth + 2;
             this.y += textHeight + 2;
@@ -672,6 +667,7 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
                 this.width,
                 this.height
             );
+
             var westHash = bottom < 32 && top > 32;
             var eastHash = bottom < 52 && top > 52;
             var hashLength = 3;
@@ -679,6 +675,17 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
             // position of first yardline in viewport
             var i = (left - Math.floor(left/8) * 8) * scale;
             var yardlineNum = Math.floor(left/8) * 5;
+
+            // 4-step line before first line
+            if (i - scale * 4 > 0) {
+                _this.pdf.setDrawColor(200);
+                _this.pdf.line(
+                    this.x + i - scale * 4, this.y,
+                    this.x + i - scale * 4, this.y + this.height
+                );
+                _this.pdf.setDrawColor(0);
+            }
+
             for (; i < this.width && yardlineNum <= 100; i += scale * 8, yardlineNum -= 5) {
                 _this.pdf.line(
                     this.x + i, this.y,
@@ -700,73 +707,65 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
                 }
 
                 var yardlineText = "";
-                var yardTextSize = 8;
                 if (yardlineNum < 50) {
                     yardlineText = String(yardlineNum);
                 } else {
                     yardlineText = String(100 - yardlineNum);
                 }
                 _this.pdf.setTextColor(150);
-                _this.pdf.setFontSize(yardTextSize);
-                var halfTextWidth = _this._getTextWidth(yardlineText, yardTextSize)/2;
+                _this.pdf.setFontSize(this.yardTextSize);
+                var halfTextWidth = _this._getTextWidth(yardlineText, this.yardTextSize)/2;
 
-                if (i < halfTextWidth) {
-                    // first character doesn't fit
-                    if (yardlineText.length > 1) {
-                        _this.pdf.text(
-                            yardlineText[1],
-                            this.x + i,
-                            this.y + this.height - 1
-                        );
-                    }
-                } else if (i > this.width - halfTextWidth) {
-                    // second character doesn't fit
+                if (i > halfTextWidth) {
+                    // include first character if room
                     if (yardlineText.length > 1) {
                         _this.pdf.text(
                             yardlineText[0],
-                            this.x + i - halfTextWidth,
-                            this.y + this.height - 1
+                            this.x + i - halfTextWidth - .5,
+                            this.y + this.height - 2
                         );
                     }
-                } else {
-                    _this.pdf.text(
-                        yardlineText,
-                        this.x + i - halfTextWidth,
-                        this.y + this.height - 1
+                }
+                if (i < this.width - halfTextWidth) {
+                    // include second character if room
+                    if (yardlineText.length > 1) {
+                        _this.pdf.text(
+                            yardlineText[1],
+                            this.x + i + .5,
+                            this.y + this.height - 2
+                        );
+                    }
+                }
+
+                // 4-step line after yardline 
+                if (i + scale * 4 < this.width) {
+                    _this.pdf.setDrawColor(200);
+                    _this.pdf.line(
+                        this.x + i + scale * 4, this.y,
+                        this.x + i + scale * 4, this.y + this.height
                     );
+                    _this.pdf.setDrawColor(0);
                 }
             }
             _this.pdf.setTextColor(0);
         },
 
         // draws movement lines and labels starting at (x, y) in steps from edge of viewport
-        lines: function(movements, x, y, scale) {
+        lines: function(x, y, scale) {
             x = this.x + x * scale;
             y = this.y + y * scale;
-            var spotRadius = 2;
+            var spotRadius = this.height / 15;
             _this.pdf.circle(x, y, spotRadius);
             _this.pdf.setLineWidth(0.5);
             for (var i = 0; i < movements.length; i++) {
-                // 0: deltaX, 1: deltaY, 2: list of intermediate points (arcs)
                 var movement = movements[i];
                 // negative because orientation flipped
-                var deltaX = -movement[0] * scale;
-                var deltaY = -movement[1] * scale;
+                var deltaX = -movement.deltaX * scale;
+                var deltaY = -movement.deltaY * scale;
 
-                if (movement[2] === undefined) {
-                    _this.pdf.line(x, y, x + deltaX, y + deltaY);
-                    x += deltaX;
-                    y += deltaY;
-                } else {
-                    var points = movement[2];
-                    for (var j = 0; j < points.length; j++) {
-                        deltaX = -points[j][0] * scale;
-                        deltaY = -points[j][1] * scale;
-                        _this.pdf.line(x, y, x + deltaX, y + deltaY);
-                        x += deltaX;
-                        y += deltaY;
-                    }
-                }
+                _this.pdf.line(x, y, x + deltaX, y + deltaY);
+                x += deltaX;
+                y += deltaY;
             }
             _this.pdf.setLineWidth(0.1);
             _this.pdf.line(
@@ -780,13 +779,11 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
         }
     };
 
-    var movements = sheet.getDotByLabel(this.dot).getMovementCommands();
-    var startPosition = movements[0].getStartPosition();
-
+    var start = movements[0].startPosition;
     // calculates scale of viewport
     var viewport = {
-        startX: startPosition.x,
-        startY: startPosition.y,
+        startX: start.x,
+        startY: start.y,
         minX: 0, // minX <= 0, maximum movement South
         minY: 0, // minY <= 0, maximum movement West
         maxX: 0, // maxX >= 0, maximum movement North
@@ -830,22 +827,9 @@ PDFGenerator.prototype._addMovementDiagram = function(quadrantX, quadrantY, shee
         }
     };
 
-    var lines = [];
-    for (var i = 0; i < movements.length; i++) {
-        var movement = movements[i];
-        var endPosition = movement.getEndPosition();
-        var x = endPosition.x - startPosition.x;
-        var y = endPosition.y - startPosition.y;
-
-        if (movement instanceof MovementCommandArc) {
-            var points = movement.getMiddlePoints(10);
-            lines.push([x, y, points]);
-        } else {
-            lines.push([x, y]);
-        }
-        viewport.update(x, y);
-        startPosition = endPosition;
-    }
+    movements.forEach(function(move) {
+        viewport.update(move.deltaX, move.deltaY);
+    });
     viewport.scale();
 
     // units per step
@@ -949,18 +933,16 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
 
     var dots = sheet.getDots();
     var currentDot = sheet.getDotByLabel(this.dot);
+    var scale = box.width / 160; // units per step
     var startX = box.x;
-    var startY = box.y;
-    // units per step
-    var scaleX = box.width / 160;
-    var scaleY = box.height / 84;
+    var startY = box.y + (box.height - scale * 84) / 2;
 
     // drawing hashes
     this.pdf.setLineWidth(.2);
     var numDashes = 21;
     var dashLength = box.width / numDashes;
-    var westHash = startY + 32 * scaleY;
-    var eastHash = startY + 52 * scaleY;
+    var westHash = startY + 32 * scale;
+    var eastHash = startY + 52 * scale;
     for (var i = 0; i < numDashes; i++) {
         if (i % 2 == 0) {
             this.pdf.setDrawColor(150);
@@ -986,16 +968,16 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
         }
         var position = dot.getAnimationState(0);
         this.pdf.circle(
-            startX + position.x * scaleX,
-            startY + position.y * scaleY,
+            startX + position.x * scale,
+            startY + position.y * scale,
             .5,
             "F"
         );
     }
 
     var position = currentDot.getAnimationState(0);
-    var x = position.x * scaleX;
-    var y = position.y * scaleY;
+    var x = position.x * scale;
+    var y = position.y * scale;
 
     var coordinates = {
         textSize: 8,
@@ -1011,29 +993,21 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
     this.pdf.setFontSize(coordinates.textSize);
 
     this.pdf.line(
-        startX + x, startY,
-        startX + x, startY + box.height
+        startX + x, box.y,
+        startX + x, box.y + box.height
     );
     this.pdf.line(
         startX, startY + y,
         startX + box.width, startY + y
     );
 
-    // Put coordinate texts on opposite side of the field as the selected dot
-    if (position.y > 42) {
-        this.pdf.text(
-            coordinates.textX,
-            coordinates.x,
-            startY + this._getTextHeight(coordinates.textSize)
-        );
-    } else {
-        this.pdf.text(
-            coordinates.textX,
-            coordinates.x,
-            startY + box.height - 1
-        );
-    }
+    this.pdf.text(
+        coordinates.textX,
+        coordinates.x,
+        box.y + this._getTextHeight(coordinates.textSize)
+    );
 
+    // Put vertical coordinate text on opposite side of the field
     if (position.x > 80) {
         this.pdf.text(
             coordinates.textY,
@@ -1155,6 +1129,73 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
     }
 
     box.draw(surroundingDots);
+};
+
+/**
+ * Draws the end sheet containing a compilation of all the continuities and movements diagrams
+ * @param {Array<Array<String>>} continuityTexts a list of continuities grouped by stuntsheet
+ * @param {Array<Array<Object>>} movements a list of movement objects grouped by stuntsheet
+ */
+PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
+    this.pdf.addPage();
+    this.pdf.line(
+        WIDTH/2, 0,
+        WIDTH/2, HEIGHT
+    );
+    var paddingX = 2;
+    var paddingY = .5;
+    var textSize = 10;
+    var textHeight = this._getTextHeight(textSize);
+    var labelSize = 20;
+    var labelWidth = this._getTextWidth("00", labelSize) + paddingX * 2;
+    var labelHeight = this._getTextHeight(labelSize);
+    var diagramSize = 30;
+    var continuitySize = WIDTH/2 - diagramSize - labelWidth - paddingX * 4;
+    var x = 0;
+    var y = 10;
+    for (var i = 0; i < this.sheets.length; i++) {
+        var height = diagramSize - 9;
+        var continuityHeight = (continuityTexts[i].length + 1) * (textHeight + 1) + 2*paddingY;
+        if (continuityHeight > height) {
+            height = continuityHeight;
+        }
+        if (y + height > HEIGHT) {
+            if (x == 0) {
+                x = WIDTH/2 + paddingX;
+            } else {
+                this.pdf.addPage();
+                this.pdf.line(
+                    WIDTH/2, 0,
+                    WIDTH/2, HEIGHT
+                );
+                x = 0;
+            }
+            y = 10;
+        }
+        this.pdf.setFontSize(labelSize);
+        this.pdf.text(
+            String(i + 1),
+            x + paddingX * 2,
+            y + paddingY + labelHeight
+        );
+        this._addIndividualContinuity(
+            continuityTexts[i],
+            this.sheets[i].getDuration(),
+            x + labelWidth + paddingX,
+            y + paddingY,
+            continuitySize,
+            height
+        );
+        this._addMovementDiagram(
+            movements[i],
+            x + labelWidth + continuitySize + paddingX * 2,
+            y + paddingY,
+            diagramSize,
+            diagramSize,
+            true
+        );
+        y += height + 2 * paddingY;
+    }
 };
 
 module.exports = PDFGenerator;

@@ -32,4 +32,12 @@ MovementCommandGoto.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._endX, this._endY, this._orientation);
 };
 
+/**
+ * Returns the continuity text for this movement
+ * @return {String} the continuity text in the form of "See Continuity (16 beats)"
+ */
+MovementCommandGoto.prototype.getContinuityText = function() {
+    return "See Continuity (" + this._numBeats + " beats)";
+};
+
 module.exports = MovementCommandGoto;

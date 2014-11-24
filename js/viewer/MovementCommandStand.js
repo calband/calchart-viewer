@@ -27,4 +27,12 @@ MovementCommandStand.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX, this._startY, this._orientation);
 };
 
+/**
+ * Returns the continuity text for this movement
+ * @return {String} the continuity text in the form of "Close 16E"
+ */
+MovementCommandStand.prototype.getContinuityText = function() {
+    return "Close " + this._numBeats + this.getOrientation();
+};
+
 module.exports = MovementCommandStand;
