@@ -320,95 +320,34 @@ PDFGenerator.prototype._getMovements = function() {
  * @param {int} pageNum is the current 1-indexed page number
  */
 PDFGenerator.prototype._addHeaders = function(pageNum) {
+    var _this = this;
     var totalPages = Math.ceil(this.sheets.length/4);
-    var _this = this; // for use in nested functions
+    var title = this.show.getTitle();
+    var dot = "Dot " + this.dot;
 
     var header = {
-        title: {
-            text: _this.show.getTitle(),
-            label: "Dot " + _this.dot,
-            size: 16,
-
-            getX: function(text) {
-                return WIDTH/2 - _this._getTextWidth(text, this.size)/2;
-            },
-
-            getY: function() {
-                return header.y + header.paddingY + _this._getTextHeight(this.size);
-            }
-        },
-
-        pageInfo: {
-            size: 12,
-
-            getWidth: function() {
-                return _this._getTextWidth("Page " + pageNum + "/" + totalPages, this.size);
-            },
-
-            getHeight: function() {
-                return _this._getTextHeight(this.size);
-            },
-
-            draw: function() {
-                _this.pdf.text(
-                    "Page ",
-                    this.x,
-                    this.y
-                )
-                this.x += _this._getTextWidth("Page ", this.size);
-                _this.pdf.text(
-                    String(pageNum),
-                    this.x,
-                    this.y - 1
-                );
-                this.x += _this._getTextWidth(String(pageNum), this.size);
-                _this.pdf.text(
-                    "/",
-                    this.x,
-                    this.y
-                );
-                this.x += _this._getTextWidth("/", this.size);
-                _this.pdf.text(
-                    String(totalPages),
-                    this.x,
-                    this.y + 1
-                );
-            }
-        },
-
         x: WIDTH * 1/6,
         y: 5,
         width: WIDTH * 2/3,
-        height: _this._getTextHeight(16) * 3,
+        height: 17, // this._getTextHeight(16) * 3
         paddingX: 3,
         paddingY: 1,
+        size: 16
+    };
 
-        draw: function() {
-            /* box */
-            _this.pdf.rect(this.x, this.y, this.width, this.height);
+    var pageInfo = {
+        size: 12,
+        draw: function(x, y) {
+            _this.pdf.text("Page ", x, y);
+            x += 10.9; // _this._getTextWidth("Page ", this.size)
 
-            /* title */
-            _this.pdf.setFontSize(this.title.size);
-            _this.pdf.text(
-                this.title.text,
-                this.title.getX(this.title.text),
-                this.title.getY()
-            );
-            _this.pdf.setFontSize(this.title.size - 3);
-            _this.pdf.text(
-                this.title.label,
-                this.title.getX(this.title.label),
-                this.title.getY() + _this._getTextHeight(this.title.size - 3) + 2
-            );
+            _this.pdf.text(String(pageNum), x, y - 1);
+            x += _this._getTextWidth(String(pageNum), this.size);
 
-            /* page info */
-            _this.pdf.setFontSize(this.pageInfo.size);
-            this.pageInfo.x = this.x + this.paddingX;
-            this.pageInfo.y = this.y + this.height/2 + this.pageInfo.getHeight()/2;
-            this.pageInfo.draw();
+            _this.pdf.text("/", x, y);
+            x += 1.2; //_this._getTextWidth("/", this.size)
 
-            this.pageInfo.x = WIDTH * 5/6 - this.paddingX - this.pageInfo.getWidth();
-            this.pageInfo.draw();
+            _this.pdf.text(String(totalPages), x, y + 1);
         }
     };
 
@@ -431,7 +370,7 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
         },
 
         getRight: function() {
-            return WIDTH - this.width;
+            return WIDTH - _this._getTextWidth("SS " + this.sheet, this.size) - sheetInfo.marginX;
         },
 
         hasNext: function() {
@@ -444,12 +383,37 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
     };
 
     /* Title and Page information */
-    header.draw();
+    this.pdf.rect(header.x, header.y, header.width, header.height);
+
+    /* Title */
+    this.pdf.setFontSize(header.size);
+    this.pdf.text(
+        title,
+        WIDTH/2 - this._getTextWidth(title, header.size)/2,
+        header.y + header.paddingY + this._getTextHeight(header.size)
+    );
+
+    /* Dot */
+    this.pdf.setFontSize(header.size - 3);
+    this.pdf.text(
+        dot,
+        WIDTH/2 - this._getTextWidth(dot, header.size)/2,
+        header.y + header.paddingY + this._getTextHeight(header.size) * 2
+    );
+
+    /* Page Info */
+    this.pdf.setFontSize(pageInfo.size);
+    var x = header.x + header.paddingX;
+    var y = header.y + header.height/2 + this._getTextHeight(pageInfo.size)/2;
+    pageInfo.draw(x, y);
+
+    x = WIDTH * 5/6 - header.paddingX - this._getTextWidth("Page 0/0", pageInfo.size);
+    pageInfo.draw(x, y);
 
     /* Stuntsheet */
-    sheetInfo.height = _this._getTextHeight(sheetInfo.size);
-    sheetInfo.width = _this._getTextWidth("SS 00", sheetInfo.size) + sheetInfo.marginX;
-    _this.pdf.setFontSize(sheetInfo.size);
+    sheetInfo.height = this._getTextHeight(sheetInfo.size);
+    sheetInfo.width = this._getTextWidth("SS 00", sheetInfo.size) + sheetInfo.marginX;
+    this.pdf.setFontSize(sheetInfo.size);
 
     sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
 
