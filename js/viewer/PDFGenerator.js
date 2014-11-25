@@ -966,9 +966,12 @@ PDFGenerator.prototype._addSurroundingDots = function(x, y, width, height, sheet
 PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
     this.pdf.addPage();
     this.pdf.line(
-        WIDTH/2, 0,
+        WIDTH/2, 10,
         WIDTH/2, HEIGHT
     );
+    var title = this.show.getTitle() + " - Dot " + this.dot;
+    this.pdf.setFontSize(15);
+    this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
     var paddingX = 2;
     var paddingY = .5;
     var textSize = 10;
@@ -992,9 +995,11 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
             } else {
                 this.pdf.addPage();
                 this.pdf.line(
-                    WIDTH/2, 0,
+                    WIDTH/2, 10,
                     WIDTH/2, HEIGHT
                 );
+                this.pdf.setFontSize(15);
+                this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
                 x = 0;
             }
             y = 10;
