@@ -1143,7 +1143,7 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
         if (continuityHeight > height) {
             height = continuityHeight;
         }
-        if (y + height > HEIGHT) {
+        if (y + height > HEIGHT - 5) {
             if (x == 0) {
                 x = WIDTH/2 + paddingX;
             } else {
