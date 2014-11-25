@@ -17,6 +17,7 @@ var MovementCommandMarkTime = require("./MovementCommandMarkTime");
 var MovementCommandArc = require("./MovementCommandArc");
 var MathUtils = require("./MathUtils");
 var PDFUtils = require("./pdf/PDFUtils");
+var IndividualContinuityWidget = require("./pdf/IndividualContinuityWidget");
 
 /* CONSTANTS: DON'T CHANGE */
 var WIDTH = 215.9;
@@ -43,6 +44,7 @@ var PDFGenerator = function(show, dot) {
     this.show = show;
     this.dot = dot;
     this.sheets = show.getSheets();
+    IndividualContinuity = new IndividualContinuityWidget(this.pdf);
 };
 
 /**
@@ -87,13 +89,15 @@ PDFGenerator.prototype.generate = function() {
             var y = QUADRANT[i].y;
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
-            this._addIndividualContinuity(
-                continuityTexts[pageNum * 4 + i],
-                sheet.getDuration(),
+            IndividualContinuity.draw(
                 x,
                 y + QUADRANT_HEIGHT / 5,
                 QUADRANT_WIDTH / 2,
-                QUADRANT_HEIGHT * 2/5
+                QUADRANT_HEIGHT * 2/5,
+                {
+                    continuities: continuityTexts[pageNum * 4 + i],
+                    duration: sheet.getDuration()
+                }
             );
             this._addMovementDiagram(
                 movements[pageNum * 4 + i],
@@ -400,64 +404,6 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
         continuities,
         text.x,
         text.y
-    );
-};
-
-/**
- * Writes the continuities for the selected dot on the PDF. Includes:
- *      - Movements
- *      - Total beats
- *
- * @param {Array<String>} continuities, a list of continuities for a sheet
- * @param {int} duration the beats in this sheet
- * @param {int} x  The x-coordinate of the top left corner of the continuity box
- * @param {int} y  The y-coordinate of the top left corner of the continuity box
- * @param {double} width The width of the continuity box
- * @param {double} height The height of the continuity box
- */
-PDFGenerator.prototype._addIndividualContinuity = function(continuities, duration, x, y, width, height) {
-    var box = {
-        paddingX: 2,
-        paddingY: 1,
-        size: 10
-    };
-    var textHeight = PDFUtils.getTextHeight(box.size);
-    var textY = y + box.paddingY;
-    var textX = x + box.paddingX;
-    var maxWidth = 0; // keeps track of longest continuity length
-    var deltaY = 0; // keeps track of total height of all continuities
-
-    this.pdf.rect(x, y, width, height);
-    this.pdf.setFontSize(box.size);
-    for (var i = 0; i < continuities.length; i++) {
-        var continuity = continuities[i];
-        var length = PDFUtils.getTextWidth(continuity, box.size);
-        if (length > maxWidth) {
-            maxWidth = length;
-        }
-        deltaY += PDFUtils.getTextHeight(box.size) + .7;
-        if (deltaY > height - textHeight - box.paddingY) {
-            if (maxWidth < width/2) {
-                textX += width/2;
-                deltaY = PDFUtils.getTextHeight(box.size) + .7;
-            } else {
-                this.pdf.text("...", textX, textY);
-                break;
-            }
-        }
-
-        this.pdf.text(
-            continuity,
-            textX,
-            textY + deltaY
-        );
-    }
-
-    var totalLabel = duration + " beats total";
-    this.pdf.text(
-        totalLabel,
-        x + width/2 - PDFUtils.getTextWidth(totalLabel, box.size)/2 - 3,
-        y + height - box.paddingY
     );
 };
 
@@ -1059,13 +1005,15 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
             x + paddingX * 2,
             y + paddingY + labelHeight
         );
-        this._addIndividualContinuity(
-            continuityTexts[i],
-            this.sheets[i].getDuration(),
+        IndividualContinuity.draw(
             x + labelWidth + paddingX,
             y + paddingY,
             continuitySize,
-            height
+            height,
+            {
+                continuities: continuityTexts[i],
+                duration: this.sheets[i].getDuration()
+            }
         );
         this._addMovementDiagram(
             movements[i],
