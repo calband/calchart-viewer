@@ -108,7 +108,12 @@ PDFGenerator.prototype.generate = function() {
                 QUADRANT_HEIGHT * 2/5,
                 sheet
             );
-            this._addSurroundingDots(x, y, sheet);
+            this._addSurroundingDots(
+                x + QUADRANT_WIDTH / 2 + 1,
+                y + QUADRANT_HEIGHT * 3/5,
+                QUADRANT_WIDTH / 2,
+                QUADRANT_HEIGHT * 2/5,
+                sheet);
         }
     }
     this._addEndSheet(continuityTexts, movements);
@@ -1010,46 +1015,47 @@ PDFGenerator.prototype._addBirdseye = function(x, y, width, height, sheet) {
  *      - Dot labels
  *      - Dot types
  *
- * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
- * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {int} x  The x-coordinate of the top left corner of the box
+ * @param {int} y  The y-coordinate of the top left corner of the box
+ * @param {double} width  The width of the box
+ * @param {double} height The height of the box
  * @param {Sheet} sheet
  */
-PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, sheet) {
+PDFGenerator.prototype._addSurroundingDots = function(x, y, width, height, sheet) {
     var _this = this;
     var box = {
-        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
-        x: quadrantX + QUADRANT_WIDTH / 2 + 1,
-        y: quadrantY + QUADRANT_HEIGHT * 3/5,
+        height: height - 2 * (this._getTextHeight(12) + 2),
+        x: x,
+        y: y,
         textSize: 12,
         labelSize: 7,
 
-        draw: function(surroundingDots, start) {
+        draw: function() {
             var textHeight = _this._getTextHeight(this.textSize);
             var textWidth = _this._getTextWidth("S", this.textSize);
-            var scale = this.height / 10; // 5 step radius for viewport
             this.width = this.height; // make square
             _this.pdf.setFontSize(this.textSize);
             _this.pdf.text(
                 "E",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
+                this.x + width/2 - textWidth/2,
                 this.y + textHeight
             );
             _this.pdf.text(
                 "S",
-                this.x + QUADRANT_WIDTH/2 - textWidth - 4.5,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.x + width - textWidth - 4.5,
+                this.y + height/2 + textHeight/2
             );
             _this.pdf.text(
                 "W",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
-                this.y + QUADRANT_HEIGHT * 2/5 - 1
+                this.x + width/2 - textWidth/2,
+                this.y + height - 1
             );
             _this.pdf.text(
                 "N",
                 this.x + 4.5,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.y + height/2 + textHeight/2
             );
-            this.x += QUADRANT_WIDTH/4 - this.width/2;
+            this.x += width/2 - this.width/2;
             this.y += textHeight + 2;
             _this.pdf.rect(
                 this.x,
@@ -1070,18 +1076,6 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
             );
             _this.pdf.setDrawColor(0);
             _this.pdf.setLineWidth(.3);
-            var origin = {
-                x: this.x + this.width/2,
-                y: this.y + this.height/2
-            };
-            for (var i = 0; i < surroundingDots.length; i++) {
-                var dot = surroundingDots[i];
-                var x = dot.deltaX * scale + origin.x;
-                var y = dot.deltaY * scale + origin.y;
-                _this.pdf.setFontSize(this.labelSize);
-                _this._drawDot(dot.type, x, y);
-                _this.pdf.text(dot.label, x - 3, y - 2);
-            }
         }
     };
 
@@ -1104,7 +1098,21 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
         }
     }
 
-    box.draw(surroundingDots);
+    box.draw();
+
+    var origin = {
+        x: box.x + box.width/2,
+        y: box.y + box.height/2
+    };
+    var scale = box.height / 11; // radius of 4 steps + 1.5 steps of padding
+    for (var i = 0; i < surroundingDots.length; i++) {
+        var dot = surroundingDots[i];
+        var x = dot.deltaX * scale + origin.x;
+        var y = dot.deltaY * scale + origin.y;
+        this.pdf.setFontSize(box.labelSize);
+        this._drawDot(dot.type, x, y);
+        this.pdf.text(dot.label, x - 3, y - 2);
+    }
 };
 
 /**
