@@ -324,7 +324,15 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
             .attr("y", function (dot) { return yScale(dot.getAnimationState(currentBeat).y) - dotRectSize / 2; })
             .attr("width", dotRectSize)
             .attr("height", dotRectSize)
-            .attr("fill", colorForDot);
+            .attr("fill", colorForDot)
+            .style("cursor", "pointer")
+            .on("click", function (dot) {
+                var label = dot.getLabel();
+                $("[value='" + label + "']").prop("selected", true);
+                $(".js-dot-labels")
+                    .trigger("chosen:updated")
+                    .trigger("change", {selected: label});
+            });
 
     var selectedDot = sheet.getDotByLabel(selectedDotLabel);
     if (selectedDot) {
