@@ -328,7 +328,7 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
             .style("cursor", "pointer")
             .on("click", function (dot) {
                 var label = dot.getLabel();
-                $("[value=" + label + "]").prop("selected", true);
+                $(".js-dot-labels option[value=" + label + "]").prop("selected", true);
                 $(".js-dot-labels")
                     .trigger("chosen:updated")
                     .trigger("change", {selected: label});
