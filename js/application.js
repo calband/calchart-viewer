@@ -87,15 +87,5 @@ $(document).ready(function () {
             window.location.search = "show=" + params.selected;
         });
 
-    var urlParams = window.location.search;
-    var index = urlParams.indexOf("show=");
-    if (index != -1) {
-        var showName = urlParams.substr(index + 5);
-        var optionElem = $(".js-select-show option[value=" + showName + "]");
-        if (optionElem.length != 0) {
-            optionElem.prop("selected", true);
-            $(".js-select-show").trigger("chosen:updated");
-            applicationController.autoloadShow(showName);
-        }
-    }
+    applicationController.autoloadShow();
 });

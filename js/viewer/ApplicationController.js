@@ -70,24 +70,36 @@ ApplicationController.prototype.getShows = function(year) {
 };
 
 /**
- * Autoloads show from the Calchart server
- * @param {String} show is the index_name of the show to get
+ * Autoloads show from the Calchart server from the URL parameters
  */
-ApplicationController.prototype.autoloadShow = function(index_name) {
+ApplicationController.prototype.autoloadShow = function() {
+    var urlParams = window.location.search.substr(1).split(/&|=/);
+    var index = urlParams.indexOf("show");
+    if (index == -1) {
+        return;
+    }
+    var indexName = urlParams[index + 1];
+    var optionElem = $(".js-select-show option[value=" + indexName + "]");
+    if (optionElem.length == 0) {
+        return;
+    }
+    optionElem.prop("selected", true);
+    $(".js-select-show").trigger("chosen:updated");
+
     var url = "https://calchart-server.herokuapp.com/";
     var _this = this;
-    $.getJSON(url + "chart/" + index_name, function(data) {
+    $.getJSON(url + "chart/" + indexName, function(data) {
         var response = JSON.stringify(data);
         var viewer = ShowUtils.fromJSON(response);
         _this.setShow(viewer);
-        _this._setFileInputText(".js-viewer-file-btn", index_name);
+        _this._setFileInputText(".js-viewer-file-btn", indexName);
     });
 
-    $.getJSON(url + "beats/" + index_name, function(data) {
+    $.getJSON(url + "beats/" + indexName, function(data) {
         var response = JSON.stringify(data);
         var beats = TimedBeatsUtils.fromJSON(response);
         _this._animator.setBeats(beats);
-        _this._setFileInputText(".js-beats-file-btn", index_name);
+        _this._setFileInputText(".js-beats-file-btn", indexName);
     });
 };
 
