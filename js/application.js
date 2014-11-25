@@ -84,6 +84,18 @@ $(document).ready(function () {
             disable_search_threshold: 4 // if there are less than 4 shows, hide search
         })
         .change(function(evt, params) {
-            applicationController.autoloadShow(params.selected);
+            window.location.search = "show=" + params.selected;
         });
+
+    var urlParams = window.location.search;
+    var index = urlParams.indexOf("show=");
+    if (index != -1) {
+        var showName = urlParams.substr(index + 5);
+        var optionElem = $(".js-select-show option[value=" + showName + "]");
+        if (optionElem.length != 0) {
+            optionElem.prop("selected", true);
+            $(".js-select-show").trigger("chosen:updated");
+            applicationController.autoloadShow(showName);
+        }
+    }
 });
