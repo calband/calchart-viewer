@@ -1,11 +1,51 @@
 @options-height: 200px;
 @pdf-height: 550px;
+@sans: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+
+* {
+    margin: 0;
+    font-family: @sans;
+}
+
+h2 {
+    font-weight: normal;
+}
+
+.header {
+    padding: 5px;
+}
 
 .options {
-    height: @options-height;
+    padding: 5px;
     width: 100%;
-    h1, h2 {
-        margin: 0;
+    div {
+        display: inline-block;
+        vertical-align: top;
+    }
+    .widget-orientation {
+        border: 1px solid black;
+        padding: 10px;
+        .orientation-labels {
+            padding-right: 15px;
+            p {
+                margin: 0;
+            }
+        }
+        .orientation-buttons {
+            vertical-align: bottom;
+            input {
+                margin: 0 5px;
+            }
+        }
+    }
+    .layout-order {
+        border: 1px solid black;
+        padding: 10px;
+        .layout-buttons {
+            input {
+                margin: 0 5px;
+            }
+        }
     }
 }
 

@@ -1,15 +1,48 @@
 <html>
 <head>
     <title>Calchart Viewer - PDF</title>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="build/css/pdf.css"></link>
     <script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="js/vendor/jspdf.min.js"></script>
     <script type="text/javascript" src="build/js/PDFGenerator.js"></script>
 </head>
 <body>
-    <div class="options">
+    <div class="header">
         <h1>Calchart Viewer: PDF Generator</h1>
         <h2>Select your options:</h2>
+    </div>
+    <div class="options">
+        <div class="widget-orientation">
+            <h3>Widget Orientations</h3>
+            <div class="orientation-labels">
+                <p>Movement Diagram</p>
+                <p>Bird's Eye View</p>
+                <p>Surrounding Dots</p>
+            </div>
+            <div class="orientation-buttons">
+                West up <input type="radio" name="md-orientation" value="West" checked>
+                East up <input type="radio" name="md-orientation" value="East">
+                <br>
+                West up <input type="radio" name="bev-orientation" value="West" checked>
+                East up <input type="radio" name="bev-orientation" value="East">
+                <br>
+                West up <input type="radio" name="sd-orientation" value="West" checked>
+                East up <input type="radio" name="sd-orientation" value="East">
+            </div>
+        </div>
+        <div class="layout-order">
+            <h3>Layout Order</h3>
+            <div class="layout-labels">
+                <p>Left to right</p>
+                <p>Top to bottom</p>
+            </div>
+            <div class="layout-buttons">
+                - <input type="radio" name="layout-order" value="ltr" checked>
+                <br>
+                - <input type="radio" name="layout-order" value="ttb">
+            </div>
+        </div>
     </div>
     <iframe class="js-pdf-preview"></iframe>
 </body>

@@ -33,7 +33,7 @@ $(document).ready(function() {
     }
 
     if (options["show"] === undefined || options["dot"] === undefined) {
-        window.location.href = "index.html";
+        $(".js-pdf-preview").attr("srcdoc", "No show or dot selected.");
         return;
     }
 
@@ -42,7 +42,7 @@ $(document).ready(function() {
         var show = ShowUtils.fromJSON(JSON.stringify(data));
         new PDFGenerator(show, options["dot"]).generate(options);
     }).fail(function() {
-        $(".js-pdf-preview").attr("srcdoc", "<h1>An error occurred</h1>");
+        $(".js-pdf-preview").attr("srcdoc", "An error occurred. Please return to the viewer.");
     });
 });
 
