@@ -84,13 +84,14 @@ var PDFGenerator = function(show, dot) {
  *
  * @param {Object} options, customizable options for the pdf. Current
  * customizable options include:
- *      - Orientation for movement diagram (options["md"] = "west"|"east")
- *      - Orientation for bird's eye view  (options["bev"] = "west"|"east")
- *      - Orientation for surrounding dots (options["sd"] = "west"|"east")
- *      - Layout order of stuntsheets      (options["layout"] = "ltr"|"ttb")
- *      - Accompanying widget in endsheet  (options["end"] = "md"|"bev"|"sd")
+ *      - Orientation for movement diagram (options["md-orientation"] = "west"|"east")
+ *      - Orientation for bird's eye view  (options["bev-orientation"] = "west"|"east")
+ *      - Orientation for surrounding dots (options["sd-orientation"] = "west"|"east")
+ *      - Layout order of stuntsheets      (options["layout-order"] = "ltr"|"ttb")
+ *      - Accompanying widget in endsheet  (options["endsheet-widget"] = "md"|"bev"|"sd")
  */
 PDFGenerator.prototype.generate = function(options) {
+    console.log(options);
     var continuityTexts = this._getContinuityTexts();
     var movements = this._getMovements();
     for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
