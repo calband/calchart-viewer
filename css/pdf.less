@@ -5,6 +5,7 @@
 * {
     margin: 0;
     font-family: @sans;
+    color: #003262;
 }
 
 h2 {
@@ -22,9 +23,12 @@ h2 {
         display: inline-block;
         vertical-align: top;
     }
-    .widget-orientation {
+    > div {
         border: 1px solid black;
-        padding: 10px;
+        padding: 5px;
+        margin: 0 5px;
+    }
+    .widget-orientation {
         .orientation-labels {
             padding-right: 15px;
             p {
@@ -39,8 +43,6 @@ h2 {
         }
     }
     .layout-order {
-        border: 1px solid black;
-        padding: 10px;
         .layout-buttons {
             input {
                 margin: 0 5px;

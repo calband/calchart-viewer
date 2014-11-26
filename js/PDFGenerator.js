@@ -44,6 +44,22 @@ $(document).ready(function() {
     }).fail(function() {
         $(".js-pdf-preview").attr("srcdoc", "An error occurred. Please return to the viewer.");
     });
+
+    var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];
+
+    keys.forEach(function(key) {
+        $(".options input[name=" + key + "][value=" + options[key] + "]").prop("checked", true);
+    })
+
+    $("input").change(function(evt) {
+        var target = $(evt.target);
+        options[target.attr("name")] = target.attr("value");
+        var url = "";
+        for (var key in options) {
+            url += "&" + key + "=" + options[key];
+        }
+        window.location.search = "?" + url.substr(1);
+    });
 });
 
 /**
@@ -66,7 +82,13 @@ var PDFGenerator = function(show, dot) {
  *
  * The function will display the pdf in the webpage's preview pane
  *
- * @param {Object} options, customizable options for the pdf
+ * @param {Object} options, customizable options for the pdf. Current
+ * customizable options include:
+ *      - Orientation for movement diagram (options["md"] = "west"|"east")
+ *      - Orientation for bird's eye view  (options["bev"] = "west"|"east")
+ *      - Orientation for surrounding dots (options["sd"] = "west"|"east")
+ *      - Layout order of stuntsheets      (options["layout"] = "ltr"|"ttb")
+ *      - Accompanying widget in endsheet  (options["end"] = "md"|"bev"|"sd")
  */
 PDFGenerator.prototype.generate = function(options) {
     var continuityTexts = this._getContinuityTexts();
