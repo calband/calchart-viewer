@@ -1,23 +1,18 @@
+var MovementCommandEven = require("./viewer/MovementCommandEven");
+var MovementCommandMove = require("./viewer/MovementCommandMove");
+var MovementCommandStand = require("./viewer/MovementCommandStand");
+var MovementCommandGoto = require("./viewer/MovementCommandGoto");
+var MovementCommandMarkTime = require("./viewer/MovementCommandMarkTime");
+var MovementCommandArc = require("./viewer/MovementCommandArc");
+var MathUtils = require("./viewer/MathUtils");
+var ShowUtils = require("./viewer/ShowUtils");
+
 /**
- * @fileOverview This file will export a class that can generate a PDF representation
- * of dots and movements
- *
  * @constant WIDTH is the width of the PDF document, in millimeters
  * @constant HEIGHT is the height of the PDF document, in millimeters
  * @constant QUADRANT contains (x,y) coordinates for the top left corner of each quadrant
  *      of the document. y coordinates offset by headers
- * @constant DOT_DATA contains the JPEG image data for the different dot types
  */
-
-var MovementCommandEven = require("./MovementCommandEven");
-var MovementCommandMove = require("./MovementCommandMove");
-var MovementCommandStand = require("./MovementCommandStand");
-var MovementCommandGoto = require("./MovementCommandGoto");
-var MovementCommandMarkTime = require("./MovementCommandMarkTime");
-var MovementCommandArc = require("./MovementCommandArc");
-var MathUtils = require("./MathUtils");
-
-/* CONSTANTS: DON'T CHANGE */
 var WIDTH = 215.9;
 var HEIGHT = 279.4;
 
@@ -29,6 +24,25 @@ var QUADRANT = [
 ];
 var QUADRANT_HEIGHT = HEIGHT/2 - 22;
 var QUADRANT_WIDTH = WIDTH/2 - 6;
+
+$(document).ready(function() {
+    var urlParams = window.location.search.substr(1).split(/&|=/);
+    var options = {};
+    for (var i = 0; i < urlParams.length; i += 2) {
+        options[urlParams[i]] = urlParams[i + 1];
+    }
+
+    if (options["show"] === undefined || options["dot"] === undefined) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    var url = "https://calchart-server.herokuapp.com/chart/" + options["show"];
+    $.getJSON(url, function(data) {
+        var show = ShowUtils.fromJSON(JSON.stringify(data));
+        new PDFGenerator(show, options["dot"]).generate(options);
+    });
+});
 
 /**
  * This PDFGenerator class will be able to generate the PDF representation of the given
@@ -48,10 +62,11 @@ var PDFGenerator = function(show, dot) {
  * generate will generate a PDF for a specific dot, containing its movements,
  * positions, and continuities relevant to it.
  *
- * The function will end with a save call, which will prompt a new window and/or
- * a dialog box to download the generated PDF.
+ * The function will display the pdf in the webpage's preview pane
+ *
+ * @param {Object} options, customizable options for the pdf
  */
-PDFGenerator.prototype.generate = function() {
+PDFGenerator.prototype.generate = function(options) {
     var continuityTexts = this._getContinuityTexts();
     var movements = this._getMovements();
     for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
@@ -107,7 +122,8 @@ PDFGenerator.prototype.generate = function() {
     }
     this._addEndSheet(continuityTexts, movements);
 
-    this.pdf.output("dataurlnewwindow");
+    var pdfData = this.pdf.output("datauristring");
+    $(".js-pdf-preview").attr("src", pdfData);
 };
 
 /**
