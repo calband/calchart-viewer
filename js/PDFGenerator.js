@@ -41,6 +41,8 @@ $(document).ready(function() {
     $.getJSON(url, function(data) {
         var show = ShowUtils.fromJSON(JSON.stringify(data));
         new PDFGenerator(show, options["dot"]).generate(options);
+    }).fail(function() {
+        $(".js-pdf-preview").attr("srcdoc", "<h1>An error occurred</h1>");
     });
 });
 
