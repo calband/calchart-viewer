@@ -173,10 +173,9 @@ PDFGenerator.prototype._drawDot = function(dotType, x, y) {
 PDFGenerator.prototype._getXCoordinateText = function(x) {
     var steps = x % 8;
     var yardline = Math.floor(x / 8) * 5;
-
     if (steps > 4) { // closer to North-side yardline
         yardline += 5;
-        steps -= 4;
+        steps = 8 - steps;
     }
     steps = Math.round(steps * 10) / 10;
 
