@@ -101,11 +101,14 @@ ApplicationController.prototype._updateUIWithShow = function () {
     } else {
         $(".js-show-title").text(this._show.getTitle());
     }
-    var options = this._show.getDotLabels().map(function (value) {
-        return "<option value='" + value + "'>" + value + "</option>";
+    this._show.getDotLabels().forEach(function(dot) {
+        $("<option>")
+            .attr("value", dot)
+            .attr("data-dot-label", dot)
+            .text(dot)
+            .appendTo(".js-dot-labels");
     });
-    var optionsHtml = "<option></option>" + options.join("");
-    $(".js-dot-labels").html(optionsHtml).trigger("chosen:updated");
+    $(".js-dot-labels").trigger("chosen:updated");
 };
 
 /**
