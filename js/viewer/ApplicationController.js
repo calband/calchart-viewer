@@ -5,6 +5,7 @@
 var Grapher = require("./Grapher");
 var ShowUtils = require("./ShowUtils");
 var TimedBeatsUtils = require("./TimedBeatsUtils");
+var URLUtils = require("./URLUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
@@ -73,12 +74,10 @@ ApplicationController.prototype.getShows = function(year) {
  * Autoloads show from the Calchart server from the URL parameters
  */
 ApplicationController.prototype.autoloadShow = function() {
-    var urlParams = window.location.search.substr(1).split(/&|=/);
-    var index = urlParams.indexOf("show");
-    if (index == -1) {
+    var indexName = URLUtils.getQueryValue("show");
+    if (indexName === null) {
         return;
     }
-    var indexName = urlParams[index + 1];
     var optionElem = $(".js-select-show option[value=" + indexName + "]");
     if (optionElem.length == 0) {
         return;
