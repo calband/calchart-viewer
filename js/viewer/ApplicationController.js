@@ -75,11 +75,8 @@ ApplicationController.prototype.getShows = function(year) {
  */
 ApplicationController.prototype.autoloadShow = function() {
     var indexName = URLUtils.getQueryValue("show");
-    if (indexName === null) {
-        return;
-    }
     var optionElem = $(".js-select-show option[value=" + indexName + "]");
-    if (optionElem.length == 0) {
+    if (optionElem.length === 0) {
         return;
     }
     optionElem.prop("selected", true);
