@@ -60,11 +60,13 @@ ApplicationController.prototype.setShow = function (show) {
 ApplicationController.prototype.getShows = function(year) {
     var url = "https://calchart-server.herokuapp.com/list/" + year;
     $.getJSON(url, function(data) {
-        var options = data.shows.map(function(show) {
-            return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
-        }).join("");
-
-        $(".js-select-show").html("<option></option>" + options);
+        $(".js-select-show").append("<option>");
+        data.shows.forEach(function(show) {
+            $("<option>")
+                .attr("value", show["index_name"])
+                .text(show["title"])
+                .appendTo(".js-select-show");
+        });
         this[year + "_shows"] = data.shows;
     });
 };
@@ -96,7 +98,7 @@ ApplicationController.prototype.autoloadShow = function(index_name) {
  * this._show has already been loaded.
  */
 ApplicationController.prototype._updateUIWithShow = function () {
-    if (typeof this._show.getTitle() === "undefined") {
+    if (this._show.getTitle() === undefined) {
         $(".js-show-title").text("Untitled Show");
     } else {
         $(".js-show-title").text(this._show.getTitle());
@@ -190,6 +192,8 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
     } else {
         $(".js-stuntsheet-label").text(sheetLabel + " (" + sheetPage + ")");
     }
+
+    $(".js-dot-continuity").empty();
     if (this._animationStateDelegate.getSelectedDot() !== null) {
         var selectedDot = this._animationStateDelegate.getSelectedDot();
         $(".js-selected-dot-label").parent().removeClass("disabled");
@@ -197,17 +201,16 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
         var currentSheet = this._animationStateDelegate.getCurrentSheet();
         var typeOfDot = currentSheet.getDotType(selectedDot);
         var continuities = currentSheet.getContinuityTexts(typeOfDot);
-        if (typeof continuities !== "undefined") {
-            continuities = continuities.map(function(continuity) {
-                return "<div class=\"dot-continuity\">" + continuity + "</div>";
-            });
-            $(".js-dot-continuity").html(continuities.join(""));
-        } else {
-            $(".js-dot-continuity").html("");
+        if (continuities !== undefined) {
+            continuities.forEach(function(continuity) {
+                $("<div>")
+                    .addClass("dot-continuity")
+                    .text(continuity)
+                    .appendTo(".js-dot-continuity");
+            })
         }
     } else {
         $(".js-selected-dot-label").parent().addClass("disabled");
-        $(".js-dot-continuity").html("");
     }
 };
 
