@@ -5,7 +5,7 @@
 var Grapher = require("./Grapher");
 var ShowUtils = require("./ShowUtils");
 var TimedBeatsUtils = require("./TimedBeatsUtils");
-var URLUtils = require("./URLUtils");
+var JSUtils = require("./JSUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
@@ -74,7 +74,7 @@ ApplicationController.prototype.getShows = function(year) {
  * Autoloads show from the Calchart server from the URL parameters
  */
 ApplicationController.prototype.autoloadShow = function() {
-    var indexName = URLUtils.getQueryValue("show");
+    var indexName = JSUtils.getQueryValue("show");
     var optionElem = $(".js-select-show option[value=" + indexName + "]");
     if (optionElem.length === 0) {
         return;
