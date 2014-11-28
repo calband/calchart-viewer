@@ -15,7 +15,7 @@
 
 var Version = require("../Version");
 var FileLoadSelector = require("./FileLoadSelector");
-var JSUtils = require("../JSUtils");
+var JSUtils = require("../utils/JSUtils");
 var TimedBeats = require("../TimedBeats");
 var InvalidFileTypeError = require("./InvalidFileTypeError");
  

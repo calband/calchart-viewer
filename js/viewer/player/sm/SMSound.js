@@ -4,7 +4,7 @@
  */
  
 var Sound = require("../Sound");
-var JSUtils = require("../../JSUtils");
+var JSUtils = require("../../utils/JSUtils");
  
 /**
  * SMSound objects play music through SoundManager2.

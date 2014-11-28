@@ -3,7 +3,7 @@
  *   type that uses SoundManager2 to play audio.
  */
 
-var JSUtils = require("../../JSUtils");
+var JSUtils = require("../../utils/JSUtils");
 var SMSound = require("./SMSound");
 var MusicPlayer = require("../MusicPlayer");
  

@@ -2,7 +2,7 @@
  * @fileOverview Defines the MovementCommandEven class.
  */
 
-var JSUtils = require("./JSUtils");
+var JSUtils = require("./utils/JSUtils");
 var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
  

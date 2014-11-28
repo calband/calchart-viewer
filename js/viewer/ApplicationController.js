@@ -3,9 +3,9 @@
  */
 
 var Grapher = require("./Grapher");
-var ShowUtils = require("./ShowUtils");
-var TimedBeatsUtils = require("./TimedBeatsUtils");
-var JSUtils = require("./JSUtils");
+var ShowUtils = require("./utils/ShowUtils");
+var TimedBeatsUtils = require("./utils/TimedBeatsUtils");
+var JSUtils = require("./utils/JSUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");

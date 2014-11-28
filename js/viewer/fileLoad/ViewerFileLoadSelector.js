@@ -15,7 +15,7 @@
 
 var FileLoadSelector = require("./FileLoadSelector");
 var InvalidFileTypeError = require("./InvalidFileTypeError");
-var JSUtils = require("../JSUtils");
+var JSUtils = require("../utils/JSUtils");
 var Version = require("../Version");
 var Dot = require("../Dot");
 var Sheet = require("../Sheet");

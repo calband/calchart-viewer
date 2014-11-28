@@ -3,8 +3,8 @@
  *   used to create and manage TimedBeats objects.
  */
 
- var BeatsFileLoadSelector = require("./fileLoad/BeatsFileLoadSelector");
- var Version = require("./Version");
+ var BeatsFileLoadSelector = require("../fileLoad/BeatsFileLoadSelector");
+ var Version = require("../Version");
  
  /**
   * The collection of all functions related to creating and

@@ -2,8 +2,8 @@
  * @fileOverview Defines the MovementCommandArc class.
  */
 
-var JSUtils = require("./JSUtils");
-var MathUtils = require("./MathUtils");
+var JSUtils = require("./utils/JSUtils");
+var MathUtils = require("./utils/MathUtils");
 var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
  
