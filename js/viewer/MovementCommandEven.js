@@ -2,7 +2,7 @@
  * @fileOverview Defines the MovementCommandEven class.
  */
 
-var ClassUtils = require("./ClassUtils");
+var JSUtils = require("./JSUtils");
 var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
  
@@ -32,7 +32,7 @@ var MovementCommandEven = function(startX, startY, endX, endY, orientation, beat
     MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
 };
 
-ClassUtils.extends(MovementCommandEven, MovementCommand);
+JSUtils.extends(MovementCommandEven, MovementCommand);
 
 MovementCommandEven.prototype.getAnimationState = function(beatNum) {
     var stepNum = Math.floor(beatNum / this._beatsPerStep);

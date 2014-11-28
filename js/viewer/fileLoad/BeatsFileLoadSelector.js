@@ -15,7 +15,7 @@
 
 var Version = require("../Version");
 var FileLoadSelector = require("./FileLoadSelector");
-var ClassUtils = require("../ClassUtils");
+var JSUtils = require("../JSUtils");
 var TimedBeats = require("../TimedBeats");
 var InvalidFileTypeError = require("./InvalidFileTypeError");
  
@@ -28,7 +28,7 @@ var BeatsFileLoadSelector = function() {
     FileLoadSelector.apply(this, []);
 };
 
-ClassUtils.extends(BeatsFileLoadSelector, FileLoadSelector);
+JSUtils.extends(BeatsFileLoadSelector, FileLoadSelector);
 
 /**
  * The BeatsFileLoadSelector is a singleton, and this is its
@@ -67,7 +67,7 @@ BeatsFileLoadSelector._setupInstance = function(instance) {
 BeatsFileLoadSelector.BeatsFileLoader = function() {
 };
 
-ClassUtils.extends(BeatsFileLoadSelector.BeatsFileLoader, FileLoadSelector.FileLoader); 
+JSUtils.extends(BeatsFileLoadSelector.BeatsFileLoader, FileLoadSelector.FileLoader); 
 
 
 /**
@@ -89,7 +89,7 @@ ClassUtils.extends(BeatsFileLoadSelector.BeatsFileLoader, FileLoadSelector.FileL
 var BeatsFileLoad_1_0_0 = function() {
 };
 
-ClassUtils.extends(BeatsFileLoad_1_0_0, BeatsFileLoadSelector.BeatsFileLoader);
+JSUtils.extends(BeatsFileLoad_1_0_0, BeatsFileLoadSelector.BeatsFileLoader);
 
 /**
  * Loads an entire beats file, and returns the result. For

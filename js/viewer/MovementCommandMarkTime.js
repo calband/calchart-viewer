@@ -2,7 +2,7 @@
  * @fileOverview Defines the MovementCommandMarkTime class.
  */
 
-var ClassUtils = require("./ClassUtils");
+var JSUtils = require("./JSUtils");
 var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
 
@@ -22,7 +22,7 @@ var MovementCommandMarkTime = function(x, y, orientation, beats) {
     MovementCommand.apply(this, [x, y, x, y, beats]);
 };
 
-ClassUtils.extends(MovementCommandMarkTime, MovementCommand);
+JSUtils.extends(MovementCommandMarkTime, MovementCommand);
 
 MovementCommandMarkTime.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX, this._startY, this._orientation);
