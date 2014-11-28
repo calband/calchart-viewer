@@ -26,6 +26,7 @@ var QUADRANT_HEIGHT = HEIGHT/2 - 22;
 var QUADRANT_WIDTH = WIDTH/2 - 6;
 
 $(document).ready(function() {
+    // Will change to JSUtils
     var urlParams = window.location.search.substr(1).split(/&|=/);
     var options = {};
     for (var i = 0; i < urlParams.length; i += 2) {
@@ -58,7 +59,7 @@ $(document).ready(function() {
         for (var key in options) {
             url += "&" + key + "=" + options[key];
         }
-        window.location.search = "?" + url.substr(1);
+        window.location.search = url.substr(1);
     });
 });
 
