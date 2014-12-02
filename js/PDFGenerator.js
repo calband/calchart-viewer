@@ -6,6 +6,8 @@ var MovementCommandMarkTime = require("./viewer/MovementCommandMarkTime");
 var MovementCommandArc = require("./viewer/MovementCommandArc");
 var MathUtils = require("./viewer/MathUtils");
 var ShowUtils = require("./viewer/ShowUtils");
+var PDFUtils = require("./pdf/PDFUtils");
+var IndividualContinuityWidget = require("./pdf/IndividualContinuityWidget");
 
 /**
  * @constant WIDTH is the width of the PDF document, in millimeters
@@ -75,6 +77,7 @@ var PDFGenerator = function(show, dot) {
     this.show = show;
     this.dot = dot;
     this.sheets = show.getSheets();
+    IndividualContinuity = new IndividualContinuityWidget(this.pdf);
 };
 
 /**
@@ -127,13 +130,15 @@ PDFGenerator.prototype.generate = function(options) {
             var y = QUADRANT[i].y;
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
-            this._addIndividualContinuity(
-                continuityTexts[pageNum * 4 + i],
-                sheet.getDuration(),
+            IndividualContinuity.draw(
                 x,
                 y + QUADRANT_HEIGHT / 5,
                 QUADRANT_WIDTH / 2,
-                QUADRANT_HEIGHT * 2/5
+                QUADRANT_HEIGHT * 2/5,
+                {
+                    continuities: continuityTexts[pageNum * 4 + i],
+                    duration: sheet.getDuration()
+                }
             );
             this._addMovementDiagram(
                 movements[pageNum * 4 + i],
@@ -142,32 +147,25 @@ PDFGenerator.prototype.generate = function(options) {
                 QUADRANT_WIDTH / 2,
                 QUADRANT_HEIGHT * 2/5
             );
-            this._addBirdseye(x, y, sheet);
-            this._addSurroundingDots(x, y, sheet);
+            this._addBirdseye(
+                x,
+                y + QUADRANT_HEIGHT * 3/5,
+                QUADRANT_WIDTH / 2,
+                QUADRANT_HEIGHT * 2/5,
+                sheet
+            );
+            this._addSurroundingDots(
+                x + QUADRANT_WIDTH / 2 + 1,
+                y + QUADRANT_HEIGHT * 3/5,
+                QUADRANT_WIDTH / 2,
+                QUADRANT_HEIGHT * 2/5,
+                sheet);
         }
     }
     this._addEndSheet(continuityTexts, movements);
 
     var pdfData = this.pdf.output("datauristring");
     $(".js-pdf-preview").attr("src", pdfData);
-};
-
-/**
- * Returns the width of a String, in whatever units this.pdf is currently using
- * @param {String} text
- * @param {int} size, font size the text will be in
- */
-PDFGenerator.prototype._getTextWidth = function(text, size) {
-    return this.pdf.getStringUnitWidth(text) * size/this.pdf.internal.scaleFactor
-};
-
-/**
- * Returns the height of text in the current fontsize, in whatever units this.pdf is
- * currently using
- * @param {int} size, font size the text will be in
- */
-PDFGenerator.prototype._getTextHeight = function(size) {
-    return size/this.pdf.internal.scaleFactor;
 };
 
 /**
@@ -203,92 +201,6 @@ PDFGenerator.prototype._drawDot = function(dotType, x, y) {
     }
     this.pdf.setLineWidth(.3);
     this.pdf.setFillColor(0);
-};
-
-/**
- * Returns the text that will be shown for the given x-coordinate in
- * the form of "4N N40" to mean "4 steps North of the North-40"
- *
- * @param {int} x, the x-coordinate
- * @return {String} the display text for the x-coordinate
- */
-PDFGenerator.prototype._getXCoordinateText = function(x) {
-    var steps = x % 8;
-    var yardline = Math.floor(x / 8) * 5;
-
-    if (steps > 4) { // closer to North-side yardline
-        yardline += 5;
-        steps -= 4;
-    }
-    steps = Math.round(steps * 10) / 10;
-
-    if (yardline < 50) {
-        yardline = "S" + yardline;
-    } else if (yardline == 50) {
-        yardline = "50";
-    } else {
-        yardline = "N" + (100 - yardline);
-    }
-
-    if (steps > 4) {
-        return steps + "S " + yardline;
-    } else if (steps == 0) {
-        return yardline;
-    } else {
-        return steps + "N " + yardline;
-    }
-};
-
-/**
- * Returns the text that will be shown for the given y-coordinate in
- * the form of "8E EH" to mean "8 steps East of the East Hash"
- *
- * @param {int} y, the y-coordinate
- * @return {String} the display text for the y-coordinate
- */
-PDFGenerator.prototype._getYCoordinateText = function(y) {
-    function round(val) {
-        return Math.round(val * 10) / 10;
-    };
-
-    // West Sideline
-    if (y == 0) {
-        return "WS";
-    }
-    // Near West Sideline
-    if (y <= 16) {
-        return round(y) + " WS";
-    }
-    // West of West Hash
-    if (y < 32) {
-        return round(32 - y) + "W WH";
-    }
-    // West Hash
-    if (y == 32) {
-        return "WH";
-    }
-    // East of West Hash
-    if (y <= 40) {
-        return round(y - 32) + "E WH";
-    }
-    // West of East Hash
-    if (y < 52) {
-        return round(52 - y) + "W EH";
-    }
-    // East Hash
-    if (y == 52) {
-        return "EH";
-    }
-    // East of East Hash
-    if (y <= 68) {
-        return round(y - 52) + "E EH";
-    }
-    // Near East Sideline
-    if (y < 84) {
-        return round(84 - y) + " ES";
-    }
-    // East Sideline
-    return "ES";
 };
 
 /*
@@ -356,101 +268,40 @@ PDFGenerator.prototype._getMovements = function() {
  * Draws the headers on the PDF. Includes:
  *      - Stuntsheet number
  *      - Dot number
- *      - "California Marching Band: <show title>"
+ *      - Show title
  *      - Page number
  *
  * @param {int} pageNum is the current 1-indexed page number
  */
 PDFGenerator.prototype._addHeaders = function(pageNum) {
+    var _this = this;
     var totalPages = Math.ceil(this.sheets.length/4);
-    var _this = this; // for use in nested functions
+    var title = this.show.getTitle();
+    var dot = "Dot " + this.dot;
 
     var header = {
-        title: {
-            text: _this.show.getTitle(),
-            label: "Dot " + _this.dot,
-            size: 16,
-
-            getX: function(text) {
-                return WIDTH/2 - _this._getTextWidth(text, this.size)/2;
-            },
-
-            getY: function() {
-                return header.y + header.paddingY + _this._getTextHeight(this.size);
-            }
-        },
-
-        pageInfo: {
-            size: 12,
-
-            getWidth: function() {
-                return _this._getTextWidth("Page " + pageNum + "/" + totalPages, this.size);
-            },
-
-            getHeight: function() {
-                return _this._getTextHeight(this.size);
-            },
-
-            draw: function() {
-                _this.pdf.text(
-                    "Page ",
-                    this.x,
-                    this.y
-                )
-                this.x += _this._getTextWidth("Page ", this.size);
-                _this.pdf.text(
-                    String(pageNum),
-                    this.x,
-                    this.y - 1
-                );
-                this.x += _this._getTextWidth(String(pageNum), this.size);
-                _this.pdf.text(
-                    "/",
-                    this.x,
-                    this.y
-                );
-                this.x += _this._getTextWidth("/", this.size);
-                _this.pdf.text(
-                    String(totalPages),
-                    this.x,
-                    this.y + 1
-                );
-            }
-        },
-
         x: WIDTH * 1/6,
         y: 5,
         width: WIDTH * 2/3,
-        height: _this._getTextHeight(16) * 3,
+        height: 17, // PDFUtils.getTextHeight(16) * 3
         paddingX: 3,
         paddingY: 1,
+        size: 16
+    };
 
-        draw: function() {
-            /* box */
-            _this.pdf.rect(this.x, this.y, this.width, this.height);
+    var pageInfo = {
+        size: 12,
+        draw: function(x, y) {
+            _this.pdf.text("Page ", x, y);
+            x += 10.9; // PDFUtils.getTextWidth("Page ", this.size)
 
-            /* title */
-            _this.pdf.setFontSize(this.title.size);
-            _this.pdf.text(
-                this.title.text,
-                this.title.getX(this.title.text),
-                this.title.getY()
-            );
-            _this.pdf.setFontSize(this.title.size - 3);
-            _this.pdf.text(
-                this.title.label,
-                this.title.getX(this.title.label),
-                this.title.getY() + _this._getTextHeight(this.title.size - 3) + 2
-            );
+            _this.pdf.text(String(pageNum), x, y - 1);
+            x += PDFUtils.getTextWidth(String(pageNum), this.size);
 
-            /* page info */
-            _this.pdf.setFontSize(this.pageInfo.size);
-            this.pageInfo.x = this.x + this.paddingX;
-            this.pageInfo.y = this.y + this.height/2 + this.pageInfo.getHeight()/2;
-            this.pageInfo.draw();
+            _this.pdf.text("/", x, y);
+            x += 1.2; //PDFUtils.getTextWidth("/", this.size)
 
-            this.pageInfo.x = WIDTH * 5/6 - this.paddingX - this.pageInfo.getWidth();
-            this.pageInfo.draw();
+            _this.pdf.text(String(totalPages), x, y + 1);
         }
     };
 
@@ -473,7 +324,7 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
         },
 
         getRight: function() {
-            return WIDTH - this.width;
+            return WIDTH - PDFUtils.getTextWidth("SS " + this.sheet, this.size) - sheetInfo.marginX;
         },
 
         hasNext: function() {
@@ -486,12 +337,37 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
     };
 
     /* Title and Page information */
-    header.draw();
+    this.pdf.rect(header.x, header.y, header.width, header.height);
+
+    /* Title */
+    this.pdf.setFontSize(header.size);
+    this.pdf.text(
+        title,
+        WIDTH/2 - PDFUtils.getTextWidth(title, header.size)/2,
+        header.y + header.paddingY + PDFUtils.getTextHeight(header.size)
+    );
+
+    /* Dot */
+    this.pdf.setFontSize(header.size - 3);
+    this.pdf.text(
+        dot,
+        WIDTH/2 - PDFUtils.getTextWidth(dot, header.size)/2,
+        header.y + header.paddingY + PDFUtils.getTextHeight(header.size) * 2
+    );
+
+    /* Page Info */
+    this.pdf.setFontSize(pageInfo.size);
+    var x = header.x + header.paddingX;
+    var y = header.y + header.height/2 + PDFUtils.getTextHeight(pageInfo.size)/2;
+    pageInfo.draw(x, y);
+
+    x = WIDTH * 5/6 - header.paddingX - PDFUtils.getTextWidth("Page 0/0", pageInfo.size);
+    pageInfo.draw(x, y);
 
     /* Stuntsheet */
-    sheetInfo.height = _this._getTextHeight(sheetInfo.size);
-    sheetInfo.width = _this._getTextWidth("SS 00", sheetInfo.size) + sheetInfo.marginX;
-    _this.pdf.setFontSize(sheetInfo.size);
+    sheetInfo.height = PDFUtils.getTextHeight(sheetInfo.size);
+    sheetInfo.width = PDFUtils.getTextWidth("SS 00", sheetInfo.size) + sheetInfo.marginX;
+    this.pdf.setFontSize(sheetInfo.size);
 
     sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
 
@@ -512,140 +388,64 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
  * Writes one stuntsheet's continuity for the given dot type on the PDF. Includes:
  *      - Dot circle type
  *      - Overall Continuity
- *      - Measure/beat number
  *
  * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
  * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
  * @param {Sheet} sheet the current sheet
  */
 PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet) {
-    var _this = this; // for use in nested functions
-
+    var _this = this;
     var box = {
         paddingX: 2,
-        paddingY: 1,
-
-        draw: function(height) {
-            _this.pdf.rect(quadrantX, quadrantY, QUADRANT_WIDTH, height);
-        }
+        paddingY: 1
     };
-
     var text = {
         x: quadrantX + box.paddingX,
         y: quadrantY + box.paddingY,
-        size: 10,
-
-        // width is the width of the containing box
-        draw: function() {
-            var _size = this.size;
-            var dotType = sheet.getDotType(_this.dot);
-            var maxWidth = QUADRANT_WIDTH - box.paddingX*2 - 6;
-
-            var continuities = sheet.getContinuityTexts(dotType);
-
-            // fail-safe for sheets without Continuity Texts
-            if (typeof continuities === "undefined") {
-                box.draw(_this._getTextHeight(_size) + box.paddingY * 2 + 1);
-                return;
-            }
-
-            continuities = continuities.map(function(text) {
-                while (_this._getTextWidth(text, _size) > maxWidth) {
-                    _size--;
-                }
-
-                return text;
-            });
-
-            var maxHeight = (QUADRANT_HEIGHT/5 - 2*box.paddingY - 3);
-            while (continuities.length * _this._getTextHeight(_size) > maxHeight) {
-                _size -= 1;
-            }
-
-            _this.pdf.setFontSize(this.size);
-            _this._drawDot(dotType, this.x + 1.5, this.y + 2);
-            this.x += 4;
-            _this.pdf.text(
-                ":",
-                this.x,
-                this.y + _this._getTextHeight(this.size)
-            );
-            _this.pdf.setFontSize(_size);
-            this.x += 2;
-            this.y += _this._getTextHeight(_size);
-            _this.pdf.text(
-                continuities,
-                this.x,
-                this.y
-            );
-
-            box.draw(QUADRANT_HEIGHT/5 - 1.5);
-        }
-    };
-
-    text.draw();
-};
-
-/**
- * Writes the continuities for the selected dot on the PDF. Includes:
- *      - Movements
- *      - Total beats
- *      - Border between general movements, e.g. Stand and Play vs. Continuity
- *
- * @param {Array<String>} continuities, a list of continuities for a sheet
- * @param {int} duration the beats in this sheet
- * @param {int} x  The x-coordinate of the top left corner of the continuity box
- * @param {int} y  The y-coordinate of the top left corner of the continuity box
- * @param {double} width The width of the continuity box
- * @param {double} height The height of the continuity box
- */
-PDFGenerator.prototype._addIndividualContinuity = function(continuities, duration, x, y, width, height) {
-    var box = {
-        height: height,
-        width: width,
-        x: x,
-        y: y,
-        paddingX: 2,
-        paddingY: 1,
         size: 10
     };
-    var textHeight = this._getTextHeight(box.size);
-    var textY = box.y + box.paddingY;
-    var textX = box.x + box.paddingX;
-    var maxWidth = 0; // keeps track of longest continuity length
-    var deltaY = 0; // keeps track of total height of all continuities
+    var dotType = sheet.getDotType(this.dot);
+    var maxWidth = QUADRANT_WIDTH - box.paddingX * 2 - 6;
+    var maxHeight = QUADRANT_HEIGHT/5 - box.paddingY * 2 - 3;
+    var continuities = sheet.getContinuityTexts(dotType);
 
-    this.pdf.rect(box.x, box.y, box.width, box.height);
-    this.pdf.setFontSize(box.size);
-    for (var i = 0; i < continuities.length; i++) {
-        var continuity = continuities[i];
-        var length = this._getTextWidth(continuity, box.size);
-        if (length > maxWidth) {
-            maxWidth = length;
-        }
-        deltaY += this._getTextHeight(box.size) + .7;
-        if (deltaY > box.height - textHeight - box.paddingY) {
-            if (maxWidth < box.width/2) {
-                textX += box.width/2;
-                deltaY = this._getTextHeight(box.size) + .7;
-            } else {
-                this.pdf.text("...", textX, textY);
-                break;
-            }
-        }
+    this.pdf.rect(quadrantX, quadrantY, QUADRANT_WIDTH, QUADRANT_HEIGHT/5 - 1.5);
 
-        this.pdf.text(
-            continuity,
-            textX,
-            textY + deltaY
-        );
+    // fail-safe for sheets without Continuity Texts
+    if (typeof continuities === "undefined") {
+        return;
     }
 
-    var totalLabel = duration + " beats total";
+    continuities = continuities.map(function(continuity) {
+        while (PDFUtils.getTextWidth(continuity, text.size) > maxWidth) {
+            text.size--;
+        }
+        return continuity;
+    });
+
+    while (continuities.length * PDFUtils.getTextHeight(text.size) > maxHeight) {
+        text.size--;
+    }
+
+    this._drawDot(
+        dotType,
+        text.x + 1.5,
+        text.y + 2
+    );
+    text.x += 4;
+    this.pdf.setFontSize(10);
     this.pdf.text(
-        totalLabel,
-        x + box.width/2 - this._getTextWidth(totalLabel, box.size)/2 - 3,
-        box.y + box.height - box.paddingY
+        ":",
+        text.x,
+        text.y + PDFUtils.getTextHeight(10)
+    );
+    this.pdf.setFontSize(text.size);
+    text.x += 2;
+    text.y += PDFUtils.getTextHeight(text.size);
+    this.pdf.text(
+        continuities,
+        text.x,
+        text.y
     );
 };
 
@@ -653,10 +453,10 @@ PDFGenerator.prototype._addIndividualContinuity = function(continuities, duratio
  * Draws the diagram for a selected dot's movements. Includes:
  *      - Circle for start
  *      - Cross for end
- *      - Path line and number of steps per movement
+ *      - Path line
  *      - Yard lines, yard line markers
  *      - Hashes if in viewport
- *      - Zooming if big
+ *      - Zoom out if big
  *      - Orientation EWNS; East is up
  *
  * @param {Array<Objects>} movements, where each item is an object containing values for
@@ -674,8 +474,8 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
     var box = {
         x: x,
         y: y,
-        width: width - 2 * (_this._getTextWidth("S", 12) + 1.5),
-        height: height - 2 * (_this._getTextHeight(12) + 2),
+        width: width - 2 * (PDFUtils.getTextWidth("S", 12) + 1.5),
+        height: height - 2 * (PDFUtils.getTextHeight(12) + 2),
         textSize: 12,
         yardTextSize: height * 11/47.1,
 
@@ -683,8 +483,8 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
         // left, right are steps from South sideline; top, bottom are steps from West sideline
         // scale is units per step
         draw: function(left, right, top, bottom, scale) {
-            var textHeight = _this._getTextHeight(this.textSize);
-            var textWidth = _this._getTextWidth("S", this.textSize);
+            var textHeight = PDFUtils.getTextHeight(this.textSize);
+            var textWidth = PDFUtils.getTextWidth("S", this.textSize);
             _this.pdf.setFontSize(this.textSize);
             if (isEndSheet) {
                 this.y -= textHeight;
@@ -768,7 +568,7 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
                 }
                 _this.pdf.setTextColor(150);
                 _this.pdf.setFontSize(this.yardTextSize);
-                var halfTextWidth = _this._getTextWidth(yardlineText, this.yardTextSize)/2;
+                var halfTextWidth = PDFUtils.getTextWidth(yardlineText, this.yardTextSize)/2;
 
                 if (i > halfTextWidth) {
                     // include first character if room
@@ -896,7 +696,7 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
     // drawing lines denoting vertical position
     function drawPosition(x, y) {
         var lineY = box.y + (east - y) * scale;
-        var text = _this._getYCoordinateText(y);
+        var text = PDFUtils.getYCoordinateText(y);
         _this.pdf.line(
             box.x, lineY,
             box.x + box.width, lineY
@@ -905,7 +705,7 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
         if (north - x < (north - south) / 2) {
             _this.pdf.text(
                 text,
-                box.x + box.width - _this._getTextWidth(text, 8),
+                box.x + box.width - PDFUtils.getTextWidth(text, 8),
                 lineY - .5
             );
         } else {
@@ -928,51 +728,56 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
 
 /**
  * Draws the overall bird's eye view of the field. Includes:
- *      - Field outline, no yardlines/hashes
- *      - Form outline, continuous for 4-step EW, 2-step NS
- *      - Circle selected dot
+ *      - Field outline, no yardlines
+ *      - Grayed out dots
+ *      - Black selected dot
  *      - Cross hairs for positions (4S N40, 2E WH)
+ *      - Hashes and sidelines indicated
  *
- * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
- * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {int} x  The x-coordinate of the top left corner of the box
+ * @param {int} y  The y-coordinate of the top left corner of the box
+ * @param {double} width     The width of the box
+ * @param {double} height    The height of the box
  * @param {Sheet} sheet
  */
-PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
+PDFGenerator.prototype._addBirdseye = function(x, y, width, height, sheet) {
     var _this = this;
 
+    var boxWidth = width - 2 * (PDFUtils.getTextWidth("S", 12) + 1.5)
+
     var box = {
-        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
-        width: QUADRANT_WIDTH / 2 - 2 * (this._getTextWidth("S", 12) + 1.5),
-        x: quadrantX,
-        y: quadrantY + QUADRANT_HEIGHT * 3/5,
+        height: boxWidth * 84/160,
+        width: boxWidth,
+        x: x,
+        y: y,
         textSize: 12,
 
         draw: function() {
-            var textHeight = _this._getTextHeight(this.textSize);
-            var textWidth = _this._getTextWidth("S", this.textSize);
+            this.x += width/2 - this.width/2;
+            this.y += height/2 - this.height/2;
+            var textHeight = PDFUtils.getTextHeight(this.textSize);
+            var textWidth = PDFUtils.getTextWidth("S", this.textSize);
             _this.pdf.setFontSize(this.textSize);
             _this.pdf.text(
                 "W",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
-                this.y + textHeight
+                this.x + this.width/2 - textWidth/2,
+                this.y - 1
             );
             _this.pdf.text(
                 "N",
-                this.x + QUADRANT_WIDTH/2 - textWidth,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.x + this.width + 1,
+                this.y + this.height/2 + textHeight/2
             );
             _this.pdf.text(
                 "E",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
-                this.y + QUADRANT_HEIGHT * 2/5 - 1
+                this.x + this.width/2 - textWidth/2,
+                this.y + this.height + textHeight
             );
             _this.pdf.text(
                 "S",
-                this.x + 1,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.x - textWidth - 1,
+                this.y + this.height/2 + textHeight/2
             );
-            this.x += textWidth + 2;
-            this.y += textHeight + 2;
             _this.pdf.rect(
                 this.x,
                 this.y,
@@ -988,7 +793,7 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
     var currentDot = sheet.getDotByLabel(this.dot);
     var scale = box.width / 160; // units per step
     var startX = box.x;
-    var startY = box.y + (box.height - scale * 84) / 2;
+    var startY = box.y;
 
     // drawing hashes
     this.pdf.setLineWidth(.2);
@@ -1034,12 +839,12 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
 
     var coordinates = {
         textSize: 8,
-        textX: this._getXCoordinateText(position.x),
-        textY: this._getYCoordinateText(position.y)
+        textX: PDFUtils.getXCoordinateText(position.x),
+        textY: PDFUtils.getYCoordinateText(position.y)
     };
 
-    coordinates.x = startX + x - this._getTextWidth(coordinates.textX, coordinates.textSize)/2;
-    coordinates.y = startY + y + this._getTextHeight(coordinates.textSize)/4;
+    coordinates.x = startX + x - PDFUtils.getTextWidth(coordinates.textX, coordinates.textSize)/2;
+    coordinates.y = startY + y + PDFUtils.getTextHeight(coordinates.textSize)/4;
 
     this.pdf.setFillColor(0);
     this.pdf.setDrawColor(180);
@@ -1054,12 +859,6 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
         startX + box.width, startY + y
     );
 
-    this.pdf.text(
-        coordinates.textX,
-        coordinates.x,
-        box.y + this._getTextHeight(coordinates.textSize)
-    );
-
     // Put vertical coordinate text on opposite side of the field
     if (position.x > 80) {
         this.pdf.text(
@@ -1070,8 +869,23 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
     } else {
         this.pdf.text(
             coordinates.textY,
-            startX + box.width - this._getTextWidth(coordinates.textY, coordinates.textSize) - 1,
+            startX + box.width - PDFUtils.getTextWidth(coordinates.textY, coordinates.textSize) - 1,
             coordinates.y
+        );
+    }
+
+    // Put horizontal coordinate text on opposite side of the field
+    if (position.y > 42) {
+        this.pdf.text(
+            coordinates.textX,
+            coordinates.x,
+            box.y + PDFUtils.getTextHeight(coordinates.textSize)
+        );
+    } else {
+        this.pdf.text(
+            coordinates.textX,
+            coordinates.x,
+            box.y + box.height - 1
         );
     }
     this.pdf.circle(startX + x, startY + y, .5, 'F');
@@ -1087,46 +901,47 @@ PDFGenerator.prototype._addBirdseye = function(quadrantX, quadrantY, sheet) {
  *      - Dot labels
  *      - Dot types
  *
- * @param {int} quadrantX  The x-coordinate of the top left corner of the quadrant
- * @param {int} quadrantY  The y-coordinate of the top left corner of the quadrant
+ * @param {int} x  The x-coordinate of the top left corner of the box
+ * @param {int} y  The y-coordinate of the top left corner of the box
+ * @param {double} width  The width of the box
+ * @param {double} height The height of the box
  * @param {Sheet} sheet
  */
-PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, sheet) {
+PDFGenerator.prototype._addSurroundingDots = function(x, y, width, height, sheet) {
     var _this = this;
     var box = {
-        height: QUADRANT_HEIGHT * 2/5 - 2 * (this._getTextHeight(12) + 2),
-        x: quadrantX + QUADRANT_WIDTH / 2 + 1,
-        y: quadrantY + QUADRANT_HEIGHT * 3/5,
+        height: height - 2 * (PDFUtils.getTextHeight(12) + 2),
+        x: x,
+        y: y,
         textSize: 12,
         labelSize: 7,
 
-        draw: function(surroundingDots, start) {
-            var textHeight = _this._getTextHeight(this.textSize);
-            var textWidth = _this._getTextWidth("S", this.textSize);
-            var scale = this.height / 10; // 5 step radius for viewport
+        draw: function() {
+            var textHeight = PDFUtils.getTextHeight(this.textSize);
+            var textWidth = PDFUtils.getTextWidth("S", this.textSize);
             this.width = this.height; // make square
             _this.pdf.setFontSize(this.textSize);
             _this.pdf.text(
                 "E",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
+                this.x + width/2 - textWidth/2,
                 this.y + textHeight
             );
             _this.pdf.text(
                 "S",
-                this.x + QUADRANT_WIDTH/2 - textWidth - 4.5,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.x + width - textWidth - 4.5,
+                this.y + height/2 + textHeight/2
             );
             _this.pdf.text(
                 "W",
-                this.x + QUADRANT_WIDTH / 4 - textWidth/2,
-                this.y + QUADRANT_HEIGHT * 2/5 - 1
+                this.x + width/2 - textWidth/2,
+                this.y + height - 1
             );
             _this.pdf.text(
                 "N",
                 this.x + 4.5,
-                this.y + QUADRANT_HEIGHT / 5 + textHeight / 2
+                this.y + height/2 + textHeight/2
             );
-            this.x += QUADRANT_WIDTH/4 - this.width/2;
+            this.x += width/2 - this.width/2;
             this.y += textHeight + 2;
             _this.pdf.rect(
                 this.x,
@@ -1147,18 +962,6 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
             );
             _this.pdf.setDrawColor(0);
             _this.pdf.setLineWidth(.3);
-            var origin = {
-                x: this.x + this.width/2,
-                y: this.y + this.height/2
-            };
-            for (var i = 0; i < surroundingDots.length; i++) {
-                var dot = surroundingDots[i];
-                var x = dot.deltaX * scale + origin.x;
-                var y = dot.deltaY * scale + origin.y;
-                _this.pdf.setFontSize(this.labelSize);
-                _this._drawDot(dot.type, x, y);
-                _this.pdf.text(dot.label, x - 3, y - 2);
-            }
         }
     };
 
@@ -1181,7 +984,21 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
         }
     }
 
-    box.draw(surroundingDots);
+    box.draw();
+
+    var origin = {
+        x: box.x + box.width/2,
+        y: box.y + box.height/2
+    };
+    var scale = box.height / 11; // radius of 4 steps + 1.5 steps of padding
+    for (var i = 0; i < surroundingDots.length; i++) {
+        var dot = surroundingDots[i];
+        var x = dot.deltaX * scale + origin.x;
+        var y = dot.deltaY * scale + origin.y;
+        this.pdf.setFontSize(box.labelSize);
+        this._drawDot(dot.type, x, y);
+        this.pdf.text(dot.label, x - 3, y - 2);
+    }
 };
 
 /**
@@ -1192,16 +1009,19 @@ PDFGenerator.prototype._addSurroundingDots = function(quadrantX, quadrantY, shee
 PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
     this.pdf.addPage();
     this.pdf.line(
-        WIDTH/2, 0,
+        WIDTH/2, 10,
         WIDTH/2, HEIGHT
     );
+    var title = this.show.getTitle() + " - Dot " + this.dot;
+    this.pdf.setFontSize(15);
+    this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
     var paddingX = 2;
     var paddingY = .5;
     var textSize = 10;
-    var textHeight = this._getTextHeight(textSize);
+    var textHeight = PDFUtils.getTextHeight(textSize);
     var labelSize = 20;
-    var labelWidth = this._getTextWidth("00", labelSize) + paddingX * 2;
-    var labelHeight = this._getTextHeight(labelSize);
+    var labelWidth = PDFUtils.getTextWidth("00", labelSize) + paddingX * 2;
+    var labelHeight = PDFUtils.getTextHeight(labelSize);
     var diagramSize = 30;
     var continuitySize = WIDTH/2 - diagramSize - labelWidth - paddingX * 4;
     var x = 0;
@@ -1212,15 +1032,17 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
         if (continuityHeight > height) {
             height = continuityHeight;
         }
-        if (y + height > HEIGHT) {
+        if (y + height > HEIGHT - 5) {
             if (x == 0) {
                 x = WIDTH/2 + paddingX;
             } else {
                 this.pdf.addPage();
                 this.pdf.line(
-                    WIDTH/2, 0,
+                    WIDTH/2, 10,
                     WIDTH/2, HEIGHT
                 );
+                this.pdf.setFontSize(15);
+                this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
                 x = 0;
             }
             y = 10;
@@ -1231,13 +1053,15 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
             x + paddingX * 2,
             y + paddingY + labelHeight
         );
-        this._addIndividualContinuity(
-            continuityTexts[i],
-            this.sheets[i].getDuration(),
+        IndividualContinuity.draw(
             x + labelWidth + paddingX,
             y + paddingY,
             continuitySize,
-            height
+            height,
+            {
+                continuities: continuityTexts[i],
+                duration: this.sheets[i].getDuration()
+            }
         );
         this._addMovementDiagram(
             movements[i],
