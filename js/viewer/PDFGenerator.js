@@ -701,39 +701,41 @@ PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, he
 PDFGenerator.prototype._addBirdseye = function(x, y, width, height, sheet) {
     var _this = this;
 
+    var boxWidth = width - 2 * (PDFUtils.getTextWidth("S", 12) + 1.5)
+
     var box = {
-        height: height - 2 * (PDFUtils.getTextHeight(12) + 2),
-        width: width - 2 * (PDFUtils.getTextWidth("S", 12) + 1.5),
+        height: boxWidth * 84/160,
+        width: boxWidth,
         x: x,
         y: y,
         textSize: 12,
 
         draw: function() {
+            this.x += width/2 - this.width/2;
+            this.y += height/2 - this.height/2;
             var textHeight = PDFUtils.getTextHeight(this.textSize);
             var textWidth = PDFUtils.getTextWidth("S", this.textSize);
             _this.pdf.setFontSize(this.textSize);
             _this.pdf.text(
                 "W",
-                this.x + width/2 - textWidth/2,
-                this.y + textHeight
+                this.x + this.width/2 - textWidth/2,
+                this.y - 1
             );
             _this.pdf.text(
                 "N",
-                this.x + width - textWidth,
-                this.y + height/2 + textHeight/2
+                this.x + this.width + 1,
+                this.y + this.height/2 + textHeight/2
             );
             _this.pdf.text(
                 "E",
-                this.x + width/2 - textWidth/2,
-                this.y + height - 1
+                this.x + this.width/2 - textWidth/2,
+                this.y + this.height + textHeight
             );
             _this.pdf.text(
                 "S",
-                this.x + 1,
-                this.y + height/2 + textHeight/2
+                this.x - textWidth - 1,
+                this.y + this.height/2 + textHeight/2
             );
-            this.x += textWidth + 2;
-            this.y += textHeight + 2;
             _this.pdf.rect(
                 this.x,
                 this.y,
@@ -749,7 +751,7 @@ PDFGenerator.prototype._addBirdseye = function(x, y, width, height, sheet) {
     var currentDot = sheet.getDotByLabel(this.dot);
     var scale = box.width / 160; // units per step
     var startX = box.x;
-    var startY = box.y + (box.height - scale * 84) / 2;
+    var startY = box.y;
 
     // drawing hashes
     this.pdf.setLineWidth(.2);
@@ -773,16 +775,6 @@ PDFGenerator.prototype._addBirdseye = function(x, y, width, height, sheet) {
             x + dashLength, eastHash
         );
     }
-
-    // drawing sidelines
-    this.pdf.line(
-        startX, startY,
-        startX + box.width, startY
-    );
-    this.pdf.line(
-        startX, startY + 84 * scale,
-        startX + box.width, startY + 84 * scale
-    );
 
     this.pdf.setFillColor(210);
     for (var i = 0; i < dots.length; i++) {
@@ -825,12 +817,6 @@ PDFGenerator.prototype._addBirdseye = function(x, y, width, height, sheet) {
         startX + box.width, startY + y
     );
 
-    this.pdf.text(
-        coordinates.textX,
-        coordinates.x,
-        box.y + PDFUtils.getTextHeight(coordinates.textSize)
-    );
-
     // Put vertical coordinate text on opposite side of the field
     if (position.x > 80) {
         this.pdf.text(
@@ -843,6 +829,21 @@ PDFGenerator.prototype._addBirdseye = function(x, y, width, height, sheet) {
             coordinates.textY,
             startX + box.width - PDFUtils.getTextWidth(coordinates.textY, coordinates.textSize) - 1,
             coordinates.y
+        );
+    }
+
+    // Put horizontal coordinate text on opposite side of the field
+    if (position.y > 42) {
+        this.pdf.text(
+            coordinates.textX,
+            coordinates.x,
+            box.y + PDFUtils.getTextHeight(coordinates.textSize)
+        );
+    } else {
+        this.pdf.text(
+            coordinates.textX,
+            coordinates.x,
+            box.y + box.height - 1
         );
     }
     this.pdf.circle(startX + x, startY + y, .5, 'F');
