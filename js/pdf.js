@@ -1,5 +1,6 @@
 var PDFGenerator = require("./pdf/PDFGenerator");
 var ShowUtils = require("./viewer/utils/ShowUtils");
+var JSUtils = require("./viewer/utils/JSUtils");
 
 /**
  * This function will be executed by jQuery when the HTML DOM is loaded. Here,
@@ -7,12 +8,7 @@ var ShowUtils = require("./viewer/utils/ShowUtils");
  * by the PDFGenerator
  */
 $(document).ready(function() {
-    // Will change to JSUtils
-    var urlParams = window.location.search.substr(1).split(/&|=/);
-    var options = {};
-    for (var i = 0; i < urlParams.length; i += 2) {
-        options[urlParams[i]] = urlParams[i + 1];
-    }
+    var options = JSUtils.getAllURLParams();
 
     if (options["show"] === undefined || options["dot"] === undefined) {
         $(".js-pdf-preview").attr("srcdoc", "No show or dot selected.");
