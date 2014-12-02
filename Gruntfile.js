@@ -17,7 +17,7 @@ module.exports = function (grunt) {
             build: {
                 entry: {
                     application: "./js/application.js",
-                    PDFGenerator: "./js/PDFGenerator.js"
+                    pdf: "./js/pdf.js"
                 },
                 output: {
                     path: "build/js/",

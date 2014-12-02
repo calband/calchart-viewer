@@ -2,7 +2,7 @@
  * @fileOverview Defines the widget for generating a dot's individual continuity
  */
 
-var ClassUtils = require("../ClassUtils");
+var JSUtils = require("../viewer/utils/JSUtils");
 var PDFUtils = require("./PDFUtils");
 var PDFWidget = require("./PDFWidget");
 
@@ -17,7 +17,7 @@ var IndividualContinuityWidget = function(pdf) {
     PDFWidget.apply(this, [pdf]);
 };
 
-ClassUtils.extends(IndividualContinuityWidget, PDFWidget);
+JSUtils.extends(IndividualContinuityWidget, PDFWidget);
 
 IndividualContinuityWidget.prototype.draw = function(x, y, width, height, options) {
     var continuities = options['continuities'];
