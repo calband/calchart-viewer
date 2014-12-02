@@ -18,7 +18,7 @@ $(document).ready(function() {
     var url = "https://calchart-server.herokuapp.com/chart/" + options["show"];
     $.getJSON(url, function(data) {
         var show = ShowUtils.fromJSON(JSON.stringify(data));
-        new PDFGenerator(show, options["dot"]).generate(options);
+        new PDFGenerator(show, options["dot"], options).generate();
     }).fail(function() {
         $(".js-pdf-preview").attr("srcdoc", "An error occurred. Please return to the viewer.");
     });

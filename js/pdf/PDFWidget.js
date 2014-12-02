@@ -5,8 +5,10 @@
 /**
  * PDFWidget class
  *
- * Represents one of the widgets available on the PDFGenerator. This is an abstract
- * class; do not make an instance of this class directly.
+ * Represents one of the widgets available on the PDFGenerator. Each widget draws
+ * a different component of the PDF, which shows detailed information about a
+ * given marcher on a given stuntsheet. This is an abstract class; do not make
+ * an instance of this class directly.
  *
  * @param {jsPDF} pdf, the jsPDF object to be written to
  */
@@ -16,7 +18,12 @@ var PDFWidget = function(pdf) {
 
 /**
  * Draws this widget onto the pdf, with whatever options passed into it as key-value
- * pairs
+ * pairs. For example, the options passed into the individual continuity widget might be:
+ *     {
+ *          continuities: [<String>, <String>],
+ *          duration: 32,
+ *          ...
+ *     }
  *
  * @param {float} x, the x-coordinate of the position of this widget
  * @param {float} y, the y-coordinate of the position of this widget

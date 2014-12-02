@@ -33,21 +33,6 @@ var QUADRANT_WIDTH = WIDTH/2 - 6;
  *
  * @param {Show} show
  * @param {String} dot is the label of the selected dot
- */
-var PDFGenerator = function(show, dot) {
-    this.pdf = jsPDF("portrait", "mm", "letter");
-    this.show = show;
-    this.dot = dot;
-    this.sheets = show.getSheets();
-    IndividualContinuity = new IndividualContinuityWidget(this.pdf);
-};
-
-/**
- * generate will generate a PDF for a specific dot, containing its movements,
- * positions, and continuities relevant to it.
- *
- * The function will display the pdf in the webpage's preview pane
- *
  * @param {Object} options, customizable options for the pdf. Current
  * customizable options include:
  *      - Orientation for movement diagram (options["md-orientation"] = "west"|"east")
@@ -56,8 +41,23 @@ var PDFGenerator = function(show, dot) {
  *      - Layout order of stuntsheets      (options["layout-order"] = "ltr"|"ttb")
  *      - Accompanying widget in endsheet  (options["endsheet-widget"] = "md"|"bev"|"sd")
  */
-PDFGenerator.prototype.generate = function(options) {
-    console.log(options);
+var PDFGenerator = function(show, dot, options) {
+    this.pdf = jsPDF("portrait", "mm", "letter");
+    this.show = show;
+    this.dot = dot;
+    this.sheets = show.getSheets();
+
+    // Widgets
+    this.IndividualContinuityWidget = new IndividualContinuityWidget(this.pdf);
+};
+
+/**
+ * generate will generate a PDF for a specific dot, containing its movements,
+ * positions, and continuities relevant to it.
+ *
+ * The function will display the pdf in the webpage's preview pane
+ */
+PDFGenerator.prototype.generate = function() {
     var continuityTexts = this._getContinuityTexts();
     var movements = this._getMovements();
     for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
@@ -92,7 +92,7 @@ PDFGenerator.prototype.generate = function(options) {
             var y = QUADRANT[i].y;
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
-            IndividualContinuity.draw(
+            this.IndividualContinuityWidget.draw(
                 x,
                 y + QUADRANT_HEIGHT / 5,
                 QUADRANT_WIDTH / 2,
@@ -1015,7 +1015,7 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
             x + paddingX * 2,
             y + paddingY + labelHeight
         );
-        IndividualContinuity.draw(
+        this.IndividualContinuityWidget.draw(
             x + labelWidth + paddingX,
             y + paddingY,
             continuitySize,
