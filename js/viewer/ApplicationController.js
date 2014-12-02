@@ -74,7 +74,7 @@ ApplicationController.prototype.getShows = function(year) {
  * Autoloads show from the Calchart server from the URL parameters
  */
 ApplicationController.prototype.autoloadShow = function() {
-    var indexName = JSUtils.getQueryValue("show");
+    var indexName = JSUtils.getURLValue("show");
     var optionElem = $(".js-select-show option[value=" + indexName + "]");
     if (optionElem.length === 0) {
         return;

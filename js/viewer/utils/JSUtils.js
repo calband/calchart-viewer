@@ -28,8 +28,8 @@ JSUtils.extends = function (ChildClass, ParentClass) {
  * @param {String} name
  * @returns {String|null} the value of the name or null if name not in URL query string
  */
-JSUtils.getQueryValue = function(name) {
-    var vals = this.getAllQueries();
+JSUtils.getURLValue = function(name) {
+    var vals = this.getAllURLParams();
     if (vals[name] !== undefined) {
         return vals[name];
     } else {
@@ -42,7 +42,7 @@ JSUtils.getQueryValue = function(name) {
  *
  * @returns {object} a dictionary mapping name to value
  */
-JSUtils.getAllQueries = function() {
+JSUtils.getAllURLParams = function() {
     var vals = {};
     var query = window.location.search.substr(1);
     var vars = query.split("&");
