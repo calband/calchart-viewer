@@ -81,9 +81,16 @@ $(document).ready(function () {
     $(".js-select-show")
         .chosen({
             width: "150px",
-            disable_search_threshold: 4 // if there are less than 4 shows, hide search
+            disable_search_threshold: 4, // if there are less than 4 shows, hide search
+            allow_single_deselect: true
         })
         .change(function(evt, params) {
-            applicationController.autoloadShow(params.selected);
+            if (params) { // selected a show
+                window.location.search = "show=" + params.selected;
+            } else { // deselected a show
+                window.location.search = "";
+            }
         });
+
+    applicationController.autoloadShow();
 });

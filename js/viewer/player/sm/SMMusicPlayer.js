@@ -3,7 +3,7 @@
  *   type that uses SoundManager2 to play audio.
  */
 
-var ClassUtils = require("../../ClassUtils");
+var JSUtils = require("../../utils/JSUtils");
 var SMSound = require("./SMSound");
 var MusicPlayer = require("../MusicPlayer");
  
@@ -29,7 +29,7 @@ var SMMusicPlayer = function() {
     });
 };
 
-ClassUtils.extends(SMMusicPlayer, MusicPlayer);
+JSUtils.extends(SMMusicPlayer, MusicPlayer);
 
 
 SMMusicPlayer.prototype.createSound = function(musicURL) {

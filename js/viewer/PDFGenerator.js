@@ -15,7 +15,7 @@ var MovementCommandStand = require("./MovementCommandStand");
 var MovementCommandGoto = require("./MovementCommandGoto");
 var MovementCommandMarkTime = require("./MovementCommandMarkTime");
 var MovementCommandArc = require("./MovementCommandArc");
-var MathUtils = require("./MathUtils");
+var MathUtils = require("./utils/MathUtils");
 
 /* CONSTANTS: DON'T CHANGE */
 var WIDTH = 215.9;

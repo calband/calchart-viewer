@@ -3,8 +3,9 @@
  */
 
 var Grapher = require("./Grapher");
-var ShowUtils = require("./ShowUtils");
-var TimedBeatsUtils = require("./TimedBeatsUtils");
+var ShowUtils = require("./utils/ShowUtils");
+var TimedBeatsUtils = require("./utils/TimedBeatsUtils");
+var JSUtils = require("./utils/JSUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
@@ -72,24 +73,31 @@ ApplicationController.prototype.getShows = function(year) {
 };
 
 /**
- * Autoloads show from the Calchart server
- * @param {String} show is the index_name of the show to get
+ * Autoloads show from the Calchart server from the URL parameters
  */
-ApplicationController.prototype.autoloadShow = function(index_name) {
+ApplicationController.prototype.autoloadShow = function() {
+    var indexName = JSUtils.getURLValue("show");
+    var optionElem = $(".js-select-show option[value=" + indexName + "]");
+    if (optionElem.length === 0) {
+        return;
+    }
+    optionElem.prop("selected", true);
+    $(".js-select-show").trigger("chosen:updated");
+
     var url = "https://calchart-server.herokuapp.com/";
     var _this = this;
-    $.getJSON(url + "chart/" + index_name, function(data) {
+    $.getJSON(url + "chart/" + indexName, function(data) {
         var response = JSON.stringify(data);
         var viewer = ShowUtils.fromJSON(response);
         _this.setShow(viewer);
-        _this._setFileInputText(".js-viewer-file-btn", index_name);
+        _this._setFileInputText(".js-viewer-file-btn", indexName);
     });
 
-    $.getJSON(url + "beats/" + index_name, function(data) {
+    $.getJSON(url + "beats/" + indexName, function(data) {
         var response = JSON.stringify(data);
         var beats = TimedBeatsUtils.fromJSON(response);
         _this._animator.setBeats(beats);
-        _this._setFileInputText(".js-beats-file-btn", index_name);
+        _this._setFileInputText(".js-beats-file-btn", indexName);
     });
 };
 
