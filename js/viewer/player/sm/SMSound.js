@@ -4,7 +4,7 @@
  */
  
 var Sound = require("../Sound");
-var ClassUtils = require("../../ClassUtils");
+var JSUtils = require("../../utils/JSUtils");
  
 /**
  * SMSound objects play music through SoundManager2.
@@ -33,7 +33,7 @@ var SMSound = function(musicURL) {
     }
 };
 
-ClassUtils.extends(SMSound, Sound);
+JSUtils.extends(SMSound, Sound);
 
 /**
  * A list of all events emitted by this class.

@@ -2,7 +2,7 @@
  * @fileOverview Defines the MovementCommandGoto class.
  */
 
-var ClassUtils = require("./ClassUtils");
+var JSUtils = require("./utils/JSUtils");
 var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
  
@@ -26,7 +26,7 @@ var MovementCommandGoto = function(startX, startY, endX, endY, orientation, beat
     MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
 };
 
-ClassUtils.extends(MovementCommandGoto, MovementCommand);
+JSUtils.extends(MovementCommandGoto, MovementCommand);
 
 MovementCommandGoto.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._endX, this._endY, this._orientation);

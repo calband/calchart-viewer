@@ -15,7 +15,7 @@
 
 var FileLoadSelector = require("./FileLoadSelector");
 var InvalidFileTypeError = require("./InvalidFileTypeError");
-var ClassUtils = require("../ClassUtils");
+var JSUtils = require("../utils/JSUtils");
 var Version = require("../Version");
 var Dot = require("../Dot");
 var Sheet = require("../Sheet");
@@ -36,7 +36,7 @@ var ViewerFileLoadSelector = function() {
     FileLoadSelector.apply(this, []);
 };
 
-ClassUtils.extends(ViewerFileLoadSelector, FileLoadSelector);
+JSUtils.extends(ViewerFileLoadSelector, FileLoadSelector);
 
 /**
  * The ViewerFileLoadSelector is a singleton, and this is its
@@ -75,7 +75,7 @@ ViewerFileLoadSelector._setupInstance = function(instance) {
 ViewerFileLoadSelector.ViewerFileLoader = function() {
 };
 
-ClassUtils.extends(ViewerFileLoadSelector.ViewerFileLoader, FileLoadSelector.FileLoader); 
+JSUtils.extends(ViewerFileLoadSelector.ViewerFileLoader, FileLoadSelector.FileLoader); 
 
 
 /**
@@ -108,7 +108,7 @@ ClassUtils.extends(ViewerFileLoadSelector.ViewerFileLoader, FileLoadSelector.Fil
 var ViewerFileLoad_1_0_0 = function() {
 };
 
-ClassUtils.extends(ViewerFileLoad_1_0_0, ViewerFileLoadSelector.ViewerFileLoader);
+JSUtils.extends(ViewerFileLoad_1_0_0, ViewerFileLoadSelector.ViewerFileLoader);
 
 /**
  * Loads an entire viewer file, and returns the result. For

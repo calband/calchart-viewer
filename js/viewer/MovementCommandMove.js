@@ -2,8 +2,8 @@
  * @fileOverview Defines the MovementCommandMove class.
  */
 
-var ClassUtils = require("./ClassUtils");
-var MathUtils = require("./MathUtils");
+var JSUtils = require("./utils/JSUtils");
+var MathUtils = require("./utils/MathUtils");
 var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
  
@@ -35,7 +35,7 @@ var MovementCommandMove = function(startX, startY, stepSize, movementDirection, 
     MovementCommand.apply(this, [startX, startY, startX + (this._deltaXPerStep * numSteps), startY + (this._deltaYPerStep * numSteps), beats]);
 };
 
-ClassUtils.extends(MovementCommandMove, MovementCommand);
+JSUtils.extends(MovementCommandMove, MovementCommand);
 
 MovementCommandMove.prototype.getAnimationState = function(beatNum) {
     numSteps = Math.floor(beatNum / this._beatsPerStep);

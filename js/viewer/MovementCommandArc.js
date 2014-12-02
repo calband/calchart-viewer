@@ -2,8 +2,8 @@
  * @fileOverview Defines the MovementCommandArc class.
  */
 
-var ClassUtils = require("./ClassUtils");
-var MathUtils = require("./MathUtils");
+var JSUtils = require("./utils/JSUtils");
+var MathUtils = require("./utils/MathUtils");
 var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
  
@@ -43,7 +43,7 @@ var MovementCommandArc = function(startX, startY, centerX, centerY, angleToRotat
     MovementCommand.apply(this, [startX, startY, finalAnimState.x, finalAnimState.y, beats]);
 };
 
-ClassUtils.extends(MovementCommandArc, MovementCommand);
+JSUtils.extends(MovementCommandArc, MovementCommand);
 
 MovementCommandArc.prototype.getAnimationState = function(beatNum) {
     var numSteps = Math.floor(beatNum / this._beatsPerStep);

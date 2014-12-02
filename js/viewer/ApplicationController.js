@@ -3,8 +3,9 @@
  */
 
 var Grapher = require("./Grapher");
-var ShowUtils = require("./ShowUtils");
-var TimedBeatsUtils = require("./TimedBeatsUtils");
+var ShowUtils = require("./utils/ShowUtils");
+var TimedBeatsUtils = require("./utils/TimedBeatsUtils");
+var JSUtils = require("./utils/JSUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
@@ -59,34 +60,43 @@ ApplicationController.prototype.setShow = function (show) {
 ApplicationController.prototype.getShows = function(year) {
     var url = "https://calchart-server.herokuapp.com/list/" + year;
     $.getJSON(url, function(data) {
-        var options = data.shows.map(function(show) {
-            return "<option value='" + show["index_name"] + "'>" + show["title"] + "</option>";
-        }).join("");
-
-        $(".js-select-show").html("<option></option>" + options);
+        $(".js-select-show").append("<option>");
+        data.shows.forEach(function(show) {
+            $("<option>")
+                .attr("value", show["index_name"])
+                .text(show["title"])
+                .appendTo(".js-select-show");
+        });
         this[year + "_shows"] = data.shows;
     });
 };
 
 /**
- * Autoloads show from the Calchart server
- * @param {String} show is the index_name of the show to get
+ * Autoloads show from the Calchart server from the URL parameters
  */
-ApplicationController.prototype.autoloadShow = function(index_name) {
+ApplicationController.prototype.autoloadShow = function() {
+    var indexName = JSUtils.getURLValue("show");
+    var optionElem = $(".js-select-show option[value=" + indexName + "]");
+    if (optionElem.length === 0) {
+        return;
+    }
+    optionElem.prop("selected", true);
+    $(".js-select-show").trigger("chosen:updated");
+
     var url = "https://calchart-server.herokuapp.com/";
     var _this = this;
-    $.getJSON(url + "chart/" + index_name, function(data) {
+    $.getJSON(url + "chart/" + indexName, function(data) {
         var response = JSON.stringify(data);
         var viewer = ShowUtils.fromJSON(response);
         _this.setShow(viewer);
-        _this._setFileInputText(".js-viewer-file-btn", index_name);
+        _this._setFileInputText(".js-viewer-file-btn", indexName);
     });
 
-    $.getJSON(url + "beats/" + index_name, function(data) {
+    $.getJSON(url + "beats/" + indexName, function(data) {
         var response = JSON.stringify(data);
         var beats = TimedBeatsUtils.fromJSON(response);
         _this._animator.setBeats(beats);
-        _this._setFileInputText(".js-beats-file-btn", index_name);
+        _this._setFileInputText(".js-beats-file-btn", indexName);
     });
 };
 
@@ -95,16 +105,19 @@ ApplicationController.prototype.autoloadShow = function(index_name) {
  * this._show has already been loaded.
  */
 ApplicationController.prototype._updateUIWithShow = function () {
-    if (typeof this._show.getTitle() === "undefined") {
+    if (this._show.getTitle() === undefined) {
         $(".js-show-title").text("Untitled Show");
     } else {
         $(".js-show-title").text(this._show.getTitle());
     }
-    var options = this._show.getDotLabels().map(function (value) {
-        return "<option value='" + value + "'>" + value + "</option>";
+    this._show.getDotLabels().forEach(function(dot) {
+        $("<option>")
+            .attr("value", dot)
+            .attr("data-dot-label", dot)
+            .text(dot)
+            .appendTo(".js-dot-labels");
     });
-    var optionsHtml = "<option></option>" + options.join("");
-    $(".js-dot-labels").html(optionsHtml).trigger("chosen:updated");
+    $(".js-dot-labels").trigger("chosen:updated");
 };
 
 /**
@@ -189,6 +202,8 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
     } else {
         $(".js-stuntsheet-label").text(sheetLabel + " (" + sheetPage + ")");
     }
+
+    $(".js-dot-continuity").empty();
     if (this._animationStateDelegate.getSelectedDot() !== null) {
         var selectedDot = this._animationStateDelegate.getSelectedDot();
         $(".js-selected-dot-label").parent().removeClass("disabled");
@@ -196,17 +211,16 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
         var currentSheet = this._animationStateDelegate.getCurrentSheet();
         var typeOfDot = currentSheet.getDotType(selectedDot);
         var continuities = currentSheet.getContinuityTexts(typeOfDot);
-        if (typeof continuities !== "undefined") {
-            continuities = continuities.map(function(continuity) {
-                return "<div class=\"dot-continuity\">" + continuity + "</div>";
-            });
-            $(".js-dot-continuity").html(continuities.join(""));
-        } else {
-            $(".js-dot-continuity").html("");
+        if (continuities !== undefined) {
+            continuities.forEach(function(continuity) {
+                $("<div>")
+                    .addClass("dot-continuity")
+                    .text(continuity)
+                    .appendTo(".js-dot-continuity");
+            })
         }
     } else {
         $(".js-selected-dot-label").parent().addClass("disabled");
-        $(".js-dot-continuity").html("");
     }
 };
 
