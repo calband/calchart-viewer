@@ -8,6 +8,7 @@ var MathUtils = require("../viewer/utils/MathUtils");
 var ShowUtils = require("../viewer/utils/ShowUtils");
 var PDFUtils = require("./PDFUtils");
 var IndividualContinuityWidget = require("./IndividualContinuityWidget");
+var MovementDiagramWidget = require("./MovementDiagramWidget");
 
 /**
  * @constant WIDTH is the width of the PDF document, in millimeters
@@ -48,6 +49,7 @@ var PDFGenerator = function(show, dot, options) {
 
     // Widgets
     this.IndividualContinuityWidget = new IndividualContinuityWidget(this.pdf);
+    this.MovementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
 };
 
 /**
@@ -101,12 +103,12 @@ PDFGenerator.prototype.generate = function() {
                     duration: sheet.getDuration()
                 }
             );
-            this._addMovementDiagram(
-                movements[pageNum * 4 + i],
-                x + QUADRANT_WIDTH / 2 + 1,
-                y + QUADRANT_HEIGHT / 5,
-                QUADRANT_WIDTH / 2,
-                QUADRANT_HEIGHT * 2/5
+            this.MovementDiagramWidget.draw(
+                x + QUADRANT_WIDTH/2 + 1,
+                y + QUADRANT_HEIGHT/5,
+                QUADRANT_WIDTH/2,
+                QUADRANT_HEIGHT * 2/5,
+                { movements: movements[pageNum * 4 + i] }
             );
             this._addBirdseye(
                 x,
@@ -126,6 +128,7 @@ PDFGenerator.prototype.generate = function() {
     this._addEndSheet(continuityTexts, movements);
 
     var pdfData = this.pdf.output("datauristring");
+    $(".js-pdf-preview").removeAttr("srcdoc");
     $(".js-pdf-preview").attr("src", pdfData);
 };
 
@@ -373,283 +376,6 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
         text.x,
         text.y
     );
-};
-
-/**
- * Draws the diagram for a selected dot's movements. Includes:
- *      - Circle for start
- *      - Cross for end
- *      - Path line
- *      - Yard lines, yard line markers
- *      - Hashes if in viewport
- *      - Zoom out if big
- *      - Orientation EWNS; East is up
- *
- * @param {Array<Objects>} movements, where each item is an object containing values for
- *      deltaX and deltaY for each movement and the starting Coordinate
- * @param {int} x  The x-coordinate of the top left corner of the movement diagram area
- * @param {int} y  The y-coordinate of the top left corner of the movement diagram area
- * @param {double} width The width of the containing box
- * @param {double} height The height of the containing box
- * @param {boolean} isEndSheet
- */
-PDFGenerator.prototype._addMovementDiagram = function(movements, x, y, width, height, isEndSheet) {
-    var _this = this;
-
-    // draws box and field
-    var box = {
-        x: x,
-        y: y,
-        width: width - 2 * (PDFUtils.getTextWidth("S", 12) + 1.5),
-        height: height - 2 * (PDFUtils.getTextHeight(12) + 2),
-        textSize: 12,
-        yardTextSize: height * 11/47.1,
-
-        // params are boundaries of viewport
-        // left, right are steps from South sideline; top, bottom are steps from West sideline
-        // scale is units per step
-        draw: function(left, right, top, bottom, scale) {
-            var textHeight = PDFUtils.getTextHeight(this.textSize);
-            var textWidth = PDFUtils.getTextWidth("S", this.textSize);
-            _this.pdf.setFontSize(this.textSize);
-            if (isEndSheet) {
-                this.y -= textHeight;
-            } else {
-                _this.pdf.text(
-                    "E",
-                    this.x + this.width / 2 + textWidth,
-                    this.y + textHeight
-                );
-                _this.pdf.text(
-                    "W",
-                    this.x + this.width / 2 + textWidth,
-                    this.y + 2 * textHeight + this.height + 2
-                );
-            }
-            _this.pdf.text(
-                "S",
-                this.x + this.width + textWidth + 3,
-                this.y + this.height / 2 + textHeight * 3/2
-            );
-            _this.pdf.text(
-                "N",
-                this.x + 1,
-                this.y + this.height / 2 + textHeight * 3/2
-            );
-            this.x += textWidth + 2;
-            this.y += textHeight + 2;
-            _this.pdf.rect(
-                this.x,
-                this.y,
-                this.width,
-                this.height
-            );
-
-            var westHash = bottom < 32 && top > 32;
-            var eastHash = bottom < 52 && top > 52;
-            var hashLength = 3;
-
-            // position of first yardline in viewport
-            var i = (left - Math.floor(left/8) * 8) * scale;
-            var yardlineNum = Math.floor(left/8) * 5;
-
-            // 4-step line before first line
-            if (i - scale * 4 > 0) {
-                _this.pdf.setDrawColor(200);
-                _this.pdf.line(
-                    this.x + i - scale * 4, this.y,
-                    this.x + i - scale * 4, this.y + this.height
-                );
-                _this.pdf.setDrawColor(0);
-            }
-
-            for (; i < this.width && yardlineNum <= 100; i += scale * 8, yardlineNum -= 5) {
-                _this.pdf.line(
-                    this.x + i, this.y,
-                    this.x + i, this.y + this.height
-                );
-                if (westHash) {
-                    var y = this.y + this.height - (32 - bottom) * scale;
-                    _this.pdf.line(
-                        this.x + i - hashLength/2, y,
-                        this.x + i + hashLength/2, y
-                    );
-                }
-                if (eastHash) {
-                    var y = this.y + this.height - (52 - bottom) * scale;
-                    _this.pdf.line(
-                        this.x + i - hashLength/2, y,
-                        this.x + i + hashLength/2, y
-                    );
-                }
-
-                var yardlineText = "";
-                if (yardlineNum < 50) {
-                    yardlineText = String(yardlineNum);
-                } else {
-                    yardlineText = String(100 - yardlineNum);
-                }
-                if (yardlineText.length == 1) {
-                    yardlineText = "0" + yardlineText;
-                }
-                _this.pdf.setTextColor(150);
-                _this.pdf.setFontSize(this.yardTextSize);
-                var halfTextWidth = PDFUtils.getTextWidth(yardlineText, this.yardTextSize)/2;
-
-                if (i > halfTextWidth) {
-                    // include first character if room
-                    _this.pdf.text(
-                        yardlineText[0],
-                        this.x + i - halfTextWidth - .5,
-                        this.y + this.height - 2
-                    );
-                }
-                if (i < this.width - halfTextWidth) {
-                    // include second character if room
-                    _this.pdf.text(
-                        yardlineText[1],
-                        this.x + i + .5,
-                        this.y + this.height - 2
-                    );
-                }
-
-                // 4-step line after yardline 
-                if (i + scale * 4 < this.width) {
-                    _this.pdf.setDrawColor(200);
-                    _this.pdf.line(
-                        this.x + i + scale * 4, this.y,
-                        this.x + i + scale * 4, this.y + this.height
-                    );
-                    _this.pdf.setDrawColor(0);
-                }
-            }
-            _this.pdf.setTextColor(0);
-        },
-
-        // draws movement lines and labels starting at (x, y) in steps from edge of viewport
-        lines: function(x, y, scale) {
-            x = this.x + x * scale;
-            y = this.y + y * scale;
-            var spotRadius = this.height / 15;
-            _this.pdf.circle(x, y, spotRadius);
-            _this.pdf.setLineWidth(0.5);
-            for (var i = 0; i < movements.length; i++) {
-                var movement = movements[i];
-                // negative because orientation flipped
-                var deltaX = -movement.deltaX * scale;
-                var deltaY = -movement.deltaY * scale;
-
-                _this.pdf.line(x, y, x + deltaX, y + deltaY);
-                x += deltaX;
-                y += deltaY;
-            }
-            _this.pdf.setLineWidth(0.1);
-            _this.pdf.line(
-                x - spotRadius, y - spotRadius,
-                x + spotRadius, y + spotRadius
-            );
-            _this.pdf.line(
-                x + spotRadius, y - spotRadius,
-                x - spotRadius, y + spotRadius
-            );
-        }
-    };
-
-    var start = movements[0].startPosition;
-    // calculates scale of viewport
-    var viewport = {
-        startX: start.x,
-        startY: start.y,
-        minX: 0, // minX <= 0, maximum movement South
-        minY: 0, // minY <= 0, maximum movement West
-        maxX: 0, // maxX >= 0, maximum movement North
-        maxY: 0, // maxY >= 0, maximum movement East
-        deltaX: 0, // overall change in NS
-        deltaY: 0, // overall change in EW
-        width: 20, // in steps
-        height: box.height/box.width * 20, // in steps, keeping height/width ratio
-        update: function(x, y) {
-            this.deltaX += x;
-            this.deltaY += y;
-            if (this.deltaX < this.minX) {
-                this.minX = this.deltaX;
-            } else if (this.deltaX > this.maxX) {
-                this.maxX = this.deltaX;
-            }
-
-            if (this.deltaY < this.minY) {
-                this.minY = this.deltaY;
-            } else if (this.deltaY > this.maxY) {
-                this.maxY = this.deltaY;
-            }
-        },
-        getOverallX: function() {
-            return this.maxX - this.minX;
-        },
-        getOverallY: function() {
-            return this.maxY - this.minY;
-        },
-        scale: function() {
-            var deltaX = this.getOverallX();
-            var deltaY = this.getOverallY();
-            if (deltaX > this.width - 4) {
-                this.width = deltaX + 4;
-                this.height = box.height/box.width * this.width;
-            }
-            if (deltaY > this.height - 4) {
-                this.height = deltaY + 4;
-                this.width = box.width/box.height * this.height;
-            }
-        }
-    };
-
-    movements.forEach(function(move) {
-        viewport.update(move.deltaX, move.deltaY);
-    });
-    viewport.scale();
-
-    // units per step
-    var scale = box.width / viewport.width;
-    // steps from sideline until start of viewport
-    var south = viewport.startX + viewport.maxX - viewport.getOverallX()/2 - viewport.width/2;
-    var west = viewport.startY + viewport.maxY - viewport.getOverallY()/2 - viewport.height/2;
-    var north = south + viewport.width;
-    var east = west + viewport.height;
-    // orientation East up
-    box.draw(north, south, east, west, scale);
-    box.lines(north - viewport.startX, east - viewport.startY, scale);
-
-    // drawing lines denoting vertical position
-    function drawPosition(x, y) {
-        var lineY = box.y + (east - y) * scale;
-        var text = PDFUtils.getYCoordinateText(y);
-        _this.pdf.line(
-            box.x, lineY,
-            box.x + box.width, lineY
-        );
-        _this.pdf.setFontSize(8);
-        if (north - x < (north - south) / 2) {
-            _this.pdf.text(
-                text,
-                box.x + box.width - PDFUtils.getTextWidth(text, 8),
-                lineY - .5
-            );
-        } else {
-            _this.pdf.text(
-                text,
-                box.x + .5,
-                lineY - .5
-            );
-        }
-    };
-
-    drawPosition(viewport.startX, viewport.startY);
-    if (viewport.deltaY != 0) {
-        drawPosition(
-            viewport.startX + viewport.deltaX,
-            viewport.startY + viewport.deltaY
-        );
-    }
 };
 
 /**
@@ -989,13 +715,15 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
                 duration: this.sheets[i].getDuration()
             }
         );
-        this._addMovementDiagram(
-            movements[i],
+        this.MovementDiagramWidget.draw(
             x + labelWidth + continuitySize + paddingX * 2,
             y + paddingY,
             diagramSize,
             diagramSize,
-            true
+            {
+                movements: movements[i],
+                minimal: true
+            }
         );
         y += height + 2 * paddingY;
     }

@@ -43,7 +43,6 @@ PDFUtils.getXCoordinateText = function(x) {
     if (steps > 4) { // closer to North-side yardline
         yardline += 5;
     }
-    steps = Math.round(steps * 10) / 10;
 
     if (yardline < 50) {
         yardline = "S" + yardline;
@@ -54,10 +53,13 @@ PDFUtils.getXCoordinateText = function(x) {
     }
 
     if (steps > 4) {
-        return (8 - steps) + "S " + yardline;
+        steps = 8 - steps;
+        steps = Math.round(steps * 10) / 10;
+        return steps + "S " + yardline;
     } else if (steps == 0) {
         return yardline;
     } else {
+        steps = Math.round(steps * 10) / 10;
         return steps + "N " + yardline;
     }
 };

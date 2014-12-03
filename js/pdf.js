@@ -15,6 +15,11 @@ $(document).ready(function() {
         return;
     }
 
+    // Loading screen
+    $(".js-pdf-preview").attr("srcdoc",
+        "<center><img src='img/calchart-viewer-highstepper.png'><h1 style= \
+        'color:#fdb515;font-family:\"Open Sans\";font-weight:normal;'>Loading...</h1></center>");
+
     var url = "https://calchart-server.herokuapp.com/chart/" + options["show"];
     $.getJSON(url, function(data) {
         var show = ShowUtils.fromJSON(JSON.stringify(data));

@@ -19,6 +19,11 @@ var IndividualContinuityWidget = function(pdf) {
 
 JSUtils.extends(IndividualContinuityWidget, PDFWidget);
 
+/**
+ * Draws the Individual Continuity Widget with the given options:
+ *      - {Array<String>} continuities, the continuity texts for this widget
+ *      - {int} duration, the total beats of all the continuities
+ */
 IndividualContinuityWidget.prototype.draw = function(x, y, width, height, options) {
     var continuities = options['continuities'];
 
@@ -35,6 +40,7 @@ IndividualContinuityWidget.prototype.draw = function(x, y, width, height, option
 
     this.pdf.rect(x, y, width, height);
     this.pdf.setFontSize(box.size);
+
     for (var i = 0; i < continuities.length; i++) {
         var continuity = continuities[i];
         var length = PDFUtils.getTextWidth(continuity, box.size);
