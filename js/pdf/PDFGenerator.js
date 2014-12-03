@@ -34,22 +34,12 @@ var QUADRANT_WIDTH = WIDTH/2 - 6;
  *
  * @param {Show} show
  * @param {String} dot is the label of the selected dot
- * @param {Object} options, customizable options for the pdf. Current options include:
- *      - Orientation for movement diagram (options["md-orientation"] = "west"|"east")
- *      - Orientation for bird's eye view  (options["bev-orientation"] = "west"|"east")
- *      - Orientation for surrounding dots (options["sd-orientation"] = "west"|"east")
- *      - Layout order of stuntsheets      (options["layout-order"] = "ltr"|"ttb")
- *      - Accompanying widget in endsheet  (options["endsheet-widget"] = "md"|"bev"|"sd")
  */
-var PDFGenerator = function(show, dot, options) {
+var PDFGenerator = function(show, dot) {
     this.pdf = jsPDF("portrait", "mm", "letter");
     this.show = show;
     this.dot = dot;
     this.sheets = show.getSheets();
-
-    // Widgets
-    this.IndividualContinuityWidget = new IndividualContinuityWidget(this.pdf);
-    this.MovementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
 };
 
 /**
@@ -57,8 +47,19 @@ var PDFGenerator = function(show, dot, options) {
  * positions, and continuities relevant to it.
  *
  * The function will display the pdf in the webpage's preview pane
+ *
+ * @param {Object} options, customizable options for the pdf. Current options include:
+ *      - Orientation for movement diagram (options["md-orientation"] = "west"|"east")
+ *      - Orientation for bird's eye view  (options["bev-orientation"] = "west"|"east")
+ *      - Orientation for surrounding dots (options["sd-orientation"] = "west"|"east")
+ *      - Layout order of stuntsheets      (options["layout-order"] = "ltr"|"ttb")
+ *      - Accompanying widget in endsheet  (options["endsheet-widget"] = "md"|"bev"|"sd")
  */
-PDFGenerator.prototype.generate = function() {
+PDFGenerator.prototype.generate = function(options) {
+    // Widgets
+    this.IndividualContinuityWidget = new IndividualContinuityWidget(this.pdf);
+    this.MovementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
+
     var continuityTexts = this._getContinuityTexts();
     var movements = this._getMovements();
     for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
@@ -75,7 +76,7 @@ PDFGenerator.prototype.generate = function() {
             pageSheets.push(this.sheets[sheet]);
         }
 
-        this._addHeaders(pageNum + 1);
+        this._addHeaders(pageNum + 1, options["layout-order"] === "ltr");
         // drawing lines between quadrants
         this.pdf.setDrawColor(150);
         this.pdf.line(
@@ -88,9 +89,14 @@ PDFGenerator.prototype.generate = function() {
         );
         this.pdf.setDrawColor(0);
 
+        var quadrantOrder = [0, 1, 2, 3]; // top left, top right, bottom left, bottom right
+        if (options["layout-order"] === "ttb") {
+            quadrantOrder = [0, 2, 1, 3];
+        }
+
         for (var i = 0; i < pageSheets.length; i++) {
-            var x = QUADRANT[i].x;
-            var y = QUADRANT[i].y;
+            var x = QUADRANT[quadrantOrder[i]].x;
+            var y = QUADRANT[quadrantOrder[i]].y;
             var sheet = pageSheets[i];
             this._addDotContinuity(x, y, sheet);
             this.IndividualContinuityWidget.draw(
@@ -201,8 +207,9 @@ PDFGenerator.prototype._getMovements = function() {
  *      - Page number
  *
  * @param {int} pageNum is the current 1-indexed page number
+ * @param {boolean} isLeftToRight, true if stuntsheets go from left to write, false otherwise
  */
-PDFGenerator.prototype._addHeaders = function(pageNum) {
+PDFGenerator.prototype._addHeaders = function(pageNum, isLeftToRight) {
     var _this = this;
     var totalPages = Math.ceil(this.sheets.length/4);
     var title = this.show.getTitle();
@@ -301,11 +308,19 @@ PDFGenerator.prototype._addHeaders = function(pageNum) {
     sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
 
     if (sheetInfo.hasNext()) {
-        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
+        if (isLeftToRight) {
+            sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
+        } else {
+            sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
+        }
     }
 
     if (sheetInfo.hasNext()) {
-        sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
+        if (isLeftToRight) {
+            sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
+        } else {
+            sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
+        }
     }
 
     if (sheetInfo.hasNext()) {
