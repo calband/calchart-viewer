@@ -26,8 +26,15 @@ $(document).ready(function() {
     var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];
 
     keys.forEach(function(key) {
-        $(".options input[name=" + key + "][value=" + options[key] + "]").prop("checked", true);
-    })
+        var allOptions = $(".options input[name=" + key + "]");
+        var selected = allOptions.filter("[value=" + options[key] + "]");
+        if (options[key] === undefined || selected.length === 0) {
+            // choose first option by default
+            allOptions.filter(":first").prop("checked", true);
+        } else {
+            selected.prop("checked", true);
+        }
+    });
 
     $("input").change(function(evt) {
         var target = $(evt.target);

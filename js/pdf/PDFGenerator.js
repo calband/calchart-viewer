@@ -33,8 +33,7 @@ var QUADRANT_WIDTH = WIDTH/2 - 6;
  *
  * @param {Show} show
  * @param {String} dot is the label of the selected dot
- * @param {Object} options, customizable options for the pdf. Current
- * customizable options include:
+ * @param {Object} options, customizable options for the pdf. Current options include:
  *      - Orientation for movement diagram (options["md-orientation"] = "west"|"east")
  *      - Orientation for bird's eye view  (options["bev-orientation"] = "west"|"east")
  *      - Orientation for surrounding dots (options["sd-orientation"] = "west"|"east")
@@ -128,41 +127,6 @@ PDFGenerator.prototype.generate = function() {
 
     var pdfData = this.pdf.output("datauristring");
     $(".js-pdf-preview").attr("src", pdfData);
-};
-
-/**
- * Draws the dot for the given dot type at the given coordinates
- * @param {String} dotType
- * @param {int} x
- * @param {int} y
- */
-PDFGenerator.prototype._drawDot = function(dotType, x, y) {
-    var radius = 1.5;
-    this.pdf.setLineWidth(.1);
-    if (dotType.indexOf("open") != -1) {
-        this.pdf.setFillColor(255);
-        this.pdf.circle(x, y, radius, "FD");
-    } else {
-        this.pdf.setFillColor(0);
-        this.pdf.circle(x, y, radius, "FD");
-    }
-
-    radius += .1; // line radius sticks out of the circle
-    if (dotType.indexOf("backslash") != -1 || dotType.indexOf("x") != -1) {
-        this.pdf.line(
-            x - radius, y - radius,
-            x + radius, y + radius
-        );
-    }
-
-    if (dotType.indexOf("forwardslash") != -1 || dotType.indexOf("x") != -1) {
-        this.pdf.line(
-            x + radius, y - radius,
-            x - radius, y + radius
-        );
-    }
-    this.pdf.setLineWidth(.3);
-    this.pdf.setFillColor(0);
 };
 
 /*
@@ -389,7 +353,7 @@ PDFGenerator.prototype._addDotContinuity = function(quadrantX, quadrantY, sheet)
         text.size--;
     }
 
-    this._drawDot(
+    this.pdf.drawDot(
         dotType,
         text.x + 1.5,
         text.y + 2
@@ -958,7 +922,7 @@ PDFGenerator.prototype._addSurroundingDots = function(x, y, width, height, sheet
         var x = dot.deltaX * scale + origin.x;
         var y = dot.deltaY * scale + origin.y;
         this.pdf.setFontSize(box.labelSize);
-        this._drawDot(dot.type, x, y);
+        this.pdf.drawDot(dot.type, x, y);
         this.pdf.text(dot.label, x - 3, y - 2);
     }
 };

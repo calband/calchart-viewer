@@ -3,13 +3,14 @@
  */
 
 /**
- * The collection of all the utility functions defined in this file. Contains a
- * dummy jsPDF object that can be used for jsPDF-related measurements
+ * The collection of all the utility functions defined in this file
  * @type {object}
  */
-PDFUtils = { pdf: jsPDF("portrait", "mm", "letter") };
+PDFUtils = {};
 
-PDFUtils.scaleFactor = PDFUtils.pdf.internal.scaleFactor;
+PDFUtils.DUMMY_PDF = jsPDF("portrait", "mm", "letter");
+
+PDFUtils.SCALE_FACTOR = PDFUtils.DUMMY_PDF.internal.scaleFactor;
 
 /**
  * Returns the width of a String in millimeters
@@ -17,7 +18,7 @@ PDFUtils.scaleFactor = PDFUtils.pdf.internal.scaleFactor;
  * @param {int} size, font size the text will be in
  */
 PDFUtils.getTextWidth = function(text, size) {
-    return this.pdf.getStringUnitWidth(text) * size/this.scaleFactor
+    return this.DUMMY_PDF.getStringUnitWidth(text) * size/this.SCALE_FACTOR
 };
 
 /**
@@ -25,7 +26,7 @@ PDFUtils.getTextWidth = function(text, size) {
  * @param {int} size, font size the text will be in
  */
 PDFUtils.getTextHeight = function(size) {
-    return size/this.scaleFactor;
+    return size/this.SCALE_FACTOR;
 };
 
 /**
@@ -112,5 +113,45 @@ PDFUtils.getYCoordinateText = function(y) {
     // East Sideline
     return "ES";
 };
+
+/**
+ * This jsPDF plugin draws a dot for the given dot type at the given coordinates
+ * @param {String} dotType
+ * @param {int} x
+ * @param {int} y
+ */
+(function (jsPDFAPI) {
+    "use strict";
+
+    jsPDFAPI.drawDot = function(dotType, x, y) {
+        var radius = 1.5;
+        this.setLineWidth(.1);
+        if (dotType.indexOf("open") != -1) {
+            this.setFillColor(255);
+            this.circle(x, y, radius, "FD");
+        } else {
+            this.setFillColor(0);
+            this.circle(x, y, radius, "FD");
+        }
+
+        radius += .1; // line radius sticks out of the circle
+        if (dotType.indexOf("backslash") != -1 || dotType.indexOf("x") != -1) {
+            this.line(
+                x - radius, y - radius,
+                x + radius, y + radius
+            );
+        }
+
+        if (dotType.indexOf("forwardslash") != -1 || dotType.indexOf("x") != -1) {
+            this.line(
+                x + radius, y - radius,
+                x - radius, y + radius
+            );
+        }
+        this.setLineWidth(.3);
+        this.setFillColor(0);
+        return this;
+    };
+})(jsPDF.API);
 
 module.exports = PDFUtils;
