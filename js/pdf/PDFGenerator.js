@@ -7,6 +7,7 @@ var MovementCommandArc = require("../viewer/MovementCommandArc");
 var MathUtils = require("../viewer/utils/MathUtils");
 var ShowUtils = require("../viewer/utils/ShowUtils");
 var PDFUtils = require("./PDFUtils");
+var DotContinuityWidget = require("./DotContinuityWidget");
 var IndividualContinuityWidget = require("./IndividualContinuityWidget");
 var MovementDiagramWidget = require("./MovementDiagramWidget");
 
@@ -57,6 +58,7 @@ var PDFGenerator = function(show, dot) {
  */
 PDFGenerator.prototype.generate = function(options) {
     // Widgets
+    this.DotContinuityWidget = new DotContinuityWidget(this.pdf);
     this.IndividualContinuityWidget = new IndividualContinuityWidget(this.pdf);
     this.MovementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
 
@@ -98,7 +100,16 @@ PDFGenerator.prototype.generate = function(options) {
             var x = QUADRANT[quadrantOrder[i]].x;
             var y = QUADRANT[quadrantOrder[i]].y;
             var sheet = pageSheets[i];
-            this._addDotContinuity(x, y, sheet);
+            this.DotContinuityWidget.draw(
+                x,
+                y,
+                QUADRANT_WIDTH,
+                QUADRANT_HEIGHT/5,
+                {
+                    sheet: sheet,
+                    dotType: sheet.getDotType(this.dot)
+                }
+            );
             this.IndividualContinuityWidget.draw(
                 x,
                 y + QUADRANT_HEIGHT / 5,
