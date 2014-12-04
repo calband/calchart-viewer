@@ -92,14 +92,18 @@ BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
 
     // drawing selected dot
     var position = selectedDot.getAnimationState(0);
-    var x = position.x * scale;
-    var y = position.y * scale;
-
     var coordinates = {
         textSize: 8,
         textX: PDFUtils.getXCoordinateText(position.x),
         textY: PDFUtils.getYCoordinateText(position.y)
     };
+
+    if (!this.westUp) {
+        position.x = 160 - position.x;
+        position.y = 84 - position.y;
+    }
+    var x = position.x * scale;
+    var y = position.y * scale;
 
     coordinates.x = box.x + x - PDFUtils.getTextWidth(coordinates.textX, coordinates.textSize)/2;
     coordinates.y = box.y + y + PDFUtils.getTextHeight(coordinates.textSize)/4;
@@ -146,7 +150,7 @@ BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
             box.y + box.height - 1
         );
     }
-    this.pdf.circle(box.x + x, box.y + y, .5, 'F');
+    this.pdf.circle(box.x + x, box.y + y, .5, "F");
     this._resetFormat();
 };
 
