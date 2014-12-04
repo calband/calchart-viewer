@@ -79,6 +79,7 @@ DotContinuityWidget.prototype.draw = function(x, y, width, height, options) {
         text.x,
         text.y
     );
+    this._resetFormat();
 };
 
 module.exports = DotContinuityWidget;

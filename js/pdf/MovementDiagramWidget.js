@@ -178,6 +178,7 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
             Math.abs(left - viewport.startX - viewport.deltaX) < Math.abs(left - right) / 2
         );
     }
+    this._resetFormat();
 };
 
 /**
@@ -198,6 +199,7 @@ MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, botto
     var height = box.height;
 
     var yardlineSize = height * 12/47.1; // at the usual height, yardline text should be 12
+    this.pdf.setFontSize(yardlineSize);
 
     var westHash, eastHash, westHashY, eastHashY;
     if (this.westUp) {
@@ -267,7 +269,6 @@ MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, botto
         if (yardlineText.length === 1) {
             yardlineText = "0" + yardlineText;
         }
-        this.pdf.setFontSize(yardlineSize);
         var halfTextWidth = PDFUtils.getTextWidth(yardlineText, yardlineSize)/2;
         if (deltaX > halfTextWidth) { // include first character if room
             this.pdf.text(
@@ -290,8 +291,7 @@ MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, botto
             break;
         }
     }
-    this.pdf.setTextColor(0);
-    this.pdf.setDrawColor(0);
+    this._resetFormat();
 };
 
 /**
@@ -323,6 +323,7 @@ MovementDiagramWidget.prototype._drawPosition = function(box, y, offset, closeTo
             lineY - .5
         );
     }
+    this._resetFormat();
 };
 
 module.exports = MovementDiagramWidget;

@@ -92,4 +92,16 @@ PDFWidget.prototype._drawBox = function(x, y, width, height, westUp, minimal) {
     this.pdf.rect(x, y, width, height);
 };
 
+/**
+ * Resets all pdf options to default values. Should be called at the end of functions that
+ * change the default values.
+ */
+PDFWidget.prototype._resetFormat = function() {
+    this.pdf.setFontSize(12);
+    this.pdf.setTextColor(0);
+    this.pdf.setDrawColor(0);
+    this.pdf.setFillColor(0);
+    this.pdf.setLineWidth(.3);
+};
+
 module.exports = PDFWidget;
