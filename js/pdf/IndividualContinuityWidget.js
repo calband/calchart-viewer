@@ -21,11 +21,11 @@ JSUtils.extends(IndividualContinuityWidget, PDFWidget);
 
 /**
  * Draws the Individual Continuity Widget with the given options:
- *      - {Array<String>} continuities, the continuity texts for this widget
+ *      - {Dot} dot, the selected dot
  *      - {int} duration, the total beats of all the continuities
  */
 IndividualContinuityWidget.prototype.draw = function(x, y, width, height, options) {
-    var continuities = options['continuities'];
+    var continuities = this._getContinuityTexts(options["dot"]);
 
     var box = {
         paddingX: 2,
@@ -72,6 +72,23 @@ IndividualContinuityWidget.prototype.draw = function(x, y, width, height, option
         y + height - box.paddingY
     );
     this.pdf.resetFormat();
+};
+
+/*
+ * Returns the selected dot's individual continuity texts
+ *
+ * @param {Dot} dot, the selected dot
+ * @return {Array<String>} an Array of continuity texts for each sheet
+ */
+IndividualContinuityWidget.prototype._getContinuityTexts = function(dot) {
+    var continuities = [];
+    dot.getMovementCommands().forEach(function(movement) {
+        var text = movement.getContinuityText();
+        if (text !== "") {
+            continuities.push(text);
+        }
+    });
+    return continuities;
 };
 
 module.exports = IndividualContinuityWidget;

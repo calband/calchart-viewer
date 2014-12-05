@@ -34,7 +34,7 @@ Dot.prototype.getLabel = function() {
 /**
  * Returns this dot's movement commands.
  *
- * @return {string} The dot's movements.
+ * @return {Array<MovementCommand>} The dot's movements.
  */
 Dot.prototype.getMovementCommands = function() {
     return this._movements;

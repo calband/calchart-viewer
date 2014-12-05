@@ -58,7 +58,6 @@ PDFGenerator.prototype.generate = function(options) {
     this.BirdsEyeWidget = new BirdsEyeWidget(this.pdf, options["bev-orientation"]);
     this.SurroundingDotsWidget = new SurroundingDotsWidget(this.pdf, options["sd-orientation"]);
 
-    var continuityTexts = this._getContinuityTexts();
     var movements = this._getMovements();
     for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
         if (pageNum != 0) {
@@ -96,6 +95,7 @@ PDFGenerator.prototype.generate = function(options) {
             var x = QUADRANT[quadrantOrder[i]].x;
             var y = QUADRANT[quadrantOrder[i]].y;
             var sheet = pageSheets[i];
+            var dot = sheet.getDotByLabel(this.dot);
             this.DotContinuityWidget.draw(
                 x,
                 y,
@@ -112,7 +112,7 @@ PDFGenerator.prototype.generate = function(options) {
                 QUADRANT_WIDTH / 2,
                 QUADRANT_HEIGHT * 2/5,
                 {
-                    continuities: continuityTexts[pageNum * 4 + i],
+                    dot: dot,
                     duration: sheet.getDuration()
                 }
             );
@@ -121,7 +121,9 @@ PDFGenerator.prototype.generate = function(options) {
                 y + QUADRANT_HEIGHT/5,
                 QUADRANT_WIDTH/2,
                 QUADRANT_HEIGHT * 2/5,
-                { movements: movements[pageNum * 4 + i] }
+                {
+                    movements: movements[pageNum * 4 + i]
+                }
             );
             this.BirdsEyeWidget.draw(
                 x,
@@ -130,7 +132,7 @@ PDFGenerator.prototype.generate = function(options) {
                 QUADRANT_HEIGHT * 2/5,
                 {
                     sheet: sheet,
-                    dot: sheet.getDotByLabel(this.dot)
+                    dot: dot
                 }
             );
             this.SurroundingDotsWidget.draw(
@@ -140,36 +142,16 @@ PDFGenerator.prototype.generate = function(options) {
                 QUADRANT_HEIGHT * 2/5,
                 {
                     sheet: sheet,
-                    dot: sheet.getDotByLabel(this.dot)
+                    dot: dot
                 }
             );
         }
     }
-    this._addEndSheet(continuityTexts, movements);
+    this._addEndSheet(movements);
 
     var pdfData = this.pdf.output("datauristring");
     $(".js-pdf-preview").removeAttr("srcdoc");
     $(".js-pdf-preview").attr("src", pdfData);
-};
-
-/*
- * Returns all of the selected dot's individual continuity texts
- * @return {Array<Array<String>>} an Array of continuity texts for each sheet
- */
-PDFGenerator.prototype._getContinuityTexts = function() {
-    var showContinuities = [];
-    var dotLabel = this.dot;
-    this.sheets.forEach(function(sheet) {
-        var continuities = [];
-        sheet.getDotByLabel(dotLabel).getMovementCommands().forEach(function(movement) {
-            var text = movement.getContinuityText();
-            if (text !== "") {
-                continuities.push(text);
-            }
-        });
-        showContinuities.push(continuities);
-    });
-    return showContinuities;
 };
 
 /**
@@ -344,10 +326,10 @@ PDFGenerator.prototype._addHeaders = function(pageNum, isLeftToRight) {
 
 /**
  * Draws the end sheet containing a compilation of all the continuities and movements diagrams
- * @param {Array<Array<String>>} continuityTexts a list of continuities grouped by stuntsheet
+ * 
  * @param {Array<Array<Object>>} movements a list of movement objects grouped by stuntsheet
  */
-PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
+PDFGenerator.prototype._addEndSheet = function(movements) {
     this.pdf.addPage();
     this.pdf.line(
         WIDTH/2, 10,
@@ -369,10 +351,6 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
     var y = 10;
     for (var i = 0; i < this.sheets.length; i++) {
         var height = diagramSize - 9;
-        var continuityHeight = (continuityTexts[i].length + 1) * (textHeight + 1) + 2*paddingY;
-        if (continuityHeight > height) {
-            height = continuityHeight;
-        }
         if (y + height > HEIGHT - 5) {
             if (x == 0) {
                 x = WIDTH/2 + paddingX;
@@ -400,7 +378,7 @@ PDFGenerator.prototype._addEndSheet = function(continuityTexts, movements) {
             continuitySize,
             height,
             {
-                continuities: continuityTexts[i],
+                dot: this.sheets[i].getDotByLabel(this.dot),
                 duration: this.sheets[i].getDuration()
             }
         );

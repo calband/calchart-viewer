@@ -15,10 +15,18 @@ $(document).ready(function() {
         return;
     }
 
+    /**
+     * Returns the HTML code for the loading/error screens
+     */
+    function getHTML(message, isError) {
+        var color = isError ? "#ff0000" : "#fdb515";
+        return "<center><img src='img/calchart-viewer-highstepper.png'><h1 style= \
+            'color:" + color + ";font-family:\"Open Sans\";font-weight:normal;'>" +
+            message + "</h1></center>";
+    };
+
     // Loading screen
-    $(".js-pdf-preview").attr("srcdoc",
-        "<center><img src='img/calchart-viewer-highstepper.png'><h1 style= \
-        'color:#fdb515;font-family:\"Open Sans\";font-weight:normal;'>Loading...</h1></center>");
+    $(".js-pdf-preview").attr("srcdoc", getHTML("Loading..."));
 
     var url = "https://calchart-server.herokuapp.com/chart/" + options["show"];
     $.getJSON(url, function(data) {
@@ -26,10 +34,11 @@ $(document).ready(function() {
         try {
             new PDFGenerator(show, options["dot"]).generate(options);
         } catch(err) {
-            $(".js-pdf-preview").attr("srcdoc", "An error occurred.");
+            $(".js-pdf-preview").attr("srcdoc", getHTML("An error occurred.", true));
+            throw err;
         }
     }).fail(function() {
-        $(".js-pdf-preview").attr("srcdoc", "An error occurred.");
+        $(".js-pdf-preview").attr("srcdoc", getHTML("An error occurred.", true));
     });
 
     var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];
