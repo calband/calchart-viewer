@@ -1,11 +1,3 @@
-var MovementCommandEven = require("../viewer/MovementCommandEven");
-var MovementCommandMove = require("../viewer/MovementCommandMove");
-var MovementCommandStand = require("../viewer/MovementCommandStand");
-var MovementCommandGoto = require("../viewer/MovementCommandGoto");
-var MovementCommandMarkTime = require("../viewer/MovementCommandMarkTime");
-var MovementCommandArc = require("../viewer/MovementCommandArc");
-var MathUtils = require("../viewer/utils/MathUtils");
-var ShowUtils = require("../viewer/utils/ShowUtils");
 var PDFUtils = require("./PDFUtils");
 var DotContinuityWidget = require("./DotContinuityWidget");
 var IndividualContinuityWidget = require("./IndividualContinuityWidget");
@@ -198,7 +190,13 @@ PDFGenerator.prototype._getMovements = function() {
         var startPosition = movements[0].getStartPosition();
         movements.forEach(function(movement) {
             var endPosition = movement.getEndPosition();
-            if (movement instanceof MovementCommandArc) {
+            if (movement.getMiddlePoints === undefined) {
+                lines.push({
+                    startPosition: startPosition,
+                    deltaX: endPosition.x - startPosition.x,
+                    deltaY: endPosition.y - startPosition.y
+                });
+            } else { // movement is a MovementCommandArc
                 // each item is an Array of (deltaX, deltaY) pairs
                 movement.getMiddlePoints().forEach(function(move) {
                     lines.push({
@@ -206,12 +204,6 @@ PDFGenerator.prototype._getMovements = function() {
                         deltaX: move[0],
                         deltaY: move[1]
                     });
-                });
-            } else {
-                lines.push({
-                    startPosition: startPosition,
-                    deltaX: endPosition.x - startPosition.x,
-                    deltaY: endPosition.y - startPosition.y
                 });
             }
             startPosition = endPosition;

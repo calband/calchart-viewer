@@ -23,9 +23,13 @@ $(document).ready(function() {
     var url = "https://calchart-server.herokuapp.com/chart/" + options["show"];
     $.getJSON(url, function(data) {
         var show = ShowUtils.fromJSON(JSON.stringify(data));
-        new PDFGenerator(show, options["dot"]).generate(options);
+        try {
+            new PDFGenerator(show, options["dot"]).generate(options);
+        } catch(err) {
+            $(".js-pdf-preview").attr("srcdoc", "An error occurred.");
+        }
     }).fail(function() {
-        $(".js-pdf-preview").attr("srcdoc", "An error occurred. Please return to the viewer.");
+        $(".js-pdf-preview").attr("srcdoc", "An error occurred.");
     });
 
     var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];

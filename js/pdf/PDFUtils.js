@@ -118,6 +118,9 @@ PDFUtils.getYCoordinateText = function(y) {
     return "ES";
 };
 
+/**
+ * Various jsPDF plugins that can be called by the jsPDF object itself
+ */
 (function (jsPDFAPI) {
     "use strict";
 
@@ -148,8 +151,8 @@ PDFUtils.getYCoordinateText = function(y) {
 
         if (dotType.indexOf("forwardslash") != -1 || dotType.indexOf("x") != -1) {
             this.line(
-                x + radius, y - radius,
-                x - radius, y + radius
+                x - radius, y + radius,
+                x + radius, y - radius
             );
         }
         this.setLineWidth(.3);
