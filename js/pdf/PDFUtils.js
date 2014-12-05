@@ -12,6 +12,8 @@ PDFUtils.DUMMY_PDF = jsPDF("portrait", "mm", "letter");
 
 PDFUtils.SCALE_FACTOR = PDFUtils.DUMMY_PDF.internal.scaleFactor;
 
+PDFUtils.DEFAULT_FONT_SIZE = 12;
+
 /**
  * Returns the width of a String in millimeters
  * @param {String} text

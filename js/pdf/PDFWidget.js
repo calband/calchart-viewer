@@ -2,6 +2,8 @@
  * @fileOverview Defines a base class for the PDFGenerator Widget classes
  */
 
+ var PDFUtils = require("./PDFUtils");
+
 /**
  * PDFWidget class
  *
@@ -48,9 +50,8 @@ PDFWidget.prototype.draw = function(x, y, width, height, options) {
  * @param {boolean} minimal, true to draw as little of the box as possible, false otherwise
  */
 PDFWidget.prototype._drawBox = function(x, y, width, height, westUp, minimal) {
-    var textSize = 12;
-    var textHeight = PDFUtils.getTextHeight(textSize);
-    var textWidth = PDFUtils.getTextWidth("S", textSize);
+    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
+    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
 
     // labels for sides of box
     var top, bottom, left, right;
@@ -66,7 +67,7 @@ PDFWidget.prototype._drawBox = function(x, y, width, height, westUp, minimal) {
         right = "S";
     }
 
-    this.pdf.setFontSize(textSize);
+    this.pdf.setFontSize(PDFUtils.DEFAULT_FONT_SIZE);
     if (!minimal) {
         this.pdf.text(
             top,
@@ -90,6 +91,7 @@ PDFWidget.prototype._drawBox = function(x, y, width, height, westUp, minimal) {
         y + height/2 + textHeight/2
     );
     this.pdf.rect(x, y, width, height);
+    this._resetFormat();
 };
 
 /**
@@ -97,7 +99,7 @@ PDFWidget.prototype._drawBox = function(x, y, width, height, westUp, minimal) {
  * change the default values.
  */
 PDFWidget.prototype._resetFormat = function() {
-    this.pdf.setFontSize(12);
+    this.pdf.setFontSize(PDFUtils.DEFAULT_FONT_SIZE);
     this.pdf.setTextColor(0);
     this.pdf.setDrawColor(0);
     this.pdf.setFillColor(0);

@@ -11,6 +11,7 @@ var DotContinuityWidget = require("./DotContinuityWidget");
 var IndividualContinuityWidget = require("./IndividualContinuityWidget");
 var MovementDiagramWidget = require("./MovementDiagramWidget");
 var BirdsEyeWidget = require("./BirdsEyeWidget");
+var SurroundingDotsWidget = require("./SurroundingDotsWidget");
 
 /**
  * @constant WIDTH is the width of the PDF document, in millimeters
@@ -63,6 +64,7 @@ PDFGenerator.prototype.generate = function(options) {
     this.IndividualContinuityWidget = new IndividualContinuityWidget(this.pdf);
     this.MovementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
     this.BirdsEyeWidget = new BirdsEyeWidget(this.pdf, options["bev-orientation"]);
+    this.SurroundingDotsWidget = new SurroundingDotsWidget(this.pdf, options["sd-orientation"]);
 
     var continuityTexts = this._getContinuityTexts();
     var movements = this._getMovements();
@@ -139,12 +141,16 @@ PDFGenerator.prototype.generate = function(options) {
                     dot: sheet.getDotByLabel(this.dot)
                 }
             );
-            this._addSurroundingDots(
-                x + QUADRANT_WIDTH / 2 + 1,
+            this.SurroundingDotsWidget.draw(
+                x + QUADRANT_WIDTH/2 + 1,
                 y + QUADRANT_HEIGHT * 3/5,
-                QUADRANT_WIDTH / 2,
+                QUADRANT_WIDTH/2,
                 QUADRANT_HEIGHT * 2/5,
-                sheet);
+                {
+                    sheet: sheet,
+                    dot: sheet.getDotByLabel(this.dot)
+                }
+            );
         }
     }
     this._addEndSheet(continuityTexts, movements);
@@ -341,114 +347,6 @@ PDFGenerator.prototype._addHeaders = function(pageNum, isLeftToRight) {
 
     if (sheetInfo.hasNext()) {
         sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getBottom());
-    }
-};
-
-/**
- * Draws the dots surrounding the selected dot. Includes:
- *      - Orientation always E up (for now)
- *      - 4 step radius
- *      - Solid line cross hairs; selected dot in middle
- *      - Dot labels
- *      - Dot types
- *
- * @param {int} x  The x-coordinate of the top left corner of the box
- * @param {int} y  The y-coordinate of the top left corner of the box
- * @param {double} width  The width of the box
- * @param {double} height The height of the box
- * @param {Sheet} sheet
- */
-PDFGenerator.prototype._addSurroundingDots = function(x, y, width, height, sheet) {
-    var _this = this;
-    var box = {
-        height: height - 2 * (PDFUtils.getTextHeight(12) + 2),
-        x: x,
-        y: y,
-        textSize: 12,
-        labelSize: 7,
-
-        draw: function() {
-            var textHeight = PDFUtils.getTextHeight(this.textSize);
-            var textWidth = PDFUtils.getTextWidth("S", this.textSize);
-            this.width = this.height; // make square
-            _this.pdf.setFontSize(this.textSize);
-            _this.pdf.text(
-                "E",
-                this.x + width/2 - textWidth/2,
-                this.y + textHeight
-            );
-            _this.pdf.text(
-                "S",
-                this.x + width - textWidth - 4.5,
-                this.y + height/2 + textHeight/2
-            );
-            _this.pdf.text(
-                "W",
-                this.x + width/2 - textWidth/2,
-                this.y + height - 1
-            );
-            _this.pdf.text(
-                "N",
-                this.x + 4.5,
-                this.y + height/2 + textHeight/2
-            );
-            this.x += width/2 - this.width/2;
-            this.y += textHeight + 2;
-            _this.pdf.rect(
-                this.x,
-                this.y,
-                this.width,
-                this.height
-            );
-            _this.pdf.setDrawColor(150);
-            _this.pdf.setLineWidth(.1);
-            // cross hairs for selected dot
-            _this.pdf.line(
-                this.x + this.width/2, this.y,
-                this.x + this.width/2, this.y + this.height
-            );
-            _this.pdf.line(
-                this.x, this.y + this.height/2,
-                this.x + this.width, this.y + this.height/2
-            );
-            _this.pdf.setDrawColor(0);
-            _this.pdf.setLineWidth(.3);
-        }
-    };
-
-    var start = sheet.getDotByLabel(this.dot).getAnimationState(0);
-    var allDots = sheet.getDots();
-    var surroundingDots = [];
-    for (var i = 0; i < allDots.length; i++) {
-        var position = allDots[i].getAnimationState(0);
-        var x = start.x - position.x;
-        var y = start.y - position.y;
-        // keep dots within 4 steps
-        if (Math.abs(x) <= 4 && Math.abs(y) <= 4) {
-            var label = allDots[i].getLabel();
-            surroundingDots.push({
-                deltaX: x,
-                deltaY: y,
-                label: label,
-                type: sheet.getDotType(label)
-            });
-        }
-    }
-
-    box.draw();
-
-    var origin = {
-        x: box.x + box.width/2,
-        y: box.y + box.height/2
-    };
-    var scale = box.height / 11; // radius of 4 steps + 1.5 steps of padding
-    for (var i = 0; i < surroundingDots.length; i++) {
-        var dot = surroundingDots[i];
-        var x = dot.deltaX * scale + origin.x;
-        var y = dot.deltaY * scale + origin.y;
-        this.pdf.setFontSize(box.labelSize);
-        this.pdf.drawDot(dot.type, x, y);
-        this.pdf.text(dot.label, x - 3, y - 2);
     }
 };
 

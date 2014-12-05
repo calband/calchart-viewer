@@ -34,8 +34,8 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
     var _this = this;
     var movements = options["movements"];
 
-    var textWidth = PDFUtils.getTextWidth("S", 12);
-    var textHeight = PDFUtils.getTextHeight(12);
+    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
+    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
 
     var box = {
         x: x + textWidth + 3,

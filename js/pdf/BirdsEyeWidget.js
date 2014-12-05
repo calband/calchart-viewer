@@ -31,9 +31,9 @@ JSUtils.extends(BirdsEyeWidget, PDFWidget);
 BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
     var _this = this;
 
-    var boxWidth = width - 2 * (PDFUtils.getTextWidth("S", 12) + 1.5)
-    var textWidth = PDFUtils.getTextWidth("S", 12);
-    var textHeight = PDFUtils.getTextHeight(12);
+    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
+    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
+    var boxWidth = width - 2 * (textWidth + 1.5);
 
     var box = {
         x: x,
