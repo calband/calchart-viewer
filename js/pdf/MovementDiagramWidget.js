@@ -178,7 +178,7 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
             Math.abs(left - viewport.startX - viewport.deltaX) < Math.abs(left - right) / 2
         );
     }
-    this._resetFormat();
+    this.pdf.resetFormat();
 };
 
 /**
@@ -291,7 +291,7 @@ MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, botto
             break;
         }
     }
-    this._resetFormat();
+    this.pdf.resetFormat();
 };
 
 /**
@@ -323,7 +323,7 @@ MovementDiagramWidget.prototype._drawPosition = function(box, y, offset, closeTo
             lineY - .5
         );
     }
-    this._resetFormat();
+    this.pdf.resetFormat();
 };
 
 module.exports = MovementDiagramWidget;

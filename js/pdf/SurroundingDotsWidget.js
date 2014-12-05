@@ -95,7 +95,7 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
         this.pdf.drawDot(dot.type, x, y);
         this.pdf.text(dot.label, x - 3, y - 2);
     }
-    this._resetFormat();
+    this.pdf.resetFormat();
 };
 
 module.exports = SurroundingDotsWidget;

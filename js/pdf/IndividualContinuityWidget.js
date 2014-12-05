@@ -71,7 +71,7 @@ IndividualContinuityWidget.prototype.draw = function(x, y, width, height, option
         x + width/2 - PDFUtils.getTextWidth(totalLabel, box.size)/2 - 3,
         y + height - box.paddingY
     );
-    this._resetFormat();
+    this.pdf.resetFormat();
 };
 
 module.exports = IndividualContinuityWidget;

@@ -118,15 +118,15 @@ PDFUtils.getYCoordinateText = function(y) {
     return "ES";
 };
 
-/**
- * This jsPDF plugin draws a dot for the given dot type at the given coordinates
- * @param {String} dotType
- * @param {int} x
- * @param {int} y
- */
 (function (jsPDFAPI) {
     "use strict";
 
+    /**
+     * This jsPDF plugin draws a dot for the given dot type at the given coordinates
+     * @param {String} dotType
+     * @param {int} x
+     * @param {int} y
+     */
     jsPDFAPI.drawDot = function(dotType, x, y) {
         var radius = 1.5;
         this.setLineWidth(.1);
@@ -154,6 +154,19 @@ PDFUtils.getYCoordinateText = function(y) {
         }
         this.setLineWidth(.3);
         this.setFillColor(0);
+        return this;
+    };
+
+    /**
+     * This jsPDF plugin resets PDF drawing options to default values, such as black
+     * stroke, white fill, black text, etc.
+     */
+    jsPDFAPI.resetFormat = function() {
+        this.setFontSize(PDFUtils.DEFAULT_FONT_SIZE);
+        this.setTextColor(0);
+        this.setDrawColor(0);
+        this.setFillColor(255);
+        this.setLineWidth(.3);
         return this;
     };
 })(jsPDF.API);

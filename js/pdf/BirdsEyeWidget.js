@@ -151,7 +151,7 @@ BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
         );
     }
     this.pdf.circle(box.x + x, box.y + y, .5, "F");
-    this._resetFormat();
+    this.pdf.resetFormat();
 };
 
 module.exports = BirdsEyeWidget;
