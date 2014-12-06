@@ -47,13 +47,13 @@ IndividualContinuityWidget.prototype.draw = function(x, y, width, height, option
         if (length > maxWidth) {
             maxWidth = length;
         }
-        deltaY += PDFUtils.getTextHeight(box.size) + .7;
+        deltaY += textHeight + .7;
         if (deltaY > height - textHeight - box.paddingY) {
-            if (maxWidth < width/2) {
+            if (maxWidth < width/2 && textX < width/2) {
                 textX += width/2;
-                deltaY = PDFUtils.getTextHeight(box.size) + .7;
+                deltaY = textHeight + .7;
             } else {
-                this.pdf.text("...", textX, textY);
+                this.pdf.text("...", textX, textY + deltaY - textHeight/2);
                 break;
             }
         }

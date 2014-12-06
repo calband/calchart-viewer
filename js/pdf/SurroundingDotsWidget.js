@@ -27,6 +27,7 @@ JSUtils.extends(SurroundingDotsWidget, PDFWidget);
  * Draws the Surrounding Dots Widget with the given options:
  *      - {Sheet} sheet, the current sheet
  *      - {Dot} dot, the selected dot
+ *      - {boolean} minimal, true if drawing as little of the widget as possible, false otherwise
  */
 SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     var _this = this;
@@ -46,7 +47,7 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     box.x += width/2 - box.width/2;
     box.y += height/2 - box.height/2;
 
-    this._drawBox(box.x, box.y, box.width, box.height, this.westUp);
+    this._drawBox(box.x, box.y, box.width, box.height, this.westUp, options["minimal"]);
 
     var origin = {
         x: box.x + box.width/2,

@@ -147,7 +147,25 @@ PDFGenerator.prototype.generate = function(options) {
             );
         }
     }
-    this._addEndSheet(movements);
+    var endsheetWidget;
+    switch(options["endsheet-widget"]) {
+        case "md":
+            endsheetWidget = this.MovementDiagramWidget;
+            break;
+        case "bev":
+            endsheetWidget = this.BirdsEyeWidget;
+            break;
+        case "sd":
+            endsheetWidget = this.SurroundingDotsWidget;
+            break;
+        default:
+            throw new Error(options["endsheet-widget"] + " is not a valid option for endsheet widget");
+    }
+    if (endsheetWidget instanceof MovementDiagramWidget) {
+        this._addEndSheet(endsheetWidget, {movements: movements});
+    } else {
+        this._addEndSheet(endsheetWidget);
+    }
 
     var pdfData = this.pdf.output("datauristring");
     $(".js-pdf-preview").removeAttr("srcdoc");
@@ -327,9 +345,10 @@ PDFGenerator.prototype._addHeaders = function(pageNum, isLeftToRight) {
 /**
  * Draws the end sheet containing a compilation of all the continuities and movements diagrams
  * 
- * @param {Array<Array<Object>>} movements a list of movement objects grouped by stuntsheet
+ * @param {PDFWidget} the widget to place next to the individual continuity
+ * @param {object} options, contains options for the widgets, if necessary.
  */
-PDFGenerator.prototype._addEndSheet = function(movements) {
+PDFGenerator.prototype._addEndSheet = function(widget, options) {
     this.pdf.addPage();
     this.pdf.line(
         WIDTH/2, 10,
@@ -345,12 +364,20 @@ PDFGenerator.prototype._addEndSheet = function(movements) {
     var labelSize = 20;
     var labelWidth = PDFUtils.getTextWidth("00", labelSize) + paddingX * 2;
     var labelHeight = PDFUtils.getTextHeight(labelSize);
-    var diagramSize = 30;
-    var continuitySize = WIDTH/2 - diagramSize - labelWidth - paddingX * 4;
+    var widgetSize = 30;
+    var continuitySize = WIDTH/2 - widgetSize - labelWidth - paddingX * 4;
     var x = 0;
     var y = 10;
     for (var i = 0; i < this.sheets.length; i++) {
-        var height = diagramSize - 9;
+        var sheet = this.sheets[i];
+        var dot = sheet.getDotByLabel(this.dot);
+
+        var height = widgetSize - 8;
+        var continuityHeight = (dot.getMovementCommands().length + 1) * (textHeight + 1) + 2*paddingY;
+        if (continuityHeight > height) {
+            height = continuityHeight;
+        }
+
         if (y + height > HEIGHT - 5) {
             if (x == 0) {
                 x = WIDTH/2 + paddingX;
@@ -378,19 +405,24 @@ PDFGenerator.prototype._addEndSheet = function(movements) {
             continuitySize,
             height,
             {
-                dot: this.sheets[i].getDotByLabel(this.dot),
+                dot: dot,
                 duration: this.sheets[i].getDuration()
             }
         );
-        this.MovementDiagramWidget.draw(
+        var widgetOptions = {
+            sheet: sheet,
+            dot: dot,
+            minimal: true
+        };
+        if (widget instanceof MovementDiagramWidget) {
+            widgetOptions["movements"] = options["movements"][i];
+        }
+        widget.draw(
             x + labelWidth + continuitySize + paddingX * 2,
             y + paddingY,
-            diagramSize,
-            diagramSize,
-            {
-                movements: movements[i],
-                minimal: true
-            }
+            widgetSize,
+            widgetSize,
+            widgetOptions
         );
         y += height + 2 * paddingY;
     }
