@@ -62,7 +62,8 @@ DotContinuityWidget.prototype.draw = function(x, y, width, height, options) {
     this.pdf.drawDot(
         dotType,
         text.x + 1.5,
-        text.y + 2
+        text.y + 2,
+        1.5
     );
     text.x += 4;
     this.pdf.setFontSize(10);

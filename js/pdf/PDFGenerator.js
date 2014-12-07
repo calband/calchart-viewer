@@ -372,7 +372,7 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
         var sheet = this.sheets[i];
         var dot = sheet.getDotByLabel(this.dot);
 
-        var height = widgetSize - 8;
+        var height = widgetSize - 5;
         var continuityHeight = (dot.getMovementCommands().length + 1) * (textHeight + 1) + 2*paddingY;
         if (continuityHeight > height) {
             height = continuityHeight;
@@ -421,7 +421,7 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
             x + labelWidth + continuitySize + paddingX * 2,
             y + paddingY,
             widgetSize,
-            widgetSize,
+            height,
             widgetOptions
         );
         y += height + 2 * paddingY;

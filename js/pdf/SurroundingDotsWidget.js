@@ -47,6 +47,10 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     box.x += width/2 - box.width/2;
     box.y += height/2 - box.height/2;
 
+    if (options["minimal"]) {
+        box.y -= textHeight;
+    }
+
     this._drawBox(box.x, box.y, box.width, box.height, this.westUp, options["minimal"]);
 
     var origin = {
@@ -88,13 +92,15 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     });
 
     var scale = box.height / 11.5; // radius of 4 steps + 1.75 steps of padding
-    this.pdf.setFontSize(7);
+    var labelSize = box.height * 7/29;
+    var dotRadius = box.height * .04;
+    this.pdf.setFontSize(labelSize);
     for (var i = 0; i < surroundingDots.length; i++) {
         var dot = surroundingDots[i];
         var x = dot.deltaX * scale + origin.x;
         var y = dot.deltaY * scale + origin.y;
-        this.pdf.drawDot(dot.type, x, y);
-        this.pdf.text(dot.label, x - 3, y - 2);
+        this.pdf.drawDot(dot.type, x, y, dotRadius);
+        this.pdf.text(dot.label, x - dotRadius * 2, y - dotRadius * 1.5);
     }
     this.pdf.resetFormat();
 };

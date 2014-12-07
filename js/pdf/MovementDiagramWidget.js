@@ -38,11 +38,14 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
     var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
 
     var box = {
-        x: x + textWidth + 3,
-        y: y + textHeight,
+        x: x,
+        y: y,
         width: width - 2 * (textWidth + 2),
         height: height - 2 * textHeight
     };
+
+    box.x += width/2 - box.width/2;
+    box.y += height/2 - box.height/2;
 
     if (options["minimal"]) {
         box.y -= textHeight;

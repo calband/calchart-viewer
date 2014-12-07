@@ -127,11 +127,11 @@ PDFUtils.getYCoordinateText = function(y) {
     /**
      * This jsPDF plugin draws a dot for the given dot type at the given coordinates
      * @param {String} dotType
-     * @param {int} x
-     * @param {int} y
+     * @param {float} x
+     * @param {float} y
+     * @param {float} radius
      */
-    jsPDFAPI.drawDot = function(dotType, x, y) {
-        var radius = 1.5;
+    jsPDFAPI.drawDot = function(dotType, x, y, radius) {
         this.setLineWidth(.1);
         if (dotType.indexOf("open") != -1) {
             this.setFillColor(255);
