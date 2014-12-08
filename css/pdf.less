@@ -1,5 +1,5 @@
-@options-height: 200px;
-@pdf-height: 550px;
+@options-height: 220px;
+@pdf-height: 500px;
 @sans: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
 
 * {
@@ -9,11 +9,13 @@
 }
 
 .header {
-    padding: 5px;
+    margin-top: 20px;
+    padding-left: 15px;
     h1 {
         border-bottom: 1px solid #fdb515;
         font-size: 30px;
         font-weight: normal;
+        margin-bottom: 10px;
     }
     h2 {
         font-weight: normal;
@@ -21,8 +23,10 @@
 }
 
 .options {
-    padding: 5px;
-    width: 100%;
+    padding-left: 15px;
+    margin-bottom: 20px;
+    overflow-x: scroll;
+    white-space: nowrap;
     div {
         display: inline-block;
         vertical-align: top;
@@ -33,6 +37,7 @@
         margin: 0 5px;
     }
     .widget-orientation {
+        margin-left: 0;
         .orientation-labels {
             padding-right: 15px;
             p {
@@ -56,6 +61,6 @@
 }
 
 iframe {
-    height: @pdf-height;
     width: 100%;
+    height: @pdf-height;
 }
