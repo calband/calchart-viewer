@@ -10,20 +10,21 @@ var JSUtils = require("./viewer/utils/JSUtils");
 $(document).ready(function() {
     var options = JSUtils.getAllURLParams();
 
-    if (options["show"] === undefined || options["dot"] === undefined) {
-        $(".js-pdf-preview").attr("srcdoc", "No show or dot selected.");
-        return;
-    }
-
     /**
      * Returns the HTML code for the loading/error screens
      */
     function getHTML(message, isError) {
-        var color = isError ? "#ff0000" : "#fdb515";
-        return "<center><img src='img/calchart-viewer-highstepper.png'><h1 style= \
-            'color:" + color + ";font-family:\"Open Sans\";font-weight:normal;'>" +
-            message + "</h1></center>";
+        var htmlClass = isError ? "error" : "";
+        return "<link rel='stylesheet' type='text/css' href='build/css/js-pdf-preview.css'>\
+            <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>\
+            <img class='highstepper-icon' src='img/calchart-viewer-highstepper.png'>\
+            <h1 class='" + htmlClass + "'>" + message + "</h1>";
     };
+
+    if (!options.show || !options.dot) {
+        $(".js-pdf-preview").attr("srcdoc", getHTML("No show or dot selected.", true));
+        return;
+    }
 
     // Loading screen
     $(".js-pdf-preview").attr("srcdoc", getHTML("Loading..."));
@@ -38,7 +39,7 @@ $(document).ready(function() {
             throw err;
         }
     }).fail(function() {
-        $(".js-pdf-preview").attr("srcdoc", getHTML("An error occurred.", true));
+        $(".js-pdf-preview").attr("srcdoc", getHTML("Could not reach server.", true));
     });
 
     var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];
@@ -61,6 +62,7 @@ $(document).ready(function() {
         for (var key in options) {
             url += "&" + key + "=" + options[key];
         }
+        // removing first '&'
         window.location.search = url.substr(1);
     });
 });

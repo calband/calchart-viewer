@@ -1,4 +1,5 @@
 var PDFUtils = require("./PDFUtils");
+var HeaderWidget = require("./HeaderWidget");
 var DotContinuityWidget = require("./DotContinuityWidget");
 var IndividualContinuityWidget = require("./IndividualContinuityWidget");
 var MovementDiagramWidget = require("./MovementDiagramWidget");
@@ -38,8 +39,8 @@ var PDFGenerator = function(show, dot) {
 };
 
 /**
- * generate will generate a PDF for a specific dot, containing its movements,
- * positions, and continuities relevant to it.
+ * generate a PDF for a specific dot, containing its movements, positions, and continuities
+ * relevant to it.
  *
  * The function will display the pdf in the webpage's preview pane
  *
@@ -52,11 +53,16 @@ var PDFGenerator = function(show, dot) {
  */
 PDFGenerator.prototype.generate = function(options) {
     // Widgets
-    this.DotContinuityWidget = new DotContinuityWidget(this.pdf);
-    this.IndividualContinuityWidget = new IndividualContinuityWidget(this.pdf);
-    this.MovementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
-    this.BirdsEyeWidget = new BirdsEyeWidget(this.pdf, options["bev-orientation"]);
-    this.SurroundingDotsWidget = new SurroundingDotsWidget(this.pdf, options["sd-orientation"]);
+    this.headerWidget = new HeaderWidget(this.pdf, {
+        dotLabel: this.dot,
+        title: this.show.getTitle(),
+        totalSheets: this.sheets.length
+    });
+    this.dotContinuityWidget = new DotContinuityWidget(this.pdf);
+    this.individualContinuityWidget = new IndividualContinuityWidget(this.pdf);
+    this.movementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
+    this.birdsEyeWidget = new BirdsEyeWidget(this.pdf, options["bev-orientation"]);
+    this.surroundingDotsWidget = new SurroundingDotsWidget(this.pdf, options["sd-orientation"]);
 
     var movements = this._getMovements();
     for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
@@ -73,7 +79,10 @@ PDFGenerator.prototype.generate = function(options) {
             pageSheets.push(this.sheets[sheet]);
         }
 
-        this._addHeaders(pageNum + 1, options["layout-order"] === "ltr");
+        this.headerWidget.draw({
+            pageNum: pageNum + 1,
+            isLeftToRight: options["layout-order"] === "ltr"
+        });
         // drawing lines between quadrants
         this.pdf.setDrawColor(150);
         this.pdf.line(
@@ -96,7 +105,7 @@ PDFGenerator.prototype.generate = function(options) {
             var y = QUADRANT[quadrantOrder[i]].y;
             var sheet = pageSheets[i];
             var dot = sheet.getDotByLabel(this.dot);
-            this.DotContinuityWidget.draw(
+            this.dotContinuityWidget.draw(
                 x,
                 y,
                 QUADRANT_WIDTH,
@@ -106,7 +115,7 @@ PDFGenerator.prototype.generate = function(options) {
                     dotType: sheet.getDotType(this.dot)
                 }
             );
-            this.IndividualContinuityWidget.draw(
+            this.individualContinuityWidget.draw(
                 x,
                 y + QUADRANT_HEIGHT / 5,
                 QUADRANT_WIDTH / 2,
@@ -116,7 +125,7 @@ PDFGenerator.prototype.generate = function(options) {
                     duration: sheet.getDuration()
                 }
             );
-            this.MovementDiagramWidget.draw(
+            this.movementDiagramWidget.draw(
                 x + QUADRANT_WIDTH/2 + 1,
                 y + QUADRANT_HEIGHT/5,
                 QUADRANT_WIDTH/2,
@@ -125,7 +134,7 @@ PDFGenerator.prototype.generate = function(options) {
                     movements: movements[pageNum * 4 + i]
                 }
             );
-            this.BirdsEyeWidget.draw(
+            this.birdsEyeWidget.draw(
                 x,
                 y + QUADRANT_HEIGHT * 3/5,
                 QUADRANT_WIDTH/2,
@@ -135,7 +144,7 @@ PDFGenerator.prototype.generate = function(options) {
                     dot: dot
                 }
             );
-            this.SurroundingDotsWidget.draw(
+            this.surroundingDotsWidget.draw(
                 x + QUADRANT_WIDTH/2 + 1,
                 y + QUADRANT_HEIGHT * 3/5,
                 QUADRANT_WIDTH/2,
@@ -150,13 +159,13 @@ PDFGenerator.prototype.generate = function(options) {
     var endsheetWidget;
     switch(options["endsheet-widget"]) {
         case "md":
-            endsheetWidget = this.MovementDiagramWidget;
+            endsheetWidget = this.movementDiagramWidget;
             break;
         case "bev":
-            endsheetWidget = this.BirdsEyeWidget;
+            endsheetWidget = this.birdsEyeWidget;
             break;
         case "sd":
-            endsheetWidget = this.SurroundingDotsWidget;
+            endsheetWidget = this.surroundingDotsWidget;
             break;
         default:
             throw new Error(options["endsheet-widget"] + " is not a valid option for endsheet widget");
@@ -399,7 +408,7 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
             x + paddingX * 2,
             y + paddingY + labelHeight
         );
-        this.IndividualContinuityWidget.draw(
+        this.individualContinuityWidget.draw(
             x + labelWidth + paddingX,
             y + paddingY,
             continuitySize,

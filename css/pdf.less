@@ -1,23 +1,26 @@
-@options-height: 220px;
-@pdf-height: 500px;
-@sans: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+@header-height: 50px;
+@options-height: 100px;
+@pdf-height-offset: @header-height + @options-height + 40px;
 
-* {
-    margin: 0;
-    font-family: @sans;
-    color: #003262;
+/* Abstract Classes */
+.inline-div {
+    display: inline-block;
+    vertical-align: top;
+}
+.bordered-box {
+    border: 1px solid black;
+    padding: 5px;
+    margin: 0 5px;
 }
 
 .header {
     margin-top: 20px;
     padding: 0 15px;
+    height: @header-height;
+    white-space: nowrap;
     h1 {
         border-bottom: 1px solid #fdb515;
         font-size: 30px;
-        font-weight: normal;
-        margin-bottom: 10px;
-    }
-    h2 {
         font-weight: normal;
     }
 }
@@ -27,40 +30,42 @@
     margin-bottom: 20px;
     overflow-x: scroll;
     white-space: nowrap;
-    div {
-        display: inline-block;
-        vertical-align: top;
+    height: @options-height;
+    h3 {
+        margin-bottom: 5px;
     }
     > div {
-        border: 1px solid black;
-        padding: 5px;
-        margin: 0 5px;
-    }
-    .widget-orientation {
-        margin-left: 0;
-        .orientation-labels {
-            padding-right: 15px;
-            p {
-                margin: 0;
-            }
-        }
-        .orientation-buttons {
-            vertical-align: bottom;
-            input {
-                margin: 0 5px;
+        &:extend(.bordered-box);
+        &:extend(.inline-div);
+        height: 85%;
+
+        &.widget-orientation {
+            margin-left: 0;
+            .orientation-labels {
+                padding-right: 15px;
             }
         }
     }
-    .layout-order {
-        .layout-buttons {
-            input {
-                margin: 0 5px;
-            }
+    div[class$=labels] {
+        &:extend(.inline-div);
+    }
+    div[class$=buttons] {
+        &:extend(.inline-div);
+        input {
+            margin: 0 5px;
         }
+    }
+    p {
+        margin: 0;
+        line-height: 1.3em;
     }
 }
 
-iframe {
+.js-pdf-preview {
     width: 100%;
-    height: @pdf-height;
+    height: 70%;
+    height: calc(~"100% - "@pdf-height-offset);
+    height: -moz-calc(~"100% -"@pdf-height-offset);
+    height: -webkit-calc(~"100% - "@pdf-height-offset);
+    height: -o-calc(~"100% -"@pdf-height-offset);
 }
