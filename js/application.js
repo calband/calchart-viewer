@@ -60,8 +60,11 @@ $(document).ready(function () {
     });
 
     $(".js-generate-continuity").click(function () {
-        if (!$(this).hasClass("disabled")) {
-            applicationController.generatePDF();
+        if (!$(this).hasClass("disabled") && $(".js-dot-labels") !== "") {
+            var show = $(".js-select-show").val();
+            var dot = $(".js-dot-labels").val();
+            var defaults = "&md-orientation=west&bev-orientation=east&sd-orientation=east&layout-order=ltr&endsheet-widget=md";
+            window.location.href = "pdf.html?show=" + show + "&dot=" + dot + defaults;
         }
     });
     

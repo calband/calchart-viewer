@@ -15,10 +15,13 @@ module.exports = function (grunt) {
         },
         webpack: {
             build: {
-                entry: "./js/application.js",
+                entry: {
+                    application: "./js/application.js",
+                    pdf: "./js/pdf.js"
+                },
                 output: {
                     path: "build/js/",
-                    filename: "application.js"
+                    filename: "[name].js"
                 }
             }
         },

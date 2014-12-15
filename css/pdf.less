@@ -1,0 +1,71 @@
+@header-height: 50px;
+@options-height: 100px;
+@pdf-height-offset: @header-height + @options-height + 40px;
+
+/* Abstract Classes */
+.inline-div {
+    display: inline-block;
+    vertical-align: top;
+}
+.bordered-box {
+    border: 1px solid black;
+    padding: 5px;
+    margin: 0 5px;
+}
+
+.header {
+    margin-top: 20px;
+    padding: 0 15px;
+    height: @header-height;
+    white-space: nowrap;
+    h1 {
+        border-bottom: 1px solid #fdb515;
+        font-size: 30px;
+        font-weight: normal;
+    }
+}
+
+.options {
+    padding-left: 15px;
+    margin-bottom: 20px;
+    overflow-x: scroll;
+    white-space: nowrap;
+    height: @options-height;
+    h3 {
+        margin-bottom: 5px;
+    }
+    > div {
+        &:extend(.bordered-box);
+        &:extend(.inline-div);
+        height: 85%;
+
+        &.widget-orientation {
+            margin-left: 0;
+            .orientation-labels {
+                padding-right: 15px;
+            }
+        }
+    }
+    div[class$=labels] {
+        &:extend(.inline-div);
+    }
+    div[class$=buttons] {
+        &:extend(.inline-div);
+        input {
+            margin: 0 5px;
+        }
+    }
+    p {
+        margin: 0;
+        line-height: 1.3em;
+    }
+}
+
+.js-pdf-preview {
+    width: 100%;
+    height: 70%;
+    height: calc(~"100% - "@pdf-height-offset);
+    height: -moz-calc(~"100% -"@pdf-height-offset);
+    height: -webkit-calc(~"100% - "@pdf-height-offset);
+    height: -o-calc(~"100% -"@pdf-height-offset);
+}

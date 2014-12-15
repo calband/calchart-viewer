@@ -9,7 +9,6 @@ var JSUtils = require("./utils/JSUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
-var PDFGenerator = require("./PDFGenerator");
 
 /**
  * The ApplicationController is the backbone of how functional components
@@ -465,16 +464,6 @@ ApplicationController.prototype._updateAnimationControl = function() {
         } else {
             $(".js-animate").addClass("disabled");
         }
-    }
-};
-
-/**
- * Passes relevant information to the PDFGenerator module which will open a PDF
- * document that contains the selected dot's continuity for the entire show.
- */
-ApplicationController.prototype.generatePDF = function() {
-    if (this._animationStateDelegate.getSelectedDot() !== undefined) {
-        new PDFGenerator(this._show, this._animationStateDelegate.getSelectedDot()).generate();
     }
 };
 
