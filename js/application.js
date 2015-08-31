@@ -79,7 +79,7 @@ $(document).ready(function () {
         }
     });
 
-    applicationController.getShows(2014);
+    applicationController.getShows(2015);
 
     $(".js-select-show")
         .chosen({
