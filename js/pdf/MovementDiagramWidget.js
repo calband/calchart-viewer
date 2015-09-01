@@ -16,7 +16,7 @@ var PDFWidget = require("./PDFWidget");
  * @param {String} orientation, the direction on the top of the box
  */
 var MovementDiagramWidget = function(pdf, orientation) {
-    this.westUp = (orientation === "west") ? true : false;
+    this.westUp = orientation == "west";
     PDFWidget.apply(this, [pdf]);
 };
 
