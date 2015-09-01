@@ -211,10 +211,10 @@ MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, botto
         westHashY = y + (32 - top) * scale;
         eastHashY = y + (52 - top) * scale;
     } else {
-        westHash = bottom < 32 && top > 32;
-        eastHash = bottom < 52 && top > 52;
-        westHashY = y + (32 - bottom) * scale;
-        eastHashY = y + (52 - bottom) * scale;
+        eastHash = top > 52 && bottom < 52;
+        westHash = top > 32 && bottom < 32;
+        eastHashY = y + (top - 52) * scale;
+        westHashY = y + (top - 32) * scale;
     }
 
     // position of first yardline from edge of viewport
