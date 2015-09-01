@@ -5,7 +5,6 @@
 var Grapher = require("./Grapher");
 var ShowUtils = require("./utils/ShowUtils");
 var TimedBeatsUtils = require("./utils/TimedBeatsUtils");
-var JSUtils = require("./utils/JSUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
@@ -72,11 +71,10 @@ ApplicationController.prototype.getShows = function(year) {
 };
 
 /**
- * Autoloads show from the Calchart server from the URL parameters
+ * Autoloads given show and dot from the Calchart server from the URL parameters
  */
-ApplicationController.prototype.autoloadShow = function() {
-    var indexName = JSUtils.getURLValue("show");
-    var optionElem = $(".js-select-show option[value=" + indexName + "]");
+ApplicationController.prototype.autoloadShow = function(show, dot) {
+    var optionElem = $(".js-select-show option[value=" + show + "]");
     if (optionElem.length === 0) {
         return;
     }
@@ -85,18 +83,23 @@ ApplicationController.prototype.autoloadShow = function() {
 
     var url = "https://calchart-server.herokuapp.com/";
     var _this = this;
-    $.getJSON(url + "chart/" + indexName, function(data) {
+    $.getJSON(url + "chart/" + show, function(data) {
         var response = JSON.stringify(data);
         var viewer = ShowUtils.fromJSON(response);
         _this.setShow(viewer);
-        _this._setFileInputText(".js-viewer-file-btn", indexName);
+        _this._setFileInputText(".js-viewer-file-btn", show);
+        if (dot !== undefined) {
+            _this.applyAnimationAction("selectDot", dot);
+            $("option[value=" + dot + "]").prop("selected", true);
+            $(".js-dot-labels").trigger("chosen:updated");
+        }
     });
 
-    $.getJSON(url + "beats/" + indexName, function(data) {
+    $.getJSON(url + "beats/" + show, function(data) {
         var response = JSON.stringify(data);
         var beats = TimedBeatsUtils.fromJSON(response);
         _this._animator.setBeats(beats);
-        _this._setFileInputText(".js-beats-file-btn", indexName);
+        _this._setFileInputText(".js-beats-file-btn", show);
     });
 };
 
