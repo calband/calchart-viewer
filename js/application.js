@@ -1,4 +1,5 @@
 var ApplicationController = require("./viewer/ApplicationController");
+var JSUtils = require("./viewer/utils/JSUtils");
 
 /**
  * This function will be executed by jQuery when the HTML DOM is loaded. Here,
@@ -72,10 +73,10 @@ $(document).ready(function () {
         allow_single_deselect: true,
         width: "90px"
     }).change(function(evt, params){
-        if (typeof params === "undefined") {
-            applicationController.applyAnimationAction("clearSelectedDot");
-        } else {
+        if (params) {
             applicationController.applyAnimationAction("selectDot", params.selected);
+        } else {
+            applicationController.applyAnimationAction("clearSelectedDot");
         }
     });
 
@@ -95,5 +96,7 @@ $(document).ready(function () {
             }
         });
 
-    applicationController.autoloadShow();
+    // URL options
+    var options = JSUtils.getAllURLParams();
+    applicationController.autoloadShow(options["show"], options["dot"]);
 });
