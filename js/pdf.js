@@ -65,4 +65,8 @@ $(document).ready(function() {
         // removing first '&'
         window.location.search = url.substr(1);
     });
+
+    // add link for back-link
+    var url = "index.html?show=" + options["show"] + "&dot=" + options["dot"];
+    $(".back-link").attr("href", url);
 });
