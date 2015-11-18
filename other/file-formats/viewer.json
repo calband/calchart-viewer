@@ -12,7 +12,7 @@
         // description of the show, for display only
         "description": "A string description of the show",
         // dot labels in this show
-        "dot_labels": [
+        "labels": [
             "A1",
             "A2",
             "A3",
