@@ -1,8 +1,14 @@
 @header-height: 150px;
 @option-height: 100px;
 
+body {
+    padding-top: 20px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
 .header {
-    margin: 20px 0;
+    margin-bottom: 20px;
     padding: 0 15px;
     height: @header-height;
     white-space: nowrap;
@@ -68,10 +74,5 @@
 
 .js-pdf-preview {
     width: 100%;
-    position: fixed;
-    top: 0;
-    padding-top: @header-height + 40px;
-    box-sizing: border-box;
-    height: 100%;
-    z-index: -10;
+    height: ~"calc(100% - (@{header-height} + 20px))";
 }

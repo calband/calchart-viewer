@@ -7,14 +7,15 @@ options.dots = options.dots === "" ? [] : options.dots.split(",");
 var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];
 
 /**
- * Returns the HTML code for the loading/error screens
+ * Updates the iframe
  */
-function getHTML(message, isError) {
+function setIFrame(message, isError) {
     var htmlClass = isError ? "error" : "";
-    return "<link rel='stylesheet' type='text/css' href='build/css/js-pdf-preview.css'>\
+    var html = "<link rel='stylesheet' type='text/css' href='build/css/js-pdf-preview.css'>\
         <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>\
         <img class='highstepper-icon' src='img/calchart-viewer-highstepper.png'>\
         <h1 class='" + htmlClass + "'>" + message + "</h1>";
+    $(".js-pdf-preview").attr("srcdoc", html);
 };
 
 /**
@@ -46,12 +47,12 @@ function addDotLabel(i, dot) {
  */
 $(document).ready(function() {
     if (!options.show) {
-        $(".js-pdf-preview").attr("srcdoc", getHTML("No show selected.", true));
+        setIFrame("No show selected.", true);
         return;
     }
 
     // Loading screen
-    $(".js-pdf-preview").attr("srcdoc", getHTML("Loading..."));
+    setIFrame("Loading...");
 
     keys.forEach(function(key) {
         var allOptions = $(".pdf-option input[name=" + key + "]");
@@ -76,7 +77,7 @@ $(document).ready(function() {
             placeholder_text_multiple: "Type in a dot",
         })
         .change(function() {
-            options.dots = $(this).val();
+            options.dots = $(this).val() || [];
             refreshPage();
         });
 
@@ -95,14 +96,22 @@ $(document).ready(function() {
             .val(options.dots)
             .trigger("chosen:updated");
 
+        if (options.dots.length === 0) {
+            setIFrame("No dot selected.");
+            return;
+        }
+
         // generate pdf
         try {
-            new PDFGenerator(show, options.dots).generate(options);
+            var pdfData = new PDFGenerator(show, options.dots).generate(options);
+            $(".js-pdf-preview")
+                .removeAttr("srcdoc")
+                .attr("src", pdfData);
         } catch(err) {
-            $(".js-pdf-preview").attr("srcdoc", getHTML("An error occurred.", true));
+            setIFrame("An error occurred.", true);
             throw err;
         }
     }).fail(function() {
-        $(".js-pdf-preview").attr("srcdoc", getHTML("Could not reach server.", true));
+        setIFrame("Could not reach server.", true);
     });
 });
