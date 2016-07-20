@@ -80,25 +80,15 @@ $(document).ready(function () {
         }
     });
 
-    applicationController.getShows(2016);
-
     $(".js-select-show")
         .chosen({
             width: "150px",
             disable_search_threshold: 4, // if there are less than 4 shows, hide search
             allow_single_deselect: true
         })
-        .change(function(evt, params) {
-            if (params) { // selected a show
-                window.location.search = "show=" + params.selected;
-            } else { // deselected a show
-                window.location.search = "";
-            }
+        .change(function() {
+            window.location.search = "show=" + $(this).val();
         });
-
-    // URL options
-    var options = JSUtils.getAllURLParams();
-    applicationController.autoloadShow(options["show"], options["dot"]);
 
     // Detect browser from http://stackoverflow.com/questions/5899783/detect-safari-using-jquery
     var browserString = navigator.userAgent;
@@ -106,4 +96,10 @@ $(document).ready(function () {
     if (isSafari) {
         alert("You may not be able to upload .ogg files using Safari. Either use an mp3 version of the file or use the Viewer on another browser.")
     }
+
+    applicationController.getShows(2016).complete(function() {
+        // URL options
+        var options = JSUtils.getAllURLParams();
+        applicationController.autoloadShow(options.show, options.dot);
+    });
 });
