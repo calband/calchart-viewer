@@ -1,24 +1,14 @@
-@header-height: 50px;
-@options-height: 100px;
-@pdf-height-offset: @header-height + @options-height + 40px;
-
-/* Abstract Classes */
-.inline-div {
-    display: inline-block;
-    vertical-align: top;
-}
-.bordered-box {
-    border: 1px solid black;
-    padding: 5px;
-    margin: 0 5px;
-}
+@header-height: 150px;
+@option-height: 100px;
 
 .header {
-    margin-top: 20px;
+    margin: 20px 0;
     padding: 0 15px;
     height: @header-height;
     white-space: nowrap;
+    z-index: 10;
     h1 {
+        margin-bottom: 10px;
         border-bottom: 1px solid #fdb515;
         font-size: 30px;
         font-weight: normal;
@@ -32,49 +22,56 @@
             }
         }
     }
-}
-
-.options {
-    padding-left: 15px;
-    margin-bottom: 20px;
-    overflow-x: scroll;
-    white-space: nowrap;
-    height: @options-height;
     h3 {
         margin-bottom: 5px;
-    }
-    > div {
-        &:extend(.bordered-box);
-        &:extend(.inline-div);
-        height: 85%;
-
-        &.widget-orientation {
-            margin-left: 0;
-            .orientation-labels {
-                padding-right: 15px;
-            }
-        }
-    }
-    div[class$=labels] {
-        &:extend(.inline-div);
-    }
-    div[class$=buttons] {
-        &:extend(.inline-div);
-        input {
-            margin: 0 5px;
-        }
     }
     p {
         margin: 0;
         line-height: 1.3em;
     }
+    .pdf-option {
+        display: inline-block;
+        vertical-align: top;
+        box-sizing: border-box;
+        height: @option-height;
+        border: 1px solid black;
+        padding: 5px;
+        margin: 0 5px;
+
+        div {
+            display: inline-block;
+            &.buttons input {
+                margin: 0 5px;
+            }
+        }
+        &.widget-orientation {
+            margin-left: 0;
+            .labels {
+                padding-right: 15px;
+            }
+        }
+        .js-dot-labels {
+            width: 200px;
+            & + .chosen-container {
+                .chosen-choices {
+                    height: 65px !important;
+                    background-image: none;
+                }
+                .search-field {
+                    margin: 3px 0;
+                    padding: 2px;
+                }
+            }
+        }
+    }
 }
 
 .js-pdf-preview {
     width: 100%;
-    height: 70%;
-    height: calc(~"100% - "@pdf-height-offset);
-    height: -moz-calc(~"100% -"@pdf-height-offset);
-    height: -webkit-calc(~"100% - "@pdf-height-offset);
-    height: -o-calc(~"100% -"@pdf-height-offset);
+    position: fixed;
+    top: 0;
+    padding-top: @header-height + 40px;
+    box-sizing: border-box;
+    height: 100%;
+    z-index: -10;
 }

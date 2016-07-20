@@ -31,6 +31,7 @@ var QUADRANT_WIDTH = WIDTH/2 - 6;
  * @param {Show} show
  * @param {String} dot is the label of the selected dot
  */
+// TODO: work for multiple dots
 var PDFGenerator = function(show, dot) {
     this.pdf = jsPDF("portrait", "mm", "letter");
     this.show = show;
