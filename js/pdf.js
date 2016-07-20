@@ -80,6 +80,21 @@ $(document).ready(function() {
             options.dots = $(this).val() || [];
             refreshPage();
         });
+    // add link to select all dots; adding here because dots not all populated
+    // until this point
+    $("<a>")
+        .addClass("choose-all-dots")
+        .text("Select all")
+        .attr("href", "#")
+        .click(function() {
+            options.dots = $(".js-dot-labels option")
+                .map(function() {
+                    return $(this).attr("value");
+                })
+                .get();
+            refreshPage();
+        })
+        .appendTo(".choose-dots h3");
 
     // add link for back-link
     var backDot = options.dots[0] || "";
