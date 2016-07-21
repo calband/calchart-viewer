@@ -55,18 +55,35 @@ ApplicationController.prototype.setShow = function (show) {
  * Sends a GET call to the Calchart server and retrieves all charts from the 
  * given year and adds it to the HTML UI
  * @param {int} the year of the desired shows
+ * @return {Promise} the jQuery AJAX promise object
  */
 ApplicationController.prototype.getShows = function(year) {
-    var url = "https://calchart-server.herokuapp.com/list/" + year;
-    $.getJSON(url, function(data) {
-        $(".js-select-show").append("<option>");
-        data.shows.forEach(function(show) {
-            $("<option>")
-                .attr("value", show["index_name"])
-                .text(show["title"])
-                .appendTo(".js-select-show");
-        });
-        this[year + "_shows"] = data.shows;
+    return $.ajax({
+        url: "https://calchart-server.herokuapp.com/list/" + year,
+        dataType: "json",
+        xhr: function() {
+            var xhr = $.ajaxSettings.xhr();
+            // update loading bar
+            xhr.onprogress = function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $(".loading .progress-bar").css({
+                        width: percentComplete * 35 + "%",
+                    });
+                }
+            };
+            return xhr;
+        },
+        success: function(data) {
+            $("<option>").appendTo(".js-select-show");
+            data.shows.forEach(function(show) {
+                $("<option>")
+                    .attr("value", show["index_name"])
+                    .text(show["title"])
+                    .appendTo(".js-select-show");
+            });
+            $(".js-select-show").trigger("chosen:updated");
+        },
     });
 };
 
@@ -74,32 +91,67 @@ ApplicationController.prototype.getShows = function(year) {
  * Autoloads given show and dot from the Calchart server from the URL parameters
  */
 ApplicationController.prototype.autoloadShow = function(show, dot) {
-    var optionElem = $(".js-select-show option[value=" + show + "]");
-    if (optionElem.length === 0) {
+    if (show === "" || show === undefined) {
+        $(".loading").remove();
         return;
     }
+    var optionElem = $(".js-select-show option[value=" + show + "]");
     optionElem.prop("selected", true);
     $(".js-select-show").trigger("chosen:updated");
 
-    var url = "https://calchart-server.herokuapp.com/";
     var _this = this;
-    $.getJSON(url + "chart/" + show, function(data) {
-        var response = JSON.stringify(data);
-        var viewer = ShowUtils.fromJSON(response);
-        _this.setShow(viewer);
-        _this._setFileInputText(".js-viewer-file-btn", show);
-        if (dot !== undefined) {
-            _this.applyAnimationAction("selectDot", dot);
-            $("option[value=" + dot + "]").prop("selected", true);
-            $(".js-dot-labels").trigger("chosen:updated");
-        }
-    });
-
-    $.getJSON(url + "beats/" + show, function(data) {
-        var response = JSON.stringify(data);
-        var beats = TimedBeatsUtils.fromJSON(response);
-        _this._animator.setBeats(beats);
-        _this._setFileInputText(".js-beats-file-btn", show);
+    // load viewer flie
+    $.ajax({
+        url: "https://calchart-server.herokuapp.com/chart/" + show,
+        dataType: "text",
+        xhr: function() {
+            var xhr = $.ajaxSettings.xhr();
+            // update loading bar
+            xhr.onprogress = function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $(".loading .progress-bar").css({
+                        width: (35 + percentComplete * 35) + "%",
+                    });
+                }
+            };
+            return xhr;
+        },
+        success: function(data) {
+            var viewer = ShowUtils.fromJSON(data);
+            _this.setShow(viewer);
+            _this._setFileInputText(".js-viewer-file-btn", show);
+            if (dot !== undefined) {
+                _this.applyAnimationAction("selectDot", dot);
+                $("option[value=" + dot + "]").prop("selected", true);
+                $(".js-dot-labels").trigger("chosen:updated");
+            }
+            // load beats file
+            $.ajax({
+                url: "https://calchart-server.herokuapp.com/beats/" + show,
+                dataType: "text",
+                xhr: function() {
+                    var xhr = $.ajaxSettings.xhr();
+                    // update loading bar
+                    xhr.onprogress = function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            $(".loading .progress-bar").css({
+                                width: (70 + percentComplete * 30) + "%",
+                            });
+                        }
+                    };
+                    return xhr;
+                },
+                success: function(data) {
+                    var beats = TimedBeatsUtils.fromJSON(data);
+                    _this._animator.setBeats(beats);
+                    _this._setFileInputText(".js-beats-file-btn", show);
+                    // close loading screen
+                    $(".loading").remove();
+                },
+            });
+        },
     });
 };
 
@@ -267,7 +319,6 @@ ApplicationController.prototype.init = function () {
     });
     this._grapher = new Grapher("college", $(".js-grapher-draw-target"));
     this._grapher.draw(null, null, null);
-    $.ajaxSetup({ async: false });
 };
 
 /**
