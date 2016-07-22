@@ -53,6 +53,6 @@ JSUtils.getAllURLParams = function() {
         vals[name] = value;
     }
     return vals;
-}
+};
 
 module.exports = JSUtils;
