@@ -36,6 +36,25 @@ function addDotLabel(i, dot) {
 };
 
 /**
+ * If it takes too long, remove the IFrame and prompt user to download
+ */
+function removeIFrame() {
+    $(".js-pdf-preview").remove();
+    showError("Displaying preview timed out");
+    var link = $("<a>")
+        .text("Download here")
+        .attr("href", "#")
+        .click(function() {
+            window.generator.pdf.save();
+            return false;
+        });
+    $("<p>")
+        .addClass("download-link")
+        .append(link)
+        .appendTo(".js-pdf-loading");
+};
+
+/**
  * This function will be executed by jQuery when the HTML DOM is loaded. Here,
  * we automatically load the show and generate a live preview of the PDF generated
  * by the PDFGenerator
@@ -109,19 +128,25 @@ $(document).ready(function() {
         }
 
         // generate pdf
+        window.generator = new PDFGenerator(show, options.dots)
         try {
-            var pdfData = new PDFGenerator(show, options.dots).generate(options);
-            $("<iframe>")
-                .addClass("js-pdf-preview")
-                .attr("src", pdfData)
-                .appendTo("body")
-                .load(function() {
-                    $(".js-pdf-loading").remove();
-                });
+            window.generator.generate(options);
         } catch(err) {
             showError("An error occurred.");
             throw err;
         }
+        // generator.pdf.save();
+        $("<iframe>")
+            .addClass("js-pdf-preview")
+            .attr("src", window.generator.data)
+            .appendTo("body")
+            .load(function() {
+                $(".js-pdf-loading").remove();
+                // cancel remove
+                clearTimeout(window.removeIFrame);
+            });
+        // after one minute, timeout PDF generation
+        window.removeIFrame = setTimeout(removeIFrame, 60000);
     }).fail(function() {
         showError("Could not reach server.");
     });

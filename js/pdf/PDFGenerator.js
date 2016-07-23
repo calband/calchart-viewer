@@ -36,6 +36,7 @@ var PDFGenerator = function(show, dots) {
     this.show = show;
     this.dots = dots;
     this.sheets = show.getSheets();
+    this.data = null;
 };
 
 /**
@@ -62,7 +63,7 @@ PDFGenerator.prototype.generate = function(options) {
         this._generate(options);
     }
 
-    return this.pdf.output("datauristring");
+    this.data = this.pdf.output("datauristring");
 };
 
 /**
