@@ -1,3 +1,5 @@
+@import "utils.less";
+
 @header-height: 150px;
 @option-height: 100px;
 
@@ -72,6 +74,31 @@ body {
             font-weight: normal;
             float: right;
         }
+    }
+}
+
+.js-pdf-loading {
+    width: 400px;
+    margin: 0 auto;
+    .highstepper-icon {
+        display: block;
+        margin: 0 auto;
+    }
+    h1 {
+        text-align: center;
+        font-family: @sans;
+        font-weight: normal;
+        font-size: 32px;
+        margin: 10px 0;
+        color: @calband-gold;
+        &.error {
+            color: #ff0000;
+        }
+    }
+    .progress-bar {
+        display: inline-block;
+        height: 5px;
+        background: @calband-blue;
     }
 }
 

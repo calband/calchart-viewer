@@ -3,19 +3,14 @@ var ShowUtils = require("./viewer/utils/ShowUtils");
 var JSUtils = require("./viewer/utils/JSUtils");
 
 var options = JSUtils.getAllURLParams();
-options.dots = options.dots === "" ? [] : options.dots.split(",");
+options.dots = options.dots ? options.dots.split(",") : [];
 var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];
 
 /**
- * Updates the iframe
+ * Shows an error text
  */
-function setIFrame(message, isError) {
-    var htmlClass = isError ? "error" : "";
-    var html = "<link rel='stylesheet' type='text/css' href='build/css/js-pdf-preview.css'>\
-        <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>\
-        <img class='highstepper-icon' src='img/calchart-viewer-highstepper.png'>\
-        <h1 class='" + htmlClass + "'>" + message + "</h1>";
-    $(".js-pdf-preview").attr("srcdoc", html);
+function showError(message) {
+    $(".js-pdf-loading h1").addClass("error").text(message);
 };
 
 /**
@@ -47,12 +42,9 @@ function addDotLabel(i, dot) {
  */
 $(document).ready(function() {
     if (!options.show) {
-        setIFrame("No show selected.", true);
+        showError("No show selected.");
         return;
     }
-
-    // Loading screen
-    setIFrame("Loading...");
 
     keys.forEach(function(key) {
         var allOptions = $(".pdf-option input[name=" + key + "]");
@@ -112,21 +104,25 @@ $(document).ready(function() {
             .trigger("chosen:updated");
 
         if (options.dots.length === 0) {
-            setIFrame("No dot selected.");
+            showError("No dot selected.");
             return;
         }
 
         // generate pdf
         try {
             var pdfData = new PDFGenerator(show, options.dots).generate(options);
-            $(".js-pdf-preview")
-                .removeAttr("srcdoc")
-                .attr("src", pdfData);
+            $("<iframe>")
+                .addClass("js-pdf-preview")
+                .attr("src", pdfData)
+                .appendTo("body")
+                .load(function() {
+                    $(".js-pdf-loading").remove();
+                });
         } catch(err) {
-            setIFrame("An error occurred.", true);
+            showError("An error occurred.");
             throw err;
         }
     }).fail(function() {
-        setIFrame("Could not reach server.", true);
+        showError("Could not reach server.");
     });
 });
