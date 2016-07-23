@@ -86,13 +86,21 @@ body {
         font-family: @sans;
         font-weight: normal;
         font-size: 32px;
+        margin-bottom: 15px;
         color: @calband-gold;
         &.error {
             color: #ff0000;
         }
     }
-    .download-link {
-        margin-top: 15px;
+    .progress-bar-container {
+        width: 400px;
+        margin: 0 auto;
+        text-align: left;
+        .progress-bar {
+            display: inline-block;
+            height: 5px;
+            background: @calband-blue;
+        }
     }
 }
 

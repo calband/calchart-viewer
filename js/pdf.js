@@ -11,6 +11,7 @@ var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order
  */
 function showError(message) {
     $(".js-pdf-loading h1").addClass("error").text(message);
+    $(".js-pdf-loading .progress-bar").remove();
 };
 
 /**
@@ -49,7 +50,6 @@ function removeIFrame() {
             return false;
         });
     $("<p>")
-        .addClass("download-link")
         .append(link)
         .appendTo(".js-pdf-loading");
 };
@@ -112,42 +112,62 @@ $(document).ready(function() {
     var url = "index.html?show=" + options.show + "&dot=" + backDot;
     $(".back-link").attr("href", url);
 
-    $.getJSON("https://calchart-server.herokuapp.com/chart/" + options.show, function(data) {
-        var show = ShowUtils.fromJSON(JSON.stringify(data));
+    $.ajax({
+        url: "https://calchart-server.herokuapp.com/chart/" + options.show,
+        dataType: "text",
+        xhr: function() {
+            var xhr = $.ajaxSettings.xhr();
+            // update progress bar
+            xhr.onprogress = function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $(".js-pdf-loading .progress-bar").css({
+                        width: percentComplete * 50 + "%",
+                    });
+                }
+            };
+            return xhr;
+        },
+        success: function(data) {
+            $(".js-pdf-loading .progress-bar").css("width", "50%");
+            var show = ShowUtils.fromJSON(data);
 
-        // update dot labels
-        $(".js-dot-labels").empty();
-        $.each(show.getDotLabels(), addDotLabel);
-        $(".js-dot-labels")
-            .val(options.dots)
-            .trigger("chosen:updated");
+            // update dot labels
+            $(".js-dot-labels").empty();
+            $.each(show.getDotLabels(), addDotLabel);
+            $(".js-dot-labels")
+                .val(options.dots)
+                .trigger("chosen:updated");
 
-        if (options.dots.length === 0) {
-            showError("No dot selected.");
-            return;
-        }
+            if (options.dots.length === 0) {
+                showError("No dot selected.");
+                return;
+            }
 
-        // generate pdf
-        window.generator = new PDFGenerator(show, options.dots)
-        try {
-            window.generator.generate(options);
-        } catch(err) {
-            showError("An error occurred.");
-            throw err;
-        }
-        // generator.pdf.save();
-        $("<iframe>")
-            .addClass("js-pdf-preview")
-            .attr("src", window.generator.data)
-            .appendTo("body")
-            .load(function() {
-                $(".js-pdf-loading").remove();
-                // cancel remove
-                clearTimeout(window.removeIFrame);
-            });
-        // after one minute, timeout PDF generation
-        window.removeIFrame = setTimeout(removeIFrame, 60000);
-    }).fail(function() {
-        showError("Could not reach server.");
+            // generate pdf
+            window.generator = new PDFGenerator(show, options.dots)
+            try {
+                window.generator.generate(options);
+            } catch(err) {
+                showError("An error occurred.");
+                throw err;
+            }
+            $("<iframe>")
+                .addClass("js-pdf-preview")
+                .attr("src", window.generator.data)
+                .appendTo("body")
+                .hide()
+                .load(function() {
+                    $(".js-pdf-loading").remove();
+                    $(this).show();
+                    // cancel remove
+                    clearTimeout(window.removeIFrame);
+                });
+            // after 5 seconds, timeout PDF generation
+            window.removeIFrame = setTimeout(removeIFrame, 5000);
+        },
+        error: function() {
+            showError("Could not reach server.");
+        },
     });
 });

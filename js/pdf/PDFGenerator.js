@@ -37,6 +37,9 @@ var PDFGenerator = function(show, dots) {
     this.dots = dots;
     this.sheets = show.getSheets();
     this.data = null;
+    // tracking for progress bar
+    this.current = 0;
+    this.total = this.dots.length * this.sheets.length; // increment per dot per stuntsheet
 };
 
 /**
@@ -172,6 +175,12 @@ PDFGenerator.prototype._generate = function(options) {
                     dot: dot
                 }
             );
+            // increment progress bar
+            this.current++;
+            var percentage = this.current / this.total;
+            $(".js-pdf-loading .progress-bar").css({
+                width: (50 + percentage * 50) + "%", // 50% from loading server
+            });
         }
     }
     var endsheetWidget;
