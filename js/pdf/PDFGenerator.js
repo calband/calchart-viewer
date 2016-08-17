@@ -29,17 +29,21 @@ var QUADRANT_WIDTH = WIDTH/2 - 6;
  * show, for the given dot.
  *
  * @param {Show} show
- * @param {String} dot is the label of the selected dot
+ * @param {Array<String>} dots is the list of dot labels to include in the PDF
  */
-var PDFGenerator = function(show, dot) {
+var PDFGenerator = function(show, dots) {
     this.pdf = jsPDF("portrait", "mm", "letter");
     this.show = show;
-    this.dot = dot;
+    this.dots = dots;
     this.sheets = show.getSheets();
+    this.data = null;
+    // tracking for progress bar
+    this.current = 0;
+    this.total = this.dots.length * this.sheets.length; // increment per dot per stuntsheet
 };
 
 /**
- * generate a PDF for a specific dot, containing its movements, positions, and continuities
+ * generate a PDF for specified dots, containing its movements, positions, and continuities
  * relevant to it.
  *
  * The function will display the pdf in the webpage's preview pane
@@ -50,8 +54,25 @@ var PDFGenerator = function(show, dot) {
  *      - Orientation for surrounding dots (options["sd-orientation"] = "west"|"east")
  *      - Layout order of stuntsheets      (options["layout-order"] = "ltr"|"ttb")
  *      - Accompanying widget in endsheet  (options["endsheet-widget"] = "md"|"bev"|"sd")
+ *
+ * @return {string} the PDF data
  */
 PDFGenerator.prototype.generate = function(options) {
+    for (var i = 0; i < this.dots.length; i++) {
+        if (i !== 0) {
+            this.pdf.addPage();
+        }
+        this.dot = this.dots[i];
+        this._generate(options);
+    }
+
+    this.data = this.pdf.output("datauristring");
+};
+
+/**
+ * Generate a PDF for one dot, given by this.dot
+ */
+PDFGenerator.prototype._generate = function(options) {
     // Widgets
     this.headerWidget = new HeaderWidget(this.pdf, {
         dotLabel: this.dot,
@@ -154,6 +175,12 @@ PDFGenerator.prototype.generate = function(options) {
                     dot: dot
                 }
             );
+            // increment progress bar
+            this.current++;
+            var percentage = this.current / this.total;
+            $(".js-pdf-loading .progress-bar").css({
+                width: (50 + percentage * 50) + "%", // 50% from loading server
+            });
         }
     }
     var endsheetWidget;
@@ -175,10 +202,6 @@ PDFGenerator.prototype.generate = function(options) {
     } else {
         this._addEndSheet(endsheetWidget);
     }
-
-    var pdfData = this.pdf.output("datauristring");
-    $(".js-pdf-preview").removeAttr("srcdoc");
-    $(".js-pdf-preview").attr("src", pdfData);
 };
 
 /**

@@ -121,7 +121,7 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
             var viewer = ShowUtils.fromJSON(data);
             _this.setShow(viewer);
             _this._setFileInputText(".js-viewer-file-btn", show);
-            if (dot !== undefined) {
+            if (dot !== undefined && dot !== "") {
                 _this.applyAnimationAction("selectDot", dot);
                 $("option[value=" + dot + "]").prop("selected", true);
                 $(".js-dot-labels").trigger("chosen:updated");
@@ -261,7 +261,6 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
     $(".js-dot-continuity").empty();
     if (this._animationStateDelegate.getSelectedDot() !== null) {
         var selectedDot = this._animationStateDelegate.getSelectedDot();
-        $(".js-selected-dot-label").parent().removeClass("disabled");
         $(".js-selected-dot-label").text(selectedDot);
         var currentSheet = this._animationStateDelegate.getCurrentSheet();
         var typeOfDot = currentSheet.getDotType(selectedDot);
@@ -275,7 +274,7 @@ ApplicationController.prototype._updateUIWithAnimationState = function () {
             })
         }
     } else {
-        $(".js-selected-dot-label").parent().addClass("disabled");
+        $(".js-selected-dot-label").text("dots");
     }
 };
 
