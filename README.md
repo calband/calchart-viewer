@@ -29,3 +29,13 @@ If you have an idea for a feature, general question, bug report, etc, open an is
 #### Architecture Diagram
 
 You can find a very high level overview of how the code architecture should work and interact with the UI [here](http://imgur.com/yw7FbWL.png).
+
+### Deploying
+
+To push changes to http://calband.github.io/calchart-viewer, do the following:
+
+1. Pull from `master` locally, to make sure you're up to date
+1. Checkout `gh-pages` and pull to get any updates
+1. `git merge master`
+1. `grunt build`
+1. Commit and push the `gh-pages` branch
