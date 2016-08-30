@@ -113,7 +113,7 @@ $(document).ready(function() {
     $(".back-link").attr("href", url);
 
     $.ajax({
-        url: "https://calchart-server.herokuapp.com/chart/" + options.show,
+        url: "https://calchart-server.herokuapp.com/viewer/" + options.show + "/",
         dataType: "text",
         xhr: function() {
             var xhr = $.ajaxSettings.xhr();

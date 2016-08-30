@@ -52,14 +52,14 @@ ApplicationController.prototype.setShow = function (show) {
 };
 
 /**
- * Sends a GET call to the Calchart server and retrieves all charts from the 
- * given year and adds it to the HTML UI
- * @param {int} the year of the desired shows
+ * Sends a GET call to the Calchart server and retrieves all shows from the
+ * server and adds it to the HTML UI
+ *
  * @return {Promise} the jQuery AJAX promise object
  */
-ApplicationController.prototype.getShows = function(year) {
+ApplicationController.prototype.getShows = function() {
     return $.ajax({
-        url: "https://calchart-server.herokuapp.com/list/" + year,
+        url: "https://calchart-server.herokuapp.com/list/",
         dataType: "json",
         xhr: function() {
             var xhr = $.ajaxSettings.xhr();
@@ -78,8 +78,8 @@ ApplicationController.prototype.getShows = function(year) {
             $("<option>").appendTo(".js-select-show");
             data.shows.forEach(function(show) {
                 $("<option>")
-                    .attr("value", show["index_name"])
-                    .text(show["title"])
+                    .attr("value", show.slug)
+                    .text(show.name)
                     .appendTo(".js-select-show");
             });
             $(".js-select-show").trigger("chosen:updated");
@@ -102,7 +102,7 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
     var _this = this;
     // load viewer flie
     $.ajax({
-        url: "https://calchart-server.herokuapp.com/chart/" + show,
+        url: "https://calchart-server.herokuapp.com/viewer/" + show + "/",
         dataType: "text",
         xhr: function() {
             var xhr = $.ajaxSettings.xhr();
@@ -128,7 +128,7 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
             }
             // load beats file
             $.ajax({
-                url: "https://calchart-server.herokuapp.com/beats/" + show,
+                url: "https://calchart-server.herokuapp.com/beats/" + show + "/",
                 dataType: "text",
                 xhr: function() {
                     var xhr = $.ajaxSettings.xhr();
