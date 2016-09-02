@@ -21,10 +21,22 @@
  * @return {Show} The show represented in the viewer
  *   file.
  */
-ShowUtils.fromJSON = function(fileContent) {
-    var viewerFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-    var fileVersion = Version.parse(viewerFileMainObject.meta.version); //Get the version of the viewer file
-    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerFileMainObject); //Get the appropriate ViewerLoader and use it to load the file
+ShowUtils.fromJSONString = function(fileContent) {
+    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+    return this.fromJSON(viewerObject);
+};
+ 
+/**
+ * Builds a show from a viewer file, as a JSON object
+ *
+ * @param {object} viewerObject The content of the
+ *   viewer file to load the show from.
+ * @return {Show} The show represented in the viewer
+ *   file.
+ */
+ShowUtils.fromJSON = function(viewerObject) {
+    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
+    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
 };
 
 module.exports = ShowUtils;

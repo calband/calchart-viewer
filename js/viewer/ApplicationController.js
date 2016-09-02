@@ -100,10 +100,10 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
     $(".js-select-show").trigger("chosen:updated");
 
     var _this = this;
-    // load viewer flie
+    // load all show data
     $.ajax({
-        url: "https://calchart-server.herokuapp.com/viewer/" + show + "/",
-        dataType: "text",
+        url: "https://calchart-server.herokuapp.com/get/" + show + "/",
+        dataType: "json",
         xhr: function() {
             var xhr = $.ajaxSettings.xhr();
             // update loading bar
@@ -111,14 +111,15 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
                 if (evt.lengthComputable) {
                     var percentComplete = evt.loaded / evt.total;
                     $(".loading .progress-bar").css({
-                        width: (35 + percentComplete * 35) + "%",
+                        width: (35 + percentComplete * 65) + "%",
                     });
                 }
             };
             return xhr;
         },
         success: function(data) {
-            var viewer = ShowUtils.fromJSON(data);
+            // load viewer file
+            var viewer = ShowUtils.fromJSON(data.viewer);
             _this.setShow(viewer);
             _this._setFileInputText(".js-viewer-file-btn", show);
             if (dot !== undefined && dot !== "") {
@@ -126,31 +127,23 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
                 $("option[value=" + dot + "]").prop("selected", true);
                 $(".js-dot-labels").trigger("chosen:updated");
             }
+
             // load beats file
-            $.ajax({
-                url: "https://calchart-server.herokuapp.com/beats/" + show + "/",
-                dataType: "text",
-                xhr: function() {
-                    var xhr = $.ajaxSettings.xhr();
-                    // update loading bar
-                    xhr.onprogress = function(evt) {
-                        if (evt.lengthComputable) {
-                            var percentComplete = evt.loaded / evt.total;
-                            $(".loading .progress-bar").css({
-                                width: (70 + percentComplete * 30) + "%",
-                            });
-                        }
-                    };
-                    return xhr;
-                },
-                success: function(data) {
-                    var beats = TimedBeatsUtils.fromJSON(data);
-                    _this._animator.setBeats(beats);
-                    _this._setFileInputText(".js-beats-file-btn", show);
-                    // close loading screen
-                    $(".loading").remove();
-                },
-            });
+            var beats = TimedBeatsUtils.fromJSON(data.beats);
+            _this._animator.setBeats(beats);
+            _this._setFileInputText(".js-beats-file-btn", show);
+
+            // load audio file
+            var newSound = _this._musicPlayer.createSound();
+            var onMusicLoaded = function() {
+                _this._animator.setMusic(newSound);
+                _this._setFileInputText(".js-audio-file-btn", show);
+            };
+            newSound.registerEventHandler("finishedLoading", onMusicLoaded);
+            newSound.load(data.audio);
+
+            // close loading screen
+            $(".loading").remove();
         },
     });
 };
@@ -408,7 +401,7 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
     var _this = this;
     return this._createFileHandler(function (fileContentsAsText, fileName) {
         try {
-            var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
+            var beats = TimedBeatsUtils.fromJSONString(fileContentsAsText);
             _this._animator.setBeats(beats);
             _this._setFileInputText(".js-beats-file-btn", fileName);
         } catch (err) {
@@ -431,7 +424,7 @@ ApplicationController.prototype.getViewerFileHandler = function () {
     var _this = this;
     return this._createFileHandler(function (fileContentsAsText, fileName) {
         try {
-            var show = ShowUtils.fromJSON(fileContentsAsText);
+            var show = ShowUtils.fromJSONString(fileContentsAsText);
             _this.setShow(show);
             _this._setFileInputText(".js-viewer-file-btn", fileName);
         } catch (err) {
