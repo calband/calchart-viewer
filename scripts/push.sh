@@ -10,7 +10,7 @@ if [[ ! -d .git ]]; then
 fi
 
 # make sure we're on the master branch
-if ! grep -q "master" .git/HEAD ; then
+if ! grep -q "master" .git/HEAD; then
     echo "ERROR: Please go to the master branch."
     return 1
 fi
