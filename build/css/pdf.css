@@ -1,0 +1,100 @@
+body {
+  padding-top: 20px;
+  height: 100%;
+  box-sizing: border-box;
+}
+.header {
+  margin-bottom: 20px;
+  padding: 0 15px;
+  height: 150px;
+  white-space: nowrap;
+  z-index: 10;
+}
+.header h1 {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #fdb515;
+  font-size: 30px;
+  font-weight: normal;
+}
+.header h1 .back-link-span {
+  position: relative;
+  font-size: 18px;
+  top: -5px;
+}
+.header h1 .back-link-span:before {
+  content: "\2014";
+  margin-right: 10px;
+}
+.header h3 {
+  margin-bottom: 5px;
+}
+.header p {
+  margin: 0;
+  line-height: 1.3em;
+}
+.header .pdf-option {
+  display: inline-block;
+  vertical-align: top;
+  box-sizing: border-box;
+  height: 100px;
+  border: 1px solid black;
+  padding: 5px;
+  margin: 0 5px;
+}
+.header .pdf-option div {
+  display: inline-block;
+}
+.header .pdf-option div.buttons input {
+  margin: 0 5px;
+}
+.header .pdf-option.widget-orientation {
+  margin-left: 0;
+}
+.header .pdf-option.widget-orientation .labels {
+  padding-right: 15px;
+}
+.header .pdf-option .js-dot-labels {
+  width: 200px;
+}
+.header .pdf-option .js-dot-labels + .chosen-container .chosen-choices {
+  height: 65px !important;
+  background-image: none;
+}
+.header .pdf-option .js-dot-labels + .chosen-container .search-field {
+  margin: 3px 0;
+  padding: 2px;
+}
+.header .pdf-option .choose-all-dots {
+  font-weight: normal;
+  float: right;
+}
+.js-pdf-loading {
+  text-align: center;
+}
+.js-pdf-loading .highstepper-icon {
+  margin-bottom: 10px;
+}
+.js-pdf-loading h1 {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: normal;
+  font-size: 32px;
+  margin-bottom: 15px;
+  color: #fdb515;
+}
+.js-pdf-loading h1.error {
+  color: #ff0000;
+}
+.js-pdf-loading .progress-bar-container {
+  width: 400px;
+  margin: 0 auto;
+  text-align: left;
+}
+.js-pdf-loading .progress-bar-container .progress-bar {
+  display: inline-block;
+  height: 5px;
+  background: #003262;
+}
+.js-pdf-preview {
+  width: 100%;
+  height: calc(100% - (150px + 20px));
+}

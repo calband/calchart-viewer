@@ -1,0 +1,108 @@
+<html>
+<head>
+    <title>Calchart Viewer</title>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <link rel="shortcut icon" href="img/favicon.png">
+    <link rel="stylesheet" type="text/css" href="build/css/app.css">
+    <link rel="stylesheet" type="text/css" href="build/css/graph.css">
+    <link rel="stylesheet" type="text/css" href="css/vendor/chosen.min.css">
+    <script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="js/vendor/d3.min.js"></script>
+    <script type="text/javascript" src="js/vendor/soundmanager2-nodebug-jsmin.js"></script>
+    <script type="text/javascript" src="js/vendor/chosen.jquery.min.js"></script>
+    <script type="text/javascript" src="build/js/application.js"></script>
+
+    <!-- Google Analytics -->
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-54540728-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    <!--  -->
+
+</head>
+<body>
+    <!-- Loading screen -->
+    <div class="loading">
+        <div class="wrapper">
+            <h1>Loading</h1>
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <div class="header-image">
+                <img src="img/calchart-viewer-highstepper.png">
+            </div>
+            <div class="header-title">
+                <div class="title">Calchart Viewer</div>
+                <div class="version">Version 1.1.0</div>
+            </div>
+            <div class="header-files">
+                <div class="files-description">Files<span class="file-input-error"></span></div>
+                <div class="load-controls">
+                    <div class="files">
+                        <div class="file-input">
+                            <label for="viewer-file">Viewer file:</label>
+                            <input type="file" id="viewer-file" class='js-viewer-file'>
+                            <button class="js-viewer-file-btn">Choose file...</button>
+                        </div>
+                        <div class="file-input">
+                            <label for="beats-file">Beats file:</label>
+                            <input type="file" id="beats-file" class='js-beats-file'>
+                            <button class="js-beats-file-btn">Choose file...</button>
+                        </div>
+                        <div class="file-input">
+                            <label for="audio-file">Audio file:</label>
+                            <input type="file" id="audio-file" class='js-audio-file'>
+                            <button class="js-audio-file-btn">Choose file...</button>
+                        </div>
+                    </div>
+                    <div class="autoload">
+                        <label>Or autoload show:</label>
+                        <select class="js-select-show select-show" data-placeholder="None"></select>
+                    </div>
+                </div>
+            </div>
+            <a class="header-feedback-link" href="https://docs.google.com/forms/d/1lR_cpAY4Zlo02US_IW41Mj_MHJoFxCT7riFNnhmVfQM/viewform" target="_blank">Please give us feedback!</a>
+        </div>
+        <div class="main">
+            <div class="graph-container">
+                <div class="graph js-grapher-draw-target"></div>
+            </div>
+            <div class="controls-container">
+                <div class="show-title js-show-title">No Show Selected</div>
+                <div class="animation-state">
+                    <div class="stuntsheet">Stuntsheet: <span class="js-stuntsheet-label">None selected</span></div>
+                    <div class="beats">Beat: <span class="js-beat-number">0</span>/<span class="js-stuntsheet-total">0</span></div>
+                    <div class="js-dot-continuity continuity-container"></div>
+                </div>
+                <div class="next-prev-control">
+                    <div class="increment-control prev js-prev-beat">Previous beat</div>
+                    <div class="increment-control next js-next-beat">Next beat</div>
+                </div>
+                <div class="next-prev-control">
+                    <div class="increment-control prev js-prev-stuntsheet">Previous stuntsheet</div>
+                    <div class="increment-control next js-next-stuntsheet">Next stuntsheet</div>
+                </div>
+                <div class="control-button js-animate disabled">
+                    Animate with music
+                </div>
+                <div class="control-container">
+                    <label>Show my dot:</label>
+                    <select class="js-dot-labels" data-placeholder="None">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="control-button js-generate-continuity">
+                    Generate continuity for <span class="js-selected-dot-label">dots</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

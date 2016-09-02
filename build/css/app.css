@@ -1,0 +1,272 @@
+.clearfix {
+  display: block;
+  clear: both;
+}
+.container {
+  width: 1040px;
+  margin: 0 auto;
+}
+.header,
+.main {
+  font-size: 0;
+}
+.header {
+  margin-top: 20px;
+  border-bottom: 1px solid #fdb515;
+  padding-bottom: 20px;
+}
+.header .header-image,
+.header .header-title,
+.header .header-files {
+  display: inline-block;
+  vertical-align: top;
+}
+.header .header-image {
+  margin-right: 20px;
+}
+.header .header-title .title,
+.header .header-files .files-description {
+  border-bottom: 1px solid #fdb515;
+  height: 40px;
+  line-height: 40px;
+}
+.header .header-title,
+.header .header-files {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  color: #003262;
+}
+.header .header-title .title {
+  font-size: 30px;
+  width: 280.8px;
+}
+.header .header-title .version {
+  height: 30px;
+  line-height: 30px;
+  font-size: 14px;
+}
+.header .header-files .files-description {
+  font-size: 20px;
+  width: 447.2px;
+}
+.header .header-files .files-description .file-input-error {
+  display: none;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  color: #FF0000;
+  margin-left: 30px;
+}
+.header .header-files .load-controls .files {
+  display: inline-block;
+  width: 268.32px;
+  margin-top: 10px;
+}
+.header .header-files .load-controls .files .file-input {
+  margin: 5px;
+}
+.header .header-files .load-controls .files .file-input label {
+  font-size: 14px;
+  color: #003262;
+  margin-right: 5px;
+  display: inline-block;
+  min-width: 75px;
+}
+.header .header-files .load-controls .files .file-input input[type="file"] {
+  color: transparent;
+  display: none;
+}
+.header .header-files .load-controls .files .file-input button {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 14px;
+  color: #003262;
+  background: white;
+  border: 1px solid #003262;
+  padding: 3px;
+  width: 156.52px;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.header .header-files .load-controls .autoload {
+  display: inline-block;
+  vertical-align: top;
+  font-size: 14px;
+  width: 178.88px;
+  text-align: center;
+}
+.header .header-files .load-controls .autoload label {
+  display: block;
+  margin: 20px 0 10px;
+}
+.header .header-files .load-controls .autoload .chosen-drop .chosen-results {
+  max-height: 100px;
+}
+.header .header-feedback-link {
+  float: right;
+  padding: 5px;
+  padding-right: 20px;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 13px;
+  text-decoration: none;
+  color: #003262;
+  border: 1px solid #003262;
+  border-right: 25px solid #003262;
+}
+.main .graph-container,
+.main .controls-container {
+  display: inline-block;
+  margin-top: 20px;
+  vertical-align: top;
+}
+.main .graph-container {
+  width: 604px;
+  margin-right: 20px;
+}
+.main .graph {
+  width: 100%;
+  height: 400px;
+}
+.main .controls-container {
+  width: 416px;
+}
+.main .controls-container .show-title,
+.main .controls-container .stuntsheet,
+.main .controls-container .beats,
+.main .controls-container .dot-continuity,
+.main .controls-container .next-prev-control,
+.main .controls-container .control-button,
+.main .controls-container .control-container {
+  color: #003262;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+}
+.main .controls-container .show-title {
+  height: 25px;
+  line-height: 25px;
+  font-size: 18px;
+  width: 100%;
+  border-bottom: 1px solid #003262;
+}
+.main .controls-container .animation-state {
+  margin-top: 5px;
+}
+.main .controls-container .animation-state:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.main .controls-container .stuntsheet,
+.main .controls-container .beats,
+.main .controls-container .continuity-container {
+  display: block;
+  height: 30px;
+  line-height: 30px;
+  font-size: 20px;
+}
+.main .controls-container .stuntsheet {
+  float: left;
+}
+.main .controls-container .beats {
+  float: right;
+}
+.main .controls-container .continuity-container {
+  clear: both;
+  height: 130px;
+  margin-top: 40px;
+  font-size: 16px;
+  overflow: scroll;
+}
+.main .controls-container .continuity-container .dot-continuity {
+  line-height: 1.5em;
+}
+.main .controls-container .increment-control,
+.main .controls-container .control-button,
+.main .controls-container .control-container {
+  height: 30px;
+  line-height: 30px;
+  font-size: 13px;
+  margin-top: 10px;
+}
+.main .controls-container .control-container label {
+  margin-right: 10px;
+}
+.main .controls-container .control-container .chosen-results {
+  max-height: 140px;
+  display: none;
+}
+.main .controls-container .control-container .chosen-with-drop .chosen-results {
+  display: block;
+}
+.main .controls-container .increment-control,
+.main .controls-container .control-button {
+  cursor: pointer;
+}
+.main .controls-container .increment-control {
+  display: inline-block;
+  width: 203px;
+  border: 1px solid #003262;
+  box-sizing: border-box;
+  padding-left: 5px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: moz-none;
+  -ms-user-select: none;
+  user-select: none;
+  height: 30px;
+  line-height: 30px;
+  font-size: 13px;
+}
+.main .controls-container .increment-control.next {
+  border-right: 25px solid #003262;
+}
+.main .controls-container .increment-control.prev {
+  border-left: 25px solid #003262;
+}
+.main .controls-container .increment-control:first-child {
+  margin-right: 10px;
+}
+.main .controls-container .control-button {
+  width: 414px;
+  border: 1px solid #003262;
+  text-align: center;
+}
+.main .controls-container .control-button.disabled {
+  color: #999;
+  text-decoration: line-through;
+  border-color: #999;
+  cursor: inherit;
+}
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 100;
+  text-align: center;
+}
+.loading:before {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  height: 100%;
+}
+.loading .wrapper {
+  display: inline-block;
+  vertical-align: middle;
+  width: 400px;
+  text-align: left;
+}
+.loading .wrapper h1 {
+  font-size: 48px;
+  color: #003262;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  text-transform: uppercase;
+  text-align: center;
+  margin: 0 0 5px;
+}
+.loading .wrapper .progress-bar {
+  display: inline-block;
+  height: 5px;
+  background: #fdb515;
+}
