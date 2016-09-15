@@ -138,12 +138,12 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
             var onMusicLoaded = function() {
                 _this._animator.setMusic(newSound);
                 _this._setFileInputText(".js-audio-file-btn", show);
+
+                // close loading screen
+                $(".loading").remove();
             };
             newSound.registerEventHandler("finishedLoading", onMusicLoaded);
             newSound.load(data.audio);
-
-            // close loading screen
-            $(".loading").remove();
         },
     });
 };
