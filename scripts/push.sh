@@ -27,7 +27,7 @@ echo "Merging master..."
 git merge master -q -m "Merging master into gh-pages branch"
 
 echo "Building static files..."
-grunt build > /dev/null
+grunt build > /dev/null # hide output
 
 git commit -am "Built production files"
 git push origin gh-pages -q
