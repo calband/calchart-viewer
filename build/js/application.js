@@ -44,8 +44,8 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ApplicationController = __webpack_require__(1);
-	var JSUtils = __webpack_require__(2);
+	var ApplicationController = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 
 	/**
 	 * This function will be executed by jQuery when the HTML DOM is loaded. Here,
@@ -151,19 +151,20 @@
 
 
 /***/ },
-/* 1 */
+/* 1 */,
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview The ApplicationController singleton class is defined here.
 	 */
 
-	var Grapher = __webpack_require__(5);
+	var Grapher = __webpack_require__(6);
 	var ShowUtils = __webpack_require__(3);
-	var TimedBeatsUtils = __webpack_require__(6);
-	var MusicAnimator = __webpack_require__(16);
-	var MusicPlayerFactory = __webpack_require__(17);
-	var AnimationStateDelegate = __webpack_require__(7);
+	var TimedBeatsUtils = __webpack_require__(7);
+	var MusicAnimator = __webpack_require__(17);
+	var MusicPlayerFactory = __webpack_require__(18);
+	var AnimationStateDelegate = __webpack_require__(8);
 
 	/**
 	 * The ApplicationController is the backbone of how functional components
@@ -673,7 +674,54 @@
 
 
 /***/ },
-/* 2 */
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines a collection of functions that are
+	 *   used to create and manage Show objects.
+	 */
+
+	 var ViewerFileLoadSelector = __webpack_require__(16);
+	 var Version = __webpack_require__(5);
+	 
+	 /**
+	  * The collection of all functions related to creating and
+	  * managing Show objects.
+	  */
+	 var ShowUtils = {};
+	 
+	/**
+	 * Builds a show from a viewer file, given the content
+	 * of a viewer file as a string.
+	 *
+	 * @param {string} fileContent The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
+	 */
+	ShowUtils.fromJSONString = function(fileContent) {
+	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+	    return this.fromJSON(viewerObject);
+	};
+	 
+	/**
+	 * Builds a show from a viewer file, as a JSON object
+	 *
+	 * @param {object} viewerObject The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
+	 */
+	ShowUtils.fromJSON = function(viewerObject) {
+	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
+	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
+	};
+
+	module.exports = ShowUtils;
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -736,55 +784,83 @@
 	module.exports = JSUtils;
 
 /***/ },
-/* 3 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * @fileOverview Defines a collection of functions that are
-	 *   used to create and manage Show objects.
+	 * @fileOverview Defines the Version class.
 	 */
 
-	 var ViewerFileLoadSelector = __webpack_require__(18);
-	 var Version = __webpack_require__(8);
-	 
-	 /**
-	  * The collection of all functions related to creating and
-	  * managing Show objects.
-	  */
-	 var ShowUtils = {};
-	 
 	/**
-	 * Builds a show from a viewer file, given the content
-	 * of a viewer file as a string.
+	 * Version objects represent a version of a file
+	 * or application in the following format:
+	 * [major].[minor].[revision].
 	 *
-	 * @param {string} fileContent The content of the
-	 *   viewer file to load the show from.
-	 * @return {Show} The show represented in the viewer
-	 *   file.
+	 * @param {int} major The major version.
+	 * @param {int} minor The minor version.
+	 * @param {int} revision The revision number.
 	 */
-	ShowUtils.fromJSONString = function(fileContent) {
-	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-	    return this.fromJSON(viewerObject);
-	};
-	 
-	/**
-	 * Builds a show from a viewer file, as a JSON object
-	 *
-	 * @param {object} viewerObject The content of the
-	 *   viewer file to load the show from.
-	 * @return {Show} The show represented in the viewer
-	 *   file.
-	 */
-	ShowUtils.fromJSON = function(viewerObject) {
-	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
-	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
+	var Version = function(major, minor, revision) {
+	    this._major = major;
+	    this._minor = minor;
+	    this._revision = revision;
 	};
 
-	module.exports = ShowUtils;
+	/**
+	 * Builds a string representation of the Version.
+	 * String representations take the format:
+	 * [major].[minor].[revision].
+	 *
+	 * @return {string} A string representation of this
+	 *   version.
+	 */
+	Version.prototype.stringify = function() {
+	    return this._major + "." + this._minor + "." + this._revision;
+	};
+
+	/**
+	 * Compares this Version to another, and indicates which
+	 * version is an earlier one.
+	 *
+	 * @param {Version} otherVersion The version to compare
+	 *   this one against.
+	 * @return {int} A negative value if this version is
+	 *   an earlier one than the other; a positive value
+	 *   if this version is later than the other one;
+	 *   zero if the versions are identical.
+	 */
+	Version.prototype.compareTo = function(otherVersion) {
+	    var delta = this._major - otherVersion._major;
+	    if (delta != 0) {
+	        return delta;
+	    }
+	    delta = this._minor - otherVersion._minor;
+	    if (delta != 0) {
+	        return delta;
+	    }
+	    delta = this._revision - otherVersion._revision;
+	    return delta;
+	};
+
+	/**
+	 * Builds a Version object from a string.
+	 * These strings should be in the format:
+	 * [major].[minor].[revision].
+	 *
+	 * @param {string} stringVersion A string representation
+	 *   of a Version.
+	 * @return {Version} A Version which matches the
+	 *   provided string.
+	 */
+	Version.parse = function(stringVersion) {
+	    var versionPieces = stringVersion.split(".");
+	    return new Version(parseInt(versionPieces[0]), parseInt(versionPieces[1]), parseInt(versionPieces[2]));
+	};
+
+	module.exports = Version;
 
 /***/ },
-/* 4 */,
-/* 5 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1144,7 +1220,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1153,7 +1229,7 @@
 	 */
 
 	 var BeatsFileLoadSelector = __webpack_require__(19);
-	 var Version = __webpack_require__(8);
+	 var Version = __webpack_require__(5);
 	 
 	 /**
 	  * The collection of all functions related to creating and
@@ -1191,7 +1267,7 @@
 	module.exports = TimedBeatsUtils;
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1414,82 +1490,6 @@
 
 
 /***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Version class.
-	 */
-
-	/**
-	 * Version objects represent a version of a file
-	 * or application in the following format:
-	 * [major].[minor].[revision].
-	 *
-	 * @param {int} major The major version.
-	 * @param {int} minor The minor version.
-	 * @param {int} revision The revision number.
-	 */
-	var Version = function(major, minor, revision) {
-	    this._major = major;
-	    this._minor = minor;
-	    this._revision = revision;
-	};
-
-	/**
-	 * Builds a string representation of the Version.
-	 * String representations take the format:
-	 * [major].[minor].[revision].
-	 *
-	 * @return {string} A string representation of this
-	 *   version.
-	 */
-	Version.prototype.stringify = function() {
-	    return this._major + "." + this._minor + "." + this._revision;
-	};
-
-	/**
-	 * Compares this Version to another, and indicates which
-	 * version is an earlier one.
-	 *
-	 * @param {Version} otherVersion The version to compare
-	 *   this one against.
-	 * @return {int} A negative value if this version is
-	 *   an earlier one than the other; a positive value
-	 *   if this version is later than the other one;
-	 *   zero if the versions are identical.
-	 */
-	Version.prototype.compareTo = function(otherVersion) {
-	    var delta = this._major - otherVersion._major;
-	    if (delta != 0) {
-	        return delta;
-	    }
-	    delta = this._minor - otherVersion._minor;
-	    if (delta != 0) {
-	        return delta;
-	    }
-	    delta = this._revision - otherVersion._revision;
-	    return delta;
-	};
-
-	/**
-	 * Builds a Version object from a string.
-	 * These strings should be in the format:
-	 * [major].[minor].[revision].
-	 *
-	 * @param {string} stringVersion A string representation
-	 *   of a Version.
-	 * @return {Version} A Version which matches the
-	 *   provided string.
-	 */
-	Version.parse = function(stringVersion) {
-	    var versionPieces = stringVersion.split(".");
-	    return new Version(parseInt(versionPieces[0]), parseInt(versionPieces[1]), parseInt(versionPieces[2]));
-	};
-
-	module.exports = Version;
-
-/***/ },
 /* 9 */,
 /* 10 */,
 /* 11 */,
@@ -1498,313 +1498,6 @@
 /* 14 */,
 /* 15 */,
 /* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MusicAnimator class. This is used to animate
-	 *   with music. For a basic description on how to use it, check the class
-	 *   description.
-	 *   To help keep the UI updated, the MusicAnimator can be set up to inform
-	 *   you when it changes state (e.g. when it starts, stops, finishes, etc.).
-	 *   You can submit event handlers to the MusicAnimator through the
-	 *   registerEventHandler(...) method.
-	 */
-
-	/**
-	 * A MusicAnimator will animate the show in sync with
-	 * music. To get the MusicAnimator to work, you must provide
-	 * it with music (through the setMusic(...) method)
-	 * and a TimedBeats object (through the setBeats(...) method), and
-	 * with an AnimationStateDelegate object (through the setAnimationStateDelegate(...) method).
-	 * After you set up the object, you should check if the MusicAnimator is 
-	 * ready to play using the isReady(...) method, since it may have encountered
-	 * an error while loading. If it is ready, then feel free to start and stop the
-	 * animator with the start(...) and stop(...) methods. The animator
-	 * will automatically stop when it reaches the end of the show, or when
-	 * it runs out of beats to animate in the music.
-	 *
-	 * @param {AnimationStateDelegate} The AnimationStateDelegate that will
-	 *   be used to animate the show. Whenever the music advances a beat, the
-	 *   delegate will advance a beat as well.
-	 * @param {MusicPlayer} The music player.
-	 */
-	var MusicAnimator = function() {
-	    this._animStateDelegate = null;
-	    this._sound = null;
-	    this._timedBeats = null;
-	    this._eventHandlers = {};
-	    this._blockStopEvent = false;
-	};
-
-	/**
-	 * Event strings that the music animator recognizes as hooks.
-	 * @type {Array}
-	 */
-	MusicAnimator.eventTypes = ["start", "stop", "finished", "beat", "ready"];
-
-	/**
-	 * Set the animation state delegate.
-	 */
-	MusicAnimator.prototype.setAnimationStateDelegate = function(animationStateDelegate) {
-	    this.stop(); // Stop before making changes - we don't want the sound to fire events while we work
-	    this._animStateDelegate = animationStateDelegate; // Set up the new delegate
-	};
-
-
-	/**
-	 * Sets the music to animate the show with.
-	 *
-	 * @param {Sound} soundObject The music.
-	 */
-	MusicAnimator.prototype.setMusic = function(soundObject) {
-	    this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
-	    var _this = this;
-	    this._sound = soundObject;
-	    this._sound.registerEventHandler("play", this._makeEventRouter("start"));
-	    this._sound.registerEventHandler("stop", function() {_this._musicStopped();});
-	    this._sound.registerEventHandler("finished", this._makeEventRouter("finished"));
-	    this._loadBeatsOntoSound();
-	    if (this.isReady()) {
-	        this._callEventHandler("ready");
-	    }
-	};
-
-	/**
-	 * Sets the TimedBeats object that will determine
-	 * where beats fall in the music.
-	 *
-	 * @param {TimedBeats} timedBeats The beats to associate with
-	 *   the music.
-	 */
-	MusicAnimator.prototype.setBeats = function(timedBeats) {
-	    this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
-	    this._beats = timedBeats;
-	    this._loadBeatsOntoSound();
-	    if (this.isReady()) {
-	        this._callEventHandler("ready");
-	    }
-	};
-
-	/**
-	 * Makes sure that the sound is prepared to inform us every
-	 * time one of the beats is reached in the music.
-	 */
-	MusicAnimator.prototype._loadBeatsOntoSound = function() {
-	    if (this._beats && this._sound) {
-	        this._sound.clearTimedEvents();
-	        var _this = this;
-	        var timedEventHandler = function() {
-	            _this._nextBeat();
-	        };
-	        var endBeatEventHandler = function() {
-	            _this._animStateDelegate.nextBeat();
-	            _this._callEventHandler("beat");
-	            _this._endOfShow();
-	        };
-	        //Beat 0 is the "start beat" - don't associate a timed event with it, just start the music at that time
-	        //The last beat is the "end beat" - make sure that the show finishes when this beat is hit
-	        for (var beatNum = 1; beatNum < this._beats.getNumBeats() - 1; beatNum++) {
-	            this._sound.addTimedEvent(this._beats.getBeatTime(beatNum), timedEventHandler);
-	        }
-	        this._sound.addTimedEvent(this._beats.getBeatTime(this._beats.getNumBeats() - 1), endBeatEventHandler);
-	    }
-	};
-
-	/**
-	 * Start playing the animation with music.
-	 */
-	MusicAnimator.prototype.start = function() {
-	    this.stop();
-	    // beat "0" of a given stuntsheet is really the last beat of the stuntsheet before
-	    var overallBeat = -1;
-	    var show = this._animStateDelegate.getShow();
-	    for (var sheet = 0; sheet < this._animStateDelegate.getCurrentSheetNum(); sheet++) {
-	        overallBeat += show.getSheet(sheet).getDuration();
-	    }
-	    overallBeat += this._animStateDelegate.getCurrentBeatNum();
-	    if (this._animStateDelegate.hasNextBeat() && overallBeat < this._beats.getNumBeats() - 1) {
-	        if (overallBeat < 0) {
-	            this._animStateDelegate.nextBeat();
-	            $(".js-beat-number").text("1");
-	            this._sound.play(0);
-	        } else {
-	            this._sound.play(this._beats.getBeatTime(overallBeat));
-	        }
-	    } else {
-	        this._endOfShow();
-	    }
-	};
-
-	/**
-	 * Stop playing the animation with music.
-	 */
-	MusicAnimator.prototype.stop = function() {
-	    if (this._sound !== null && this._sound.isPlaying()) {
-	        this._sound.stop();
-	    }
-	};
-
-	/**
-	 * Returns whether or not the animator is currently playing.
-	 *
-	 * @return {boolean} True if the animator is currently playing; false
-	 *   otherwise.
-	 */
-	MusicAnimator.prototype.isPlaying = function() {
-	    if (this._sound !== null) {
-	        return this._sound.isPlaying();
-	    } else {
-	        return false;
-	    }
-	};
-
-	/**
-	 * Returns whether or not the animator is ready to play.
-	 *
-	 * @return {boolean} True if the animator is ready to play; false
-	 *   otherwise.
-	 */
-	MusicAnimator.prototype.isReady = function() {
-	    return (
-	        this._sound && this._sound.isReady() &&
-	        this._beats &&
-	        this._animStateDelegate !== null
-	    );
-	};
-
-	/**
-	 * Registers an event handler, so that whenever a particular event occurs,
-	 * the event handler function is called.
-	 *
-	 * @param {string} eventName This is the name of the event to connect
-	 *   the event handler to. When this event occurs, the eventHandler will
-	 *   be called. Possible eventName inputs are:
-	 *     - "start" : occurs when the animator starts
-	 *     - "stop" : occurs when the animator stops, but NOT when the
-	 *         animator stops because it has finished
-	 *     - "finished" : occurs when the animator finishes
-	 *     - "beat" : occurs when the animator advances to the next beat
-	 * @param {function():*} eventHandler The function that will be called
-	 *   when the specified event occurs.
-	 */
-	MusicAnimator.prototype.registerEventHandler = function(eventName, eventHandler) {
-	    this._eventHandlers[eventName] = eventHandler;
-	};
-
-	/**
-	 * Makes a function that will call the event handler with the given
-	 * name. The returned function is flexible: it will call whatever
-	 * event handler is associated with the MusicAnimator (so if the
-	 * event handlers are changed in the MusicAnimator, they will be
-	 * be changed in the function), and it will skip a call to the
-	 * event handler if it is unset.
-	 *
-	 * @param {string} eventName The name of the event whose handler
-	 *   should be called.
-	 * @return {function():*} A function that, when called, will
-	 *   call the event handler associated with the specified event
-	 *   (but only if that event handler is set).
-	 */
-	MusicAnimator.prototype._makeEventRouter = function(eventName) {
-	    var _this = this;
-	    return function() {
-	        _this._callEventHandler(eventName);
-	    };
-	};
-
-	/**
-	 * Calls an event handler, if it is set.
-	 *
-	 * @param {string} eventName The event whose handler should be called.
-	 */
-	MusicAnimator.prototype._callEventHandler = function(eventName) {
-	    if (this._eventHandlers[eventName]) {
-	        this._eventHandlers[eventName]();
-	    }
-	};
-
-	/**
-	 * Responds to a timed event in the sound, and moves to the next
-	 * beat.
-	 */
-	MusicAnimator.prototype._nextBeat = function() {
-	    this._animStateDelegate.nextBeat();
-	    this._callEventHandler("beat");
-	    if (!this._animStateDelegate.hasNextBeat()) {
-	        this._endOfShow();
-	    }
-	};
-
-	/**
-	 * Called when the end of the show is reached before the
-	 * end of the music. This stops the animation and alerts
-	 * the event handler that the animation has finished.
-	 */
-	MusicAnimator.prototype._endOfShow = function() {
-	    this._stopAndBlockEvent();
-	    this._callEventHandler("finished");
-	};
-
-	/**
-	 * Stops the animation and the sound, but makes sure that
-	 * the music's "stop" event never reaches the event handler.
-	 * This is useful when the show finishes before the music,
-	 * because in that case, we need to stop the music prematurely,
-	 * but we want to throw a "finished" event instead of a "stopped"
-	 * event.
-	 */
-	MusicAnimator.prototype._stopAndBlockEvent = function() {
-	    this._blockStopEvent = true;
-	    this.stop();
-	};
-
-	/**
-	 * An intermediate event handler for when the music is stopped.
-	 * It can block stop events from reaching the real event handler.
-	 */
-	MusicAnimator.prototype._musicStopped = function() {
-	    if (this._blockStopEvent) {
-	        this._blockStopEvent = false;
-	    } else {
-	        this._callEventHandler("stop");
-	    }
-	};
-
-	module.exports = MusicAnimator;
-
-/***/ },
-/* 17 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MusicPlayerFactory class, which is used to
-	 *   generate a MusicPlayer that will play audio for us.
-	 */
-
-	var SMMusicPlayer = __webpack_require__(32);
-	 
-	/**
-	 * MusicPlayerFactory objects can create an appropriate MusicPlayer object
-	 * for on the current environment and settings.
-	 */
-	var MusicPlayerFactory = function() {
-	};
-
-	/**
-	 * Creates and returns an appropriate MusicPlayer for the current
-	 * environment and settings.
-	 *
-	 * @return {MusicPlayer} A MusicPlayer object to play audio for
-	 *   the application.
-	 */
-	MusicPlayerFactory.prototype.createMusicPlayer = function() {
-	    return new SMMusicPlayer();
-	};
-
-	module.exports = MusicPlayerFactory;
-
-/***/ },
-/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1824,8 +1517,8 @@
 
 	var FileLoadSelector = __webpack_require__(21);
 	var InvalidFileTypeError = __webpack_require__(22);
-	var JSUtils = __webpack_require__(2);
-	var Version = __webpack_require__(8);
+	var JSUtils = __webpack_require__(4);
+	var Version = __webpack_require__(5);
 	var Dot = __webpack_require__(23);
 	var Sheet = __webpack_require__(24);
 	var Show = __webpack_require__(25);
@@ -2123,6 +1816,313 @@
 	module.exports = ViewerFileLoadSelector;
 
 /***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MusicAnimator class. This is used to animate
+	 *   with music. For a basic description on how to use it, check the class
+	 *   description.
+	 *   To help keep the UI updated, the MusicAnimator can be set up to inform
+	 *   you when it changes state (e.g. when it starts, stops, finishes, etc.).
+	 *   You can submit event handlers to the MusicAnimator through the
+	 *   registerEventHandler(...) method.
+	 */
+
+	/**
+	 * A MusicAnimator will animate the show in sync with
+	 * music. To get the MusicAnimator to work, you must provide
+	 * it with music (through the setMusic(...) method)
+	 * and a TimedBeats object (through the setBeats(...) method), and
+	 * with an AnimationStateDelegate object (through the setAnimationStateDelegate(...) method).
+	 * After you set up the object, you should check if the MusicAnimator is 
+	 * ready to play using the isReady(...) method, since it may have encountered
+	 * an error while loading. If it is ready, then feel free to start and stop the
+	 * animator with the start(...) and stop(...) methods. The animator
+	 * will automatically stop when it reaches the end of the show, or when
+	 * it runs out of beats to animate in the music.
+	 *
+	 * @param {AnimationStateDelegate} The AnimationStateDelegate that will
+	 *   be used to animate the show. Whenever the music advances a beat, the
+	 *   delegate will advance a beat as well.
+	 * @param {MusicPlayer} The music player.
+	 */
+	var MusicAnimator = function() {
+	    this._animStateDelegate = null;
+	    this._sound = null;
+	    this._timedBeats = null;
+	    this._eventHandlers = {};
+	    this._blockStopEvent = false;
+	};
+
+	/**
+	 * Event strings that the music animator recognizes as hooks.
+	 * @type {Array}
+	 */
+	MusicAnimator.eventTypes = ["start", "stop", "finished", "beat", "ready"];
+
+	/**
+	 * Set the animation state delegate.
+	 */
+	MusicAnimator.prototype.setAnimationStateDelegate = function(animationStateDelegate) {
+	    this.stop(); // Stop before making changes - we don't want the sound to fire events while we work
+	    this._animStateDelegate = animationStateDelegate; // Set up the new delegate
+	};
+
+
+	/**
+	 * Sets the music to animate the show with.
+	 *
+	 * @param {Sound} soundObject The music.
+	 */
+	MusicAnimator.prototype.setMusic = function(soundObject) {
+	    this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
+	    var _this = this;
+	    this._sound = soundObject;
+	    this._sound.registerEventHandler("play", this._makeEventRouter("start"));
+	    this._sound.registerEventHandler("stop", function() {_this._musicStopped();});
+	    this._sound.registerEventHandler("finished", this._makeEventRouter("finished"));
+	    this._loadBeatsOntoSound();
+	    if (this.isReady()) {
+	        this._callEventHandler("ready");
+	    }
+	};
+
+	/**
+	 * Sets the TimedBeats object that will determine
+	 * where beats fall in the music.
+	 *
+	 * @param {TimedBeats} timedBeats The beats to associate with
+	 *   the music.
+	 */
+	MusicAnimator.prototype.setBeats = function(timedBeats) {
+	    this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
+	    this._beats = timedBeats;
+	    this._loadBeatsOntoSound();
+	    if (this.isReady()) {
+	        this._callEventHandler("ready");
+	    }
+	};
+
+	/**
+	 * Makes sure that the sound is prepared to inform us every
+	 * time one of the beats is reached in the music.
+	 */
+	MusicAnimator.prototype._loadBeatsOntoSound = function() {
+	    if (this._beats && this._sound) {
+	        this._sound.clearTimedEvents();
+	        var _this = this;
+	        var timedEventHandler = function() {
+	            _this._nextBeat();
+	        };
+	        var endBeatEventHandler = function() {
+	            _this._animStateDelegate.nextBeat();
+	            _this._callEventHandler("beat");
+	            _this._endOfShow();
+	        };
+	        //Beat 0 is the "start beat" - don't associate a timed event with it, just start the music at that time
+	        //The last beat is the "end beat" - make sure that the show finishes when this beat is hit
+	        for (var beatNum = 1; beatNum < this._beats.getNumBeats() - 1; beatNum++) {
+	            this._sound.addTimedEvent(this._beats.getBeatTime(beatNum), timedEventHandler);
+	        }
+	        this._sound.addTimedEvent(this._beats.getBeatTime(this._beats.getNumBeats() - 1), endBeatEventHandler);
+	    }
+	};
+
+	/**
+	 * Start playing the animation with music.
+	 */
+	MusicAnimator.prototype.start = function() {
+	    this.stop();
+	    // beat "0" of a given stuntsheet is really the last beat of the stuntsheet before
+	    var overallBeat = -1;
+	    var show = this._animStateDelegate.getShow();
+	    for (var sheet = 0; sheet < this._animStateDelegate.getCurrentSheetNum(); sheet++) {
+	        overallBeat += show.getSheet(sheet).getDuration();
+	    }
+	    overallBeat += this._animStateDelegate.getCurrentBeatNum();
+	    if (this._animStateDelegate.hasNextBeat() && overallBeat < this._beats.getNumBeats() - 1) {
+	        if (overallBeat < 0) {
+	            this._animStateDelegate.nextBeat();
+	            $(".js-beat-number").text("1");
+	            this._sound.play(0);
+	        } else {
+	            this._sound.play(this._beats.getBeatTime(overallBeat));
+	        }
+	    } else {
+	        this._endOfShow();
+	    }
+	};
+
+	/**
+	 * Stop playing the animation with music.
+	 */
+	MusicAnimator.prototype.stop = function() {
+	    if (this._sound !== null && this._sound.isPlaying()) {
+	        this._sound.stop();
+	    }
+	};
+
+	/**
+	 * Returns whether or not the animator is currently playing.
+	 *
+	 * @return {boolean} True if the animator is currently playing; false
+	 *   otherwise.
+	 */
+	MusicAnimator.prototype.isPlaying = function() {
+	    if (this._sound !== null) {
+	        return this._sound.isPlaying();
+	    } else {
+	        return false;
+	    }
+	};
+
+	/**
+	 * Returns whether or not the animator is ready to play.
+	 *
+	 * @return {boolean} True if the animator is ready to play; false
+	 *   otherwise.
+	 */
+	MusicAnimator.prototype.isReady = function() {
+	    return (
+	        this._sound && this._sound.isReady() &&
+	        this._beats &&
+	        this._animStateDelegate !== null
+	    );
+	};
+
+	/**
+	 * Registers an event handler, so that whenever a particular event occurs,
+	 * the event handler function is called.
+	 *
+	 * @param {string} eventName This is the name of the event to connect
+	 *   the event handler to. When this event occurs, the eventHandler will
+	 *   be called. Possible eventName inputs are:
+	 *     - "start" : occurs when the animator starts
+	 *     - "stop" : occurs when the animator stops, but NOT when the
+	 *         animator stops because it has finished
+	 *     - "finished" : occurs when the animator finishes
+	 *     - "beat" : occurs when the animator advances to the next beat
+	 * @param {function():*} eventHandler The function that will be called
+	 *   when the specified event occurs.
+	 */
+	MusicAnimator.prototype.registerEventHandler = function(eventName, eventHandler) {
+	    this._eventHandlers[eventName] = eventHandler;
+	};
+
+	/**
+	 * Makes a function that will call the event handler with the given
+	 * name. The returned function is flexible: it will call whatever
+	 * event handler is associated with the MusicAnimator (so if the
+	 * event handlers are changed in the MusicAnimator, they will be
+	 * be changed in the function), and it will skip a call to the
+	 * event handler if it is unset.
+	 *
+	 * @param {string} eventName The name of the event whose handler
+	 *   should be called.
+	 * @return {function():*} A function that, when called, will
+	 *   call the event handler associated with the specified event
+	 *   (but only if that event handler is set).
+	 */
+	MusicAnimator.prototype._makeEventRouter = function(eventName) {
+	    var _this = this;
+	    return function() {
+	        _this._callEventHandler(eventName);
+	    };
+	};
+
+	/**
+	 * Calls an event handler, if it is set.
+	 *
+	 * @param {string} eventName The event whose handler should be called.
+	 */
+	MusicAnimator.prototype._callEventHandler = function(eventName) {
+	    if (this._eventHandlers[eventName]) {
+	        this._eventHandlers[eventName]();
+	    }
+	};
+
+	/**
+	 * Responds to a timed event in the sound, and moves to the next
+	 * beat.
+	 */
+	MusicAnimator.prototype._nextBeat = function() {
+	    this._animStateDelegate.nextBeat();
+	    this._callEventHandler("beat");
+	    if (!this._animStateDelegate.hasNextBeat()) {
+	        this._endOfShow();
+	    }
+	};
+
+	/**
+	 * Called when the end of the show is reached before the
+	 * end of the music. This stops the animation and alerts
+	 * the event handler that the animation has finished.
+	 */
+	MusicAnimator.prototype._endOfShow = function() {
+	    this._stopAndBlockEvent();
+	    this._callEventHandler("finished");
+	};
+
+	/**
+	 * Stops the animation and the sound, but makes sure that
+	 * the music's "stop" event never reaches the event handler.
+	 * This is useful when the show finishes before the music,
+	 * because in that case, we need to stop the music prematurely,
+	 * but we want to throw a "finished" event instead of a "stopped"
+	 * event.
+	 */
+	MusicAnimator.prototype._stopAndBlockEvent = function() {
+	    this._blockStopEvent = true;
+	    this.stop();
+	};
+
+	/**
+	 * An intermediate event handler for when the music is stopped.
+	 * It can block stop events from reaching the real event handler.
+	 */
+	MusicAnimator.prototype._musicStopped = function() {
+	    if (this._blockStopEvent) {
+	        this._blockStopEvent = false;
+	    } else {
+	        this._callEventHandler("stop");
+	    }
+	};
+
+	module.exports = MusicAnimator;
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MusicPlayerFactory class, which is used to
+	 *   generate a MusicPlayer that will play audio for us.
+	 */
+
+	var SMMusicPlayer = __webpack_require__(32);
+	 
+	/**
+	 * MusicPlayerFactory objects can create an appropriate MusicPlayer object
+	 * for on the current environment and settings.
+	 */
+	var MusicPlayerFactory = function() {
+	};
+
+	/**
+	 * Creates and returns an appropriate MusicPlayer for the current
+	 * environment and settings.
+	 *
+	 * @return {MusicPlayer} A MusicPlayer object to play audio for
+	 *   the application.
+	 */
+	MusicPlayerFactory.prototype.createMusicPlayer = function() {
+	    return new SMMusicPlayer();
+	};
+
+	module.exports = MusicPlayerFactory;
+
+/***/ },
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -2141,9 +2141,9 @@
 	 *   
 	 */
 
-	var Version = __webpack_require__(8);
+	var Version = __webpack_require__(5);
 	var FileLoadSelector = __webpack_require__(21);
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var TimedBeats = __webpack_require__(33);
 	var InvalidFileTypeError = __webpack_require__(22);
 	 
@@ -2298,7 +2298,7 @@
 	 */
 
 	var ArrayUtils = __webpack_require__(34);
-	var Version = __webpack_require__(8);
+	var Version = __webpack_require__(5);
 	 
 	/**
 	 * Every version of a file needs to be loaded in a different way -
@@ -2715,7 +2715,7 @@
 	 * @fileOverview Defines the MovementCommandStand class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
 	 
@@ -2758,7 +2758,7 @@
 	 * @fileOverview Defines the MovementCommandMarkTime class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
 
@@ -2802,7 +2802,7 @@
 	 * @fileOverview Defines the MovementCommandArc class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MathUtils = __webpack_require__(37);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
@@ -2896,7 +2896,7 @@
 	 * @fileOverview Defines the MovementCommandMove class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MathUtils = __webpack_require__(37);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
@@ -2963,7 +2963,7 @@
 	 * @fileOverview Defines the MovementCommandGoto class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
 	 
@@ -3011,7 +3011,7 @@
 	 * @fileOverview Defines the MovementCommandEven class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
 	 
@@ -3113,7 +3113,7 @@
 	 *   type that uses SoundManager2 to play audio.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var SMSound = __webpack_require__(38);
 	var MusicPlayer = __webpack_require__(39);
 	 
@@ -3918,7 +3918,7 @@
 	 */
 	 
 	var Sound = __webpack_require__(41);
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	 
 	/**
 	 * SMSound objects play music through SoundManager2.

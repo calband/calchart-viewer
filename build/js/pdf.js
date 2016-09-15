@@ -44,9 +44,9 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var PDFGenerator = __webpack_require__(4);
+	var PDFGenerator = __webpack_require__(1);
 	var ShowUtils = __webpack_require__(3);
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 
 	var options = JSUtils.getAllURLParams();
 	options.dots = options.dots ? options.dots.split(",") : [];
@@ -220,118 +220,7 @@
 
 
 /***/ },
-/* 1 */,
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines miscellaneous utility functions.
-	 */
-
-	/**
-	 * A collection of javascript utility functions.
-	 */
-	var JSUtils = {};
-	 
-	/**
-	 * Causes a child class to inherit from a parent class.
-	 *
-	 * @param {function} ChildClass The class that will inherit
-	 *   from another.
-	 * @param {function} ParentClass The class to inherit from.
-	 */
-	JSUtils.extends = function (ChildClass, ParentClass) {
-	    var Inheritor = function () {}; // dummy constructor
-	    Inheritor.prototype = ParentClass.prototype;
-	    ChildClass.prototype = new Inheritor();
-	};
-
-	/**
-	 * Returns the value of the given name in the URL query string
-	 *
-	 * getQueryValue("hello") on http://foo.bar?hello=world should return "world"
-	 *
-	 * @param {String} name
-	 * @returns {String|null} the value of the name or null if name not in URL query string
-	 */
-	JSUtils.getURLValue = function(name) {
-	    var vals = this.getAllURLParams();
-	    if (vals[name] !== undefined) {
-	        return vals[name];
-	    } else {
-	        return null;
-	    }
-	};
-
-	/**
-	 * Returns all name-value pairs in the URL query string
-	 *
-	 * @returns {object} a dictionary mapping name to value
-	 */
-	JSUtils.getAllURLParams = function() {
-	    var vals = {};
-	    var query = window.location.search.substr(1);
-	    var vars = query.split("&");
-	    for (var i = 0; i < vars.length; i++) {
-	        var pair = vars[i].split("=");
-	        var name = decodeURIComponent(pair[0]);
-	        var value = decodeURIComponent(pair[1]);
-	        vals[name] = value;
-	    }
-	    return vals;
-	};
-
-	module.exports = JSUtils;
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines a collection of functions that are
-	 *   used to create and manage Show objects.
-	 */
-
-	 var ViewerFileLoadSelector = __webpack_require__(18);
-	 var Version = __webpack_require__(8);
-	 
-	 /**
-	  * The collection of all functions related to creating and
-	  * managing Show objects.
-	  */
-	 var ShowUtils = {};
-	 
-	/**
-	 * Builds a show from a viewer file, given the content
-	 * of a viewer file as a string.
-	 *
-	 * @param {string} fileContent The content of the
-	 *   viewer file to load the show from.
-	 * @return {Show} The show represented in the viewer
-	 *   file.
-	 */
-	ShowUtils.fromJSONString = function(fileContent) {
-	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-	    return this.fromJSON(viewerObject);
-	};
-	 
-	/**
-	 * Builds a show from a viewer file, as a JSON object
-	 *
-	 * @param {object} viewerObject The content of the
-	 *   viewer file to load the show from.
-	 * @return {Show} The show represented in the viewer
-	 *   file.
-	 */
-	ShowUtils.fromJSON = function(viewerObject) {
-	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
-	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
-	};
-
-	module.exports = ShowUtils;
-
-/***/ },
-/* 4 */
+/* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var PDFUtils = __webpack_require__(9);
@@ -671,10 +560,118 @@
 
 
 /***/ },
-/* 5 */,
-/* 6 */,
-/* 7 */,
-/* 8 */
+/* 2 */,
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines a collection of functions that are
+	 *   used to create and manage Show objects.
+	 */
+
+	 var ViewerFileLoadSelector = __webpack_require__(16);
+	 var Version = __webpack_require__(5);
+	 
+	 /**
+	  * The collection of all functions related to creating and
+	  * managing Show objects.
+	  */
+	 var ShowUtils = {};
+	 
+	/**
+	 * Builds a show from a viewer file, given the content
+	 * of a viewer file as a string.
+	 *
+	 * @param {string} fileContent The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
+	 */
+	ShowUtils.fromJSONString = function(fileContent) {
+	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+	    return this.fromJSON(viewerObject);
+	};
+	 
+	/**
+	 * Builds a show from a viewer file, as a JSON object
+	 *
+	 * @param {object} viewerObject The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
+	 */
+	ShowUtils.fromJSON = function(viewerObject) {
+	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
+	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
+	};
+
+	module.exports = ShowUtils;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines miscellaneous utility functions.
+	 */
+
+	/**
+	 * A collection of javascript utility functions.
+	 */
+	var JSUtils = {};
+	 
+	/**
+	 * Causes a child class to inherit from a parent class.
+	 *
+	 * @param {function} ChildClass The class that will inherit
+	 *   from another.
+	 * @param {function} ParentClass The class to inherit from.
+	 */
+	JSUtils.extends = function (ChildClass, ParentClass) {
+	    var Inheritor = function () {}; // dummy constructor
+	    Inheritor.prototype = ParentClass.prototype;
+	    ChildClass.prototype = new Inheritor();
+	};
+
+	/**
+	 * Returns the value of the given name in the URL query string
+	 *
+	 * getQueryValue("hello") on http://foo.bar?hello=world should return "world"
+	 *
+	 * @param {String} name
+	 * @returns {String|null} the value of the name or null if name not in URL query string
+	 */
+	JSUtils.getURLValue = function(name) {
+	    var vals = this.getAllURLParams();
+	    if (vals[name] !== undefined) {
+	        return vals[name];
+	    } else {
+	        return null;
+	    }
+	};
+
+	/**
+	 * Returns all name-value pairs in the URL query string
+	 *
+	 * @returns {object} a dictionary mapping name to value
+	 */
+	JSUtils.getAllURLParams = function() {
+	    var vals = {};
+	    var query = window.location.search.substr(1);
+	    var vars = query.split("&");
+	    for (var i = 0; i < vars.length; i++) {
+	        var pair = vars[i].split("=");
+	        var name = decodeURIComponent(pair[0]);
+	        var value = decodeURIComponent(pair[1]);
+	        vals[name] = value;
+	    }
+	    return vals;
+	};
+
+	module.exports = JSUtils;
+
+/***/ },
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -750,6 +747,9 @@
 	module.exports = Version;
 
 /***/ },
+/* 6 */,
+/* 7 */,
+/* 8 */,
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -939,7 +939,7 @@
 	 * @fileOverview Defines the widget for generating the page's headers
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var PDFUtils = __webpack_require__(9);
 	var PDFWidget = __webpack_require__(20);
 
@@ -1105,7 +1105,7 @@
 	 * @fileOverview Defines the widget for generating a dot type's continuity
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var PDFUtils = __webpack_require__(9);
 	var PDFWidget = __webpack_require__(20);
 
@@ -1196,7 +1196,7 @@
 	 * @fileOverview Defines the widget for generating a dot's individual continuity
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var PDFUtils = __webpack_require__(9);
 	var PDFWidget = __webpack_require__(20);
 
@@ -1295,7 +1295,7 @@
 	 * @fileOverview Defines the widget for generating a dot's movement diagram
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var PDFUtils = __webpack_require__(9);
 	var PDFWidget = __webpack_require__(20);
 
@@ -1633,7 +1633,7 @@
 	 * @fileOverview Defines the widget for generating the bird's eye view widget
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var PDFUtils = __webpack_require__(9);
 	var PDFWidget = __webpack_require__(20);
 
@@ -1796,7 +1796,7 @@
 	 * @fileOverview Defines the widget for generating the surrounding dots widget
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var PDFUtils = __webpack_require__(9);
 	var PDFWidget = __webpack_require__(20);
 
@@ -1902,9 +1902,7 @@
 	module.exports = SurroundingDotsWidget;
 
 /***/ },
-/* 16 */,
-/* 17 */,
-/* 18 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1924,8 +1922,8 @@
 
 	var FileLoadSelector = __webpack_require__(21);
 	var InvalidFileTypeError = __webpack_require__(22);
-	var JSUtils = __webpack_require__(2);
-	var Version = __webpack_require__(8);
+	var JSUtils = __webpack_require__(4);
+	var Version = __webpack_require__(5);
 	var Dot = __webpack_require__(23);
 	var Sheet = __webpack_require__(24);
 	var Show = __webpack_require__(25);
@@ -2223,6 +2221,8 @@
 	module.exports = ViewerFileLoadSelector;
 
 /***/ },
+/* 17 */,
+/* 18 */,
 /* 19 */,
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
@@ -2367,7 +2367,7 @@
 	 */
 
 	var ArrayUtils = __webpack_require__(34);
-	var Version = __webpack_require__(8);
+	var Version = __webpack_require__(5);
 	 
 	/**
 	 * Every version of a file needs to be loaded in a different way -
@@ -2784,7 +2784,7 @@
 	 * @fileOverview Defines the MovementCommandStand class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
 	 
@@ -2827,7 +2827,7 @@
 	 * @fileOverview Defines the MovementCommandMarkTime class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
 
@@ -2871,7 +2871,7 @@
 	 * @fileOverview Defines the MovementCommandArc class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MathUtils = __webpack_require__(37);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
@@ -2965,7 +2965,7 @@
 	 * @fileOverview Defines the MovementCommandMove class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MathUtils = __webpack_require__(37);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
@@ -3032,7 +3032,7 @@
 	 * @fileOverview Defines the MovementCommandGoto class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
 	 
@@ -3080,7 +3080,7 @@
 	 * @fileOverview Defines the MovementCommandEven class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(4);
 	var MovementCommand = __webpack_require__(35);
 	var AnimationState = __webpack_require__(36);
 	 
