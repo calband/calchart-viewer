@@ -137,6 +137,7 @@
 	    // Detect browser from http://stackoverflow.com/questions/5899783/detect-safari-using-jquery
 	    var browserString = navigator.userAgent;
 	    var isSafari = (browserString.indexOf("Safari") > -1) && (browserString.indexOf("Chrome") == -1);
+	    // alert about safari not supporting ogg files. can remove if we stop using ogg files completely
 	    if (isSafari) {
 	        alert("You may not be able to upload .ogg files using Safari. Either use an mp3 version of the file or use the Viewer on another browser.")
 	    }
@@ -160,8 +161,8 @@
 	var Grapher = __webpack_require__(5);
 	var ShowUtils = __webpack_require__(3);
 	var TimedBeatsUtils = __webpack_require__(6);
-	var MusicAnimator = __webpack_require__(16);
-	var MusicPlayerFactory = __webpack_require__(17);
+	var MusicAnimator = __webpack_require__(9);
+	var MusicPlayerFactory = __webpack_require__(10);
 	var AnimationStateDelegate = __webpack_require__(7);
 
 	/**
@@ -255,10 +256,10 @@
 	    $(".js-select-show").trigger("chosen:updated");
 
 	    var _this = this;
-	    // load viewer flie
+	    // load all show data
 	    $.ajax({
-	        url: "https://calchart-server.herokuapp.com/viewer/" + show + "/",
-	        dataType: "text",
+	        url: "https://calchart-server.herokuapp.com/get/" + show + "/",
+	        dataType: "json",
 	        xhr: function() {
 	            var xhr = $.ajaxSettings.xhr();
 	            // update loading bar
@@ -266,14 +267,15 @@
 	                if (evt.lengthComputable) {
 	                    var percentComplete = evt.loaded / evt.total;
 	                    $(".loading .progress-bar").css({
-	                        width: (35 + percentComplete * 35) + "%",
+	                        width: (35 + percentComplete * 65) + "%",
 	                    });
 	                }
 	            };
 	            return xhr;
 	        },
 	        success: function(data) {
-	            var viewer = ShowUtils.fromJSON(data);
+	            // load viewer file
+	            var viewer = ShowUtils.fromJSON(data.viewer);
 	            _this.setShow(viewer);
 	            _this._setFileInputText(".js-viewer-file-btn", show);
 	            if (dot !== undefined && dot !== "") {
@@ -281,31 +283,23 @@
 	                $("option[value=" + dot + "]").prop("selected", true);
 	                $(".js-dot-labels").trigger("chosen:updated");
 	            }
+
 	            // load beats file
-	            $.ajax({
-	                url: "https://calchart-server.herokuapp.com/beats/" + show + "/",
-	                dataType: "text",
-	                xhr: function() {
-	                    var xhr = $.ajaxSettings.xhr();
-	                    // update loading bar
-	                    xhr.onprogress = function(evt) {
-	                        if (evt.lengthComputable) {
-	                            var percentComplete = evt.loaded / evt.total;
-	                            $(".loading .progress-bar").css({
-	                                width: (70 + percentComplete * 30) + "%",
-	                            });
-	                        }
-	                    };
-	                    return xhr;
-	                },
-	                success: function(data) {
-	                    var beats = TimedBeatsUtils.fromJSON(data);
-	                    _this._animator.setBeats(beats);
-	                    _this._setFileInputText(".js-beats-file-btn", show);
-	                    // close loading screen
-	                    $(".loading").remove();
-	                },
-	            });
+	            var beats = TimedBeatsUtils.fromJSON(data.beats);
+	            _this._animator.setBeats(beats);
+	            _this._setFileInputText(".js-beats-file-btn", show);
+
+	            // load audio file
+	            var newSound = _this._musicPlayer.createSound();
+	            var onMusicLoaded = function() {
+	                _this._animator.setMusic(newSound);
+	                _this._setFileInputText(".js-audio-file-btn", show);
+
+	                // close loading screen
+	                $(".loading").remove();
+	            };
+	            newSound.registerEventHandler("finishedLoading", onMusicLoaded);
+	            newSound.load(data.audio);
 	        },
 	    });
 	};
@@ -563,7 +557,7 @@
 	    var _this = this;
 	    return this._createFileHandler(function (fileContentsAsText, fileName) {
 	        try {
-	            var beats = TimedBeatsUtils.fromJSON(fileContentsAsText);
+	            var beats = TimedBeatsUtils.fromJSONString(fileContentsAsText);
 	            _this._animator.setBeats(beats);
 	            _this._setFileInputText(".js-beats-file-btn", fileName);
 	        } catch (err) {
@@ -586,7 +580,7 @@
 	    var _this = this;
 	    return this._createFileHandler(function (fileContentsAsText, fileName) {
 	        try {
-	            var show = ShowUtils.fromJSON(fileContentsAsText);
+	            var show = ShowUtils.fromJSONString(fileContentsAsText);
 	            _this.setShow(show);
 	            _this._setFileInputText(".js-viewer-file-btn", fileName);
 	        } catch (err) {
@@ -750,8 +744,8 @@
 	 *   used to create and manage Show objects.
 	 */
 
-	 var ViewerFileLoadSelector = __webpack_require__(18);
-	 var Version = __webpack_require__(15);
+	 var ViewerFileLoadSelector = __webpack_require__(11);
+	 var Version = __webpack_require__(8);
 	 
 	 /**
 	  * The collection of all functions related to creating and
@@ -768,10 +762,22 @@
 	 * @return {Show} The show represented in the viewer
 	 *   file.
 	 */
-	ShowUtils.fromJSON = function(fileContent) {
-	    var viewerFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-	    var fileVersion = Version.parse(viewerFileMainObject.meta.version); //Get the version of the viewer file
-	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerFileMainObject); //Get the appropriate ViewerLoader and use it to load the file
+	ShowUtils.fromJSONString = function(fileContent) {
+	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+	    return this.fromJSON(viewerObject);
+	};
+	 
+	/**
+	 * Builds a show from a viewer file, as a JSON object
+	 *
+	 * @param {object} viewerObject The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
+	 */
+	ShowUtils.fromJSON = function(viewerObject) {
+	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
+	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
 	};
 
 	module.exports = ShowUtils;
@@ -1147,7 +1153,7 @@
 	 */
 
 	 var BeatsFileLoadSelector = __webpack_require__(19);
-	 var Version = __webpack_require__(15);
+	 var Version = __webpack_require__(8);
 	 
 	 /**
 	  * The collection of all functions related to creating and
@@ -1164,10 +1170,22 @@
 	 * @return {TimedBeats} The TimedBeats object represented in the
 	 *   beats file.
 	 */
-	TimedBeatsUtils.fromJSON = function(fileContent) {
-	    var beatsFileMainObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-	    var fileVersion = Version.parse(beatsFileMainObject.meta.version); //Get the version of the beats file
-	    return BeatsFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(beatsFileMainObject); //Get the appropriate file loader and use it to load the file
+	TimedBeatsUtils.fromJSONString = function(fileContent) {
+	    var beatsObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+	    return this.fromJSON(beatsObject);
+	};
+	 
+	/**
+	 * Builds a TimedBeats object from a beats file, as a JSON object
+	 *
+	 * @param {object} beatsObject The content of the
+	 *   beats file to load the TimedBeats from.
+	 * @return {TimedBeats} The TimedBeats object represented in the
+	 *   beats file.
+	 */
+	TimedBeatsUtils.fromJSON = function(beatsObject) {
+	    var fileVersion = Version.parse(beatsObject.meta.version); //Get the version of the beats file
+	    return BeatsFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(beatsObject); //Get the appropriate file loader and use it to load the file
 	};
 
 	module.exports = TimedBeatsUtils;
@@ -1396,14 +1414,7 @@
 
 
 /***/ },
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */,
-/* 12 */,
-/* 13 */,
-/* 14 */,
-/* 15 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1479,7 +1490,7 @@
 	module.exports = Version;
 
 /***/ },
-/* 16 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1755,7 +1766,7 @@
 	module.exports = MusicAnimator;
 
 /***/ },
-/* 17 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1786,7 +1797,7 @@
 	module.exports = MusicPlayerFactory;
 
 /***/ },
-/* 18 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1807,7 +1818,7 @@
 	var FileLoadSelector = __webpack_require__(21);
 	var InvalidFileTypeError = __webpack_require__(22);
 	var JSUtils = __webpack_require__(2);
-	var Version = __webpack_require__(15);
+	var Version = __webpack_require__(8);
 	var Dot = __webpack_require__(23);
 	var Sheet = __webpack_require__(24);
 	var Show = __webpack_require__(25);
@@ -2105,6 +2116,13 @@
 	module.exports = ViewerFileLoadSelector;
 
 /***/ },
+/* 12 */,
+/* 13 */,
+/* 14 */,
+/* 15 */,
+/* 16 */,
+/* 17 */,
+/* 18 */,
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -2123,7 +2141,7 @@
 	 *   
 	 */
 
-	var Version = __webpack_require__(15);
+	var Version = __webpack_require__(8);
 	var FileLoadSelector = __webpack_require__(21);
 	var JSUtils = __webpack_require__(2);
 	var TimedBeats = __webpack_require__(33);
@@ -2280,7 +2298,7 @@
 	 */
 
 	var ArrayUtils = __webpack_require__(34);
-	var Version = __webpack_require__(15);
+	var Version = __webpack_require__(8);
 	 
 	/**
 	 * Every version of a file needs to be loaded in a different way -
