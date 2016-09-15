@@ -15,30 +15,22 @@ if ! grep -q "master" .git/HEAD; then
     return 1
 fi
 
-# make sure master is up to date
-git pull origin master
+echo "Updating master..."
+git pull origin master -q
 
-# checkout and update the gh-pages branch
-git fetch origin gh-pages
-git checkout gh-pages
-git pull origin gh-pages
+echo "Checking out gh-pages branch..."
+git fetch origin gh-pages -q
+git checkout gh-pages -q
+git pull origin gh-pages -q
 
-# get the current hash
-latest=$(git log -1 --format="%H")
+echo "Merging master..."
+git merge master -q
 
-# merge any updates from master
-git merge master
-
-master_hash=$(git log -1 --format="%H")
-master_message=$(git log -1 --format="%B")
-
-# build static files
+echo "Building static files..."
 grunt build
 
-# squash commits
-git reset --soft $latest
-git commit -m "Built up to $master_hash ($master_message)"
-git push origin gh-pages
+git commit -am "Built production files"
+git push origin gh-pages -q
 
-git checkout master
+git checkout master -q
 echo "done."
