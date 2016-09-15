@@ -91,6 +91,7 @@ $(document).ready(function () {
     // Detect browser from http://stackoverflow.com/questions/5899783/detect-safari-using-jquery
     var browserString = navigator.userAgent;
     var isSafari = (browserString.indexOf("Safari") > -1) && (browserString.indexOf("Chrome") == -1);
+    // alert about safari not supporting ogg files. can remove if we stop using ogg files completely
     if (isSafari) {
         alert("You may not be able to upload .ogg files using Safari. Either use an mp3 version of the file or use the Viewer on another browser.")
     }

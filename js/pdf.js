@@ -130,7 +130,7 @@ $(document).ready(function() {
         },
         success: function(data) {
             $(".js-pdf-loading .progress-bar").css("width", "50%");
-            var show = ShowUtils.fromJSON(data);
+            var show = ShowUtils.fromJSONString(data);
 
             // update dot labels
             $(".js-dot-labels").empty();
