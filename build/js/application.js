@@ -161,8 +161,8 @@
 	var Grapher = __webpack_require__(5);
 	var ShowUtils = __webpack_require__(3);
 	var TimedBeatsUtils = __webpack_require__(6);
-	var MusicAnimator = __webpack_require__(9);
-	var MusicPlayerFactory = __webpack_require__(10);
+	var MusicAnimator = __webpack_require__(16);
+	var MusicPlayerFactory = __webpack_require__(17);
 	var AnimationStateDelegate = __webpack_require__(7);
 
 	/**
@@ -744,7 +744,7 @@
 	 *   used to create and manage Show objects.
 	 */
 
-	 var ViewerFileLoadSelector = __webpack_require__(11);
+	 var ViewerFileLoadSelector = __webpack_require__(18);
 	 var Version = __webpack_require__(8);
 	 
 	 /**
@@ -1490,7 +1490,14 @@
 	module.exports = Version;
 
 /***/ },
-/* 9 */
+/* 9 */,
+/* 10 */,
+/* 11 */,
+/* 12 */,
+/* 13 */,
+/* 14 */,
+/* 15 */,
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1766,7 +1773,7 @@
 	module.exports = MusicAnimator;
 
 /***/ },
-/* 10 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1797,7 +1804,7 @@
 	module.exports = MusicPlayerFactory;
 
 /***/ },
-/* 11 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2116,13 +2123,6 @@
 	module.exports = ViewerFileLoadSelector;
 
 /***/ },
-/* 12 */,
-/* 13 */,
-/* 14 */,
-/* 15 */,
-/* 16 */,
-/* 17 */,
-/* 18 */,
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
