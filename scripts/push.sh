@@ -24,10 +24,10 @@ git checkout gh-pages -q
 git pull origin gh-pages -q
 
 echo "Merging master..."
-git merge master -q
+git merge master -q -m "Merging master into gh-pages branch"
 
 echo "Building static files..."
-grunt build
+grunt build > /dev/null
 
 git commit -am "Built production files"
 git push origin gh-pages -q
