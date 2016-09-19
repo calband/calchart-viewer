@@ -134,16 +134,18 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
             _this._setFileInputText(".js-beats-file-btn", show);
 
             // load audio file
-            var newSound = _this._musicPlayer.createSound();
-            var onMusicLoaded = function() {
-                _this._animator.setMusic(newSound);
-                _this._setFileInputText(".js-audio-file-btn", show);
+            if (data.audio !== null) {
+                var newSound = _this._musicPlayer.createSound();
+                var onMusicLoaded = function() {
+                    _this._animator.setMusic(newSound);
+                    _this._setFileInputText(".js-audio-file-btn", show);
 
-                // close loading screen
-                $(".loading").remove();
-            };
-            newSound.registerEventHandler("finishedLoading", onMusicLoaded);
-            newSound.load(data.audio);
+                    // close loading screen
+                    $(".loading").remove();
+                };
+                newSound.registerEventHandler("finishedLoading", onMusicLoaded);
+                newSound.load(data.audio);
+            }
         },
     });
 };
