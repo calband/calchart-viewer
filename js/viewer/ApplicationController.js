@@ -134,7 +134,10 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
             _this._setFileInputText(".js-beats-file-btn", show);
 
             // load audio file
-            if (data.audio !== null) {
+            if (data.audio === null) {
+                // close loading screen
+                $(".loading").remove();
+            } else {
                 var newSound = _this._musicPlayer.createSound();
                 var onMusicLoaded = function() {
                     _this._animator.setMusic(newSound);
