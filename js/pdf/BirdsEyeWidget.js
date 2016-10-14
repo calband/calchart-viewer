@@ -62,14 +62,8 @@ BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
     this.pdf.setDrawColor(150);
     for (var i = 0; i < numDashes; i += 2) {
         var x = box.x + i * dashLength;
-        this.pdf.line(
-            x, topHash,
-            x + dashLength, topHash
-        );
-        this.pdf.line(
-            x, bottomHash,
-            x + dashLength, bottomHash
-        );
+        this.pdf.hLine(x, topHash, dashLength);
+        this.pdf.hLine(x, bottomHash, dashLength);
     }
 
     // drawing all the dots
@@ -113,14 +107,8 @@ BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
     this.pdf.setDrawColor(180);
     this.pdf.setFontSize(coordinates.textSize);
 
-    this.pdf.line(
-        box.x + x, box.y,
-        box.x + x, box.y + box.height
-    );
-    this.pdf.line(
-        box.x, box.y + y,
-        box.x + box.width, box.y + y
-    );
+    this.pdf.vLine(box.x + x, box.y, box.height);
+    this.pdf.hLine(box.x, box.y + y, box.width);
 
     // Put vertical coordinate text on opposite side of the field
     if (position.x > 80) {

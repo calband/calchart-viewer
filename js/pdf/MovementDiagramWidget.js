@@ -236,29 +236,25 @@ MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, botto
         // drawing the yardline
         if (isSplitting) {
             this.pdf.setDrawColor(200);
-            this.pdf.line(
-                yardlineX, y,
-                yardlineX, y + height
-            );
+            this.pdf.vLine(yardlineX, y, height);
             continue;
         }
         this.pdf.setDrawColor(0);
-        this.pdf.line(
-            yardlineX, y,
-            yardlineX, y + height
-        );
+        this.pdf.vLine(yardlineX, y, height);
 
         // drawing hashes
         if (westHash) {
-            this.pdf.line(
-                yardlineX - hashLength/2, westHashY,
-                yardlineX + hashLength/2, westHashY
+            this.pdf.hLine(
+                yardlineX - hashLength/2,
+                westHashY,
+                hashLength
             );
         }
         if (eastHash) {
-            this.pdf.line(
-                yardlineX - hashLength/2, eastHashY,
-                yardlineX + hashLength/2, eastHashY
+            this.pdf.hLine(
+                yardlineX - hashLength/2,
+                eastHashY,
+                hashLength
             );
         }
 
@@ -308,10 +304,7 @@ MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, botto
 MovementDiagramWidget.prototype._drawPosition = function(box, y, offset, closeToLeft) {
     var lineY = box.y + offset;
     var text = PDFUtils.getYCoordinateText(y);
-    this.pdf.line(
-        box.x, lineY,
-        box.x + box.width, lineY
-    );
+    this.pdf.hLine(box.x, lineY, box.width);
     this.pdf.setFontSize(8);
     if (closeToLeft) {
         this.pdf.text(
