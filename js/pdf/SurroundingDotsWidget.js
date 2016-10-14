@@ -57,22 +57,26 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
         x: box.x + box.width/2,
         y: box.y + box.height/2
     };
-
-    this.pdf.setDrawColor(150);
-    this.pdf.setLineWidth(.1);
-    // cross hairs for selected dot
-    this.pdf.line(
-        origin.x, box.y,
-        origin.x, box.y + box.height
-    );
-    this.pdf.line(
-        box.x, origin.y,
-        box.x + box.width, origin.y
-    );
-
     var sheet = options["sheet"];
     var start = options["dot"].getAnimationState(0);
     var orientationFactor = this.westUp ? 1 : -1;
+    var scale = box.height / 11.5; // radius of 4 steps + 1.75 steps of padding
+
+    // yardlines
+    this.pdf.setDrawColor(150);
+    this.pdf.setLineWidth(.1);
+    // # of steps north of the yardline the dot is at
+    var yardlineDelta = start.x % 8;
+    if (yardlineDelta > 4) {
+        yardlineDelta = 4 - yardlineDelta;
+    }
+    var yardlineX = origin.x - yardlineDelta * scale * orientationFactor;
+    this.pdf.vLine(yardlineX, box.y, box.height);
+    // the only time 2 yardlines will be drawn is if the dot is splitting
+    if (Math.abs(yardlineDelta) === 4) {
+        yardlineX = origin.x + yardlineDelta * scale * orientationFactor;
+        this.pdf.vLine(yardlineX, box.y, box.height);
+    }
 
     var allDots = sheet.getDots();
     var surroundingDots = [];
@@ -91,7 +95,6 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
         }
     });
 
-    var scale = box.height / 11.5; // radius of 4 steps + 1.75 steps of padding
     var labelSize = box.height * 7/29;
     var dotRadius = box.height * .04;
     this.pdf.setFontSize(labelSize);

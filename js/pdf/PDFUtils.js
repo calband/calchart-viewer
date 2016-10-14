@@ -172,6 +172,30 @@ PDFUtils.getYCoordinateText = function(y) {
         this.setLineWidth(.3);
         return this;
     };
+
+    /**
+     * This jsPDF plugin draws a horizontal line from the given (x,y) coordinate to
+     * the coordinate (x + width, y)
+     *
+     * @param {float} x
+     * @param {float} y
+     * @param {float} width
+     */
+    jsPDFAPI.hLine = function(x, y, width) {
+        this.line(x, y, x + width, y);
+    };
+
+    /**
+     * This jsPDF plugin draws a vertical line from the given (x,y) coordinate to
+     * the coordinate (x, y + height)
+     *
+     * @param {float} x
+     * @param {float} y
+     * @param {float} height
+     */
+    jsPDFAPI.vLine = function(x, y, height) {
+        this.line(x, y, x, y + height);
+    };
 })(jsPDF.API);
 
 module.exports = PDFUtils;
