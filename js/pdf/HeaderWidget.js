@@ -9,9 +9,11 @@ var PDFWidget = require("./PDFWidget");
 /**
  * @constant WIDTH is the width of the PDF document, in millimeters
  * @constant HEIGHT is the height of the PDF document, in millimeters
+ * @constant SIDE_MARGIN is the left/right margin of the PDF document, in millimeters
  */
 var WIDTH = 215.9;
 var HEIGHT = 279.4;
+var SIDE_MARGIN = 10;
 
 /**
  * Represents the widget for a page's headers
@@ -46,9 +48,9 @@ HeaderWidget.prototype.draw = function(options) {
     var isLeftToRight = options["isLeftToRight"];
 
     var header = {
-        x: WIDTH * 1/6,
+        x: WIDTH * 1/4,
         y: 5,
-        width: WIDTH * 2/3,
+        width: WIDTH * 1/2,
         height: 17, // PDFUtils.getTextHeight(16) * 3
         paddingX: 3,
         paddingY: 1,
@@ -72,7 +74,7 @@ HeaderWidget.prototype.draw = function(options) {
     };
 
     var sheetInfo = {
-        marginX: 4,
+        marginX: SIDE_MARGIN,
         marginY: 3,
         size: 28,
         sheet: (pageNum - 1) * 4 + 1,
@@ -127,7 +129,7 @@ HeaderWidget.prototype.draw = function(options) {
     var y = header.y + header.height/2 + PDFUtils.getTextHeight(pageInfo.size)/2;
     pageInfo.draw(x, y);
 
-    x = WIDTH * 5/6 - header.paddingX - PDFUtils.getTextWidth("Page 0/0", pageInfo.size);
+    x = WIDTH * 3/4 - header.paddingX - PDFUtils.getTextWidth("Page 0/0", pageInfo.size);
     pageInfo.draw(x, y);
 
     /* Stuntsheet */
