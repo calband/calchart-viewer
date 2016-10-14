@@ -52,6 +52,10 @@ function removeIFrame() {
     $("<p>")
         .append(link)
         .appendTo(".js-pdf-loading");
+        
+    $("<p>")
+        .text("Are you on Google Chrome? Try opening the PDF outside of Chrome.")
+        .appendTo(".js-pdf-loading");
 };
 
 /**
