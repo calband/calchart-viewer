@@ -9,20 +9,22 @@ var SurroundingDotsWidget = require("./SurroundingDotsWidget");
 /**
  * @constant WIDTH is the width of the PDF document, in millimeters
  * @constant HEIGHT is the height of the PDF document, in millimeters
+ * @constant SIDE_MARGIN is the left/right margin of the PDF document, in millimeters
  * @constant QUADRANT contains (x,y) coordinates for the top left corner of each quadrant
  *      of the document. y coordinates offset by headers
  */
 var WIDTH = 215.9;
 var HEIGHT = 279.4;
+var SIDE_MARGIN = 10;
 
 var QUADRANT = [
-    {x: 3, y: 24},                     // top left
-    {x: WIDTH/2 + 3, y: 24},           // top right
-    {x: 3, y: HEIGHT/2 + 16},          // bottom left
-    {x: WIDTH/2 + 3, y: HEIGHT/2 + 16} // bottom right
+    {x: SIDE_MARGIN, y: 24},                     // top left
+    {x: WIDTH/2 + SIDE_MARGIN, y: 24},           // top right
+    {x: SIDE_MARGIN, y: HEIGHT/2 + 16},          // bottom left
+    {x: WIDTH/2 + SIDE_MARGIN, y: HEIGHT/2 + 16} // bottom right
 ];
 var QUADRANT_HEIGHT = HEIGHT/2 - 22;
-var QUADRANT_WIDTH = WIDTH/2 - 6;
+var QUADRANT_WIDTH = WIDTH/2 - SIDE_MARGIN * 2;
 
 /**
  * This PDFGenerator class will be able to generate the PDF representation of the given
@@ -106,14 +108,8 @@ PDFGenerator.prototype._generate = function(options) {
         });
         // drawing lines between quadrants
         this.pdf.setDrawColor(150);
-        this.pdf.line(
-            WIDTH/2, 24,
-            WIDTH/2, HEIGHT
-        );
-        this.pdf.line(
-            0, HEIGHT/2 + 2.5,
-            WIDTH, HEIGHT/2 + 2.5
-        );
+        this.pdf.vLine(WIDTH/2, 24, HEIGHT - 24);
+        this.pdf.hLine(0, HEIGHT/2 + 2.5, WIDTH);
         this.pdf.setDrawColor(0);
 
         var quadrantOrder = [0, 1, 2, 3]; // top left, top right, bottom left, bottom right
@@ -253,10 +249,7 @@ PDFGenerator.prototype._getMovements = function() {
  */
 PDFGenerator.prototype._addEndSheet = function(widget, options) {
     this.pdf.addPage();
-    this.pdf.line(
-        WIDTH/2, 10,
-        WIDTH/2, HEIGHT
-    );
+    this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
     var title = this.show.getTitle() + " - Dot " + this.dot;
     this.pdf.setFontSize(15);
     this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
@@ -268,7 +261,7 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
     var labelWidth = PDFUtils.getTextWidth("00", labelSize) + paddingX * 2;
     var labelHeight = PDFUtils.getTextHeight(labelSize);
     var widgetSize = 30;
-    var continuitySize = WIDTH/2 - widgetSize - labelWidth - paddingX * 4;
+    var continuitySize = WIDTH/2 - widgetSize - labelWidth - paddingX * 3 - SIDE_MARGIN;
     var x = 0;
     var y = 10;
     for (var i = 0; i < this.sheets.length; i++) {
@@ -283,13 +276,10 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
 
         if (y + height > HEIGHT - 5) {
             if (x == 0) {
-                x = WIDTH/2 + paddingX;
+                x = WIDTH/2 + paddingX - SIDE_MARGIN;
             } else {
                 this.pdf.addPage();
-                this.pdf.line(
-                    WIDTH/2, 10,
-                    WIDTH/2, HEIGHT
-                );
+                this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
                 this.pdf.setFontSize(15);
                 this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
                 x = 0;
@@ -299,11 +289,11 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
         this.pdf.setFontSize(labelSize);
         this.pdf.text(
             String(i + 1),
-            x + paddingX * 2,
+            x + paddingX + SIDE_MARGIN,
             y + paddingY + labelHeight
         );
         this.individualContinuityWidget.draw(
-            x + labelWidth + paddingX,
+            x + labelWidth + paddingX + SIDE_MARGIN,
             y + paddingY,
             continuitySize,
             height,
@@ -321,7 +311,7 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
             widgetOptions["movements"] = options["movements"][i];
         }
         widget.draw(
-            x + labelWidth + continuitySize + paddingX * 2,
+            x + labelWidth + continuitySize + paddingX + SIDE_MARGIN,
             y + paddingY,
             widgetSize,
             height,
