@@ -44,8 +44,8 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var ApplicationController = __webpack_require__(1);
-	var JSUtils = __webpack_require__(2);
+	var ApplicationController = __webpack_require__(4);
+	var JSUtils = __webpack_require__(3);
 
 	/**
 	 * This function will be executed by jQuery when the HTML DOM is loaded. Here,
@@ -151,19 +151,130 @@
 
 
 /***/ },
-/* 1 */
+/* 1 */,
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines a collection of functions that are
+	 *   used to create and manage Show objects.
+	 */
+
+	 var ViewerFileLoadSelector = __webpack_require__(16);
+	 var Version = __webpack_require__(12);
+	 
+	 /**
+	  * The collection of all functions related to creating and
+	  * managing Show objects.
+	  */
+	 var ShowUtils = {};
+	 
+	/**
+	 * Builds a show from a viewer file, given the content
+	 * of a viewer file as a string.
+	 *
+	 * @param {string} fileContent The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
+	 */
+	ShowUtils.fromJSONString = function(fileContent) {
+	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+	    return this.fromJSON(viewerObject);
+	};
+	 
+	/**
+	 * Builds a show from a viewer file, as a JSON object
+	 *
+	 * @param {object} viewerObject The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
+	 */
+	ShowUtils.fromJSON = function(viewerObject) {
+	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
+	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
+	};
+
+	module.exports = ShowUtils;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines miscellaneous utility functions.
+	 */
+
+	/**
+	 * A collection of javascript utility functions.
+	 */
+	var JSUtils = {};
+	 
+	/**
+	 * Causes a child class to inherit from a parent class.
+	 *
+	 * @param {function} ChildClass The class that will inherit
+	 *   from another.
+	 * @param {function} ParentClass The class to inherit from.
+	 */
+	JSUtils.extends = function (ChildClass, ParentClass) {
+	    var Inheritor = function () {}; // dummy constructor
+	    Inheritor.prototype = ParentClass.prototype;
+	    ChildClass.prototype = new Inheritor();
+	};
+
+	/**
+	 * Returns the value of the given name in the URL query string
+	 *
+	 * getQueryValue("hello") on http://foo.bar?hello=world should return "world"
+	 *
+	 * @param {String} name
+	 * @returns {String|null} the value of the name or null if name not in URL query string
+	 */
+	JSUtils.getURLValue = function(name) {
+	    var vals = this.getAllURLParams();
+	    if (vals[name] !== undefined) {
+	        return vals[name];
+	    } else {
+	        return null;
+	    }
+	};
+
+	/**
+	 * Returns all name-value pairs in the URL query string
+	 *
+	 * @returns {object} a dictionary mapping name to value
+	 */
+	JSUtils.getAllURLParams = function() {
+	    var vals = {};
+	    var query = window.location.search.substr(1);
+	    var vars = query.split("&");
+	    for (var i = 0; i < vars.length; i++) {
+	        var pair = vars[i].split("=");
+	        var name = decodeURIComponent(pair[0]);
+	        var value = decodeURIComponent(pair[1]);
+	        vals[name] = value;
+	    }
+	    return vals;
+	};
+
+	module.exports = JSUtils;
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview The ApplicationController singleton class is defined here.
 	 */
 
-	var Grapher = __webpack_require__(5);
-	var ShowUtils = __webpack_require__(3);
-	var TimedBeatsUtils = __webpack_require__(6);
-	var MusicAnimator = __webpack_require__(8);
-	var MusicPlayerFactory = __webpack_require__(9);
-	var AnimationStateDelegate = __webpack_require__(7);
+	var Grapher = __webpack_require__(13);
+	var ShowUtils = __webpack_require__(2);
+	var TimedBeatsUtils = __webpack_require__(14);
+	var MusicAnimator = __webpack_require__(17);
+	var MusicPlayerFactory = __webpack_require__(18);
+	var AnimationStateDelegate = __webpack_require__(15);
 
 	/**
 	 * The ApplicationController is the backbone of how functional components
@@ -678,118 +789,90 @@
 
 
 /***/ },
-/* 2 */
+/* 5 */,
+/* 6 */,
+/* 7 */,
+/* 8 */,
+/* 9 */,
+/* 10 */,
+/* 11 */,
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * @fileOverview Defines miscellaneous utility functions.
+	 * @fileOverview Defines the Version class.
 	 */
 
 	/**
-	 * A collection of javascript utility functions.
-	 */
-	var JSUtils = {};
-	 
-	/**
-	 * Causes a child class to inherit from a parent class.
+	 * Version objects represent a version of a file
+	 * or application in the following format:
+	 * [major].[minor].[revision].
 	 *
-	 * @param {function} ChildClass The class that will inherit
-	 *   from another.
-	 * @param {function} ParentClass The class to inherit from.
+	 * @param {int} major The major version.
+	 * @param {int} minor The minor version.
+	 * @param {int} revision The revision number.
 	 */
-	JSUtils.extends = function (ChildClass, ParentClass) {
-	    var Inheritor = function () {}; // dummy constructor
-	    Inheritor.prototype = ParentClass.prototype;
-	    ChildClass.prototype = new Inheritor();
+	var Version = function(major, minor, revision) {
+	    this._major = major;
+	    this._minor = minor;
+	    this._revision = revision;
 	};
 
 	/**
-	 * Returns the value of the given name in the URL query string
+	 * Builds a string representation of the Version.
+	 * String representations take the format:
+	 * [major].[minor].[revision].
 	 *
-	 * getQueryValue("hello") on http://foo.bar?hello=world should return "world"
-	 *
-	 * @param {String} name
-	 * @returns {String|null} the value of the name or null if name not in URL query string
+	 * @return {string} A string representation of this
+	 *   version.
 	 */
-	JSUtils.getURLValue = function(name) {
-	    var vals = this.getAllURLParams();
-	    if (vals[name] !== undefined) {
-	        return vals[name];
-	    } else {
-	        return null;
+	Version.prototype.stringify = function() {
+	    return this._major + "." + this._minor + "." + this._revision;
+	};
+
+	/**
+	 * Compares this Version to another, and indicates which
+	 * version is an earlier one.
+	 *
+	 * @param {Version} otherVersion The version to compare
+	 *   this one against.
+	 * @return {int} A negative value if this version is
+	 *   an earlier one than the other; a positive value
+	 *   if this version is later than the other one;
+	 *   zero if the versions are identical.
+	 */
+	Version.prototype.compareTo = function(otherVersion) {
+	    var delta = this._major - otherVersion._major;
+	    if (delta != 0) {
+	        return delta;
 	    }
+	    delta = this._minor - otherVersion._minor;
+	    if (delta != 0) {
+	        return delta;
+	    }
+	    delta = this._revision - otherVersion._revision;
+	    return delta;
 	};
 
 	/**
-	 * Returns all name-value pairs in the URL query string
+	 * Builds a Version object from a string.
+	 * These strings should be in the format:
+	 * [major].[minor].[revision].
 	 *
-	 * @returns {object} a dictionary mapping name to value
+	 * @param {string} stringVersion A string representation
+	 *   of a Version.
+	 * @return {Version} A Version which matches the
+	 *   provided string.
 	 */
-	JSUtils.getAllURLParams = function() {
-	    var vals = {};
-	    var query = window.location.search.substr(1);
-	    var vars = query.split("&");
-	    for (var i = 0; i < vars.length; i++) {
-	        var pair = vars[i].split("=");
-	        var name = decodeURIComponent(pair[0]);
-	        var value = decodeURIComponent(pair[1]);
-	        vals[name] = value;
-	    }
-	    return vals;
+	Version.parse = function(stringVersion) {
+	    var versionPieces = stringVersion.split(".");
+	    return new Version(parseInt(versionPieces[0]), parseInt(versionPieces[1]), parseInt(versionPieces[2]));
 	};
 
-	module.exports = JSUtils;
+	module.exports = Version;
 
 /***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines a collection of functions that are
-	 *   used to create and manage Show objects.
-	 */
-
-	 var ViewerFileLoadSelector = __webpack_require__(18);
-	 var Version = __webpack_require__(10);
-	 
-	 /**
-	  * The collection of all functions related to creating and
-	  * managing Show objects.
-	  */
-	 var ShowUtils = {};
-	 
-	/**
-	 * Builds a show from a viewer file, given the content
-	 * of a viewer file as a string.
-	 *
-	 * @param {string} fileContent The content of the
-	 *   viewer file to load the show from.
-	 * @return {Show} The show represented in the viewer
-	 *   file.
-	 */
-	ShowUtils.fromJSONString = function(fileContent) {
-	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-	    return this.fromJSON(viewerObject);
-	};
-	 
-	/**
-	 * Builds a show from a viewer file, as a JSON object
-	 *
-	 * @param {object} viewerObject The content of the
-	 *   viewer file to load the show from.
-	 * @return {Show} The show represented in the viewer
-	 *   file.
-	 */
-	ShowUtils.fromJSON = function(viewerObject) {
-	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
-	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
-	};
-
-	module.exports = ShowUtils;
-
-/***/ },
-/* 4 */,
-/* 5 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1149,7 +1232,7 @@
 
 
 /***/ },
-/* 6 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1157,8 +1240,8 @@
 	 *   used to create and manage TimedBeats objects.
 	 */
 
-	 var BeatsFileLoadSelector = __webpack_require__(19);
-	 var Version = __webpack_require__(10);
+	 var BeatsFileLoadSelector = __webpack_require__(20);
+	 var Version = __webpack_require__(12);
 	 
 	 /**
 	  * The collection of all functions related to creating and
@@ -1196,7 +1279,7 @@
 	module.exports = TimedBeatsUtils;
 
 /***/ },
-/* 7 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1419,397 +1502,7 @@
 
 
 /***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MusicAnimator class. This is used to animate
-	 *   with music. For a basic description on how to use it, check the class
-	 *   description.
-	 *   To help keep the UI updated, the MusicAnimator can be set up to inform
-	 *   you when it changes state (e.g. when it starts, stops, finishes, etc.).
-	 *   You can submit event handlers to the MusicAnimator through the
-	 *   registerEventHandler(...) method.
-	 */
-
-	/**
-	 * A MusicAnimator will animate the show in sync with
-	 * music. To get the MusicAnimator to work, you must provide
-	 * it with music (through the setMusic(...) method)
-	 * and a TimedBeats object (through the setBeats(...) method), and
-	 * with an AnimationStateDelegate object (through the setAnimationStateDelegate(...) method).
-	 * After you set up the object, you should check if the MusicAnimator is 
-	 * ready to play using the isReady(...) method, since it may have encountered
-	 * an error while loading. If it is ready, then feel free to start and stop the
-	 * animator with the start(...) and stop(...) methods. The animator
-	 * will automatically stop when it reaches the end of the show, or when
-	 * it runs out of beats to animate in the music.
-	 *
-	 * @param {AnimationStateDelegate} The AnimationStateDelegate that will
-	 *   be used to animate the show. Whenever the music advances a beat, the
-	 *   delegate will advance a beat as well.
-	 * @param {MusicPlayer} The music player.
-	 */
-	var MusicAnimator = function() {
-	    this._animStateDelegate = null;
-	    this._sound = null;
-	    this._timedBeats = null;
-	    this._eventHandlers = {};
-	    this._blockStopEvent = false;
-	};
-
-	/**
-	 * Event strings that the music animator recognizes as hooks.
-	 * @type {Array}
-	 */
-	MusicAnimator.eventTypes = ["start", "stop", "finished", "beat", "ready"];
-
-	/**
-	 * Set the animation state delegate.
-	 */
-	MusicAnimator.prototype.setAnimationStateDelegate = function(animationStateDelegate) {
-	    this.stop(); // Stop before making changes - we don't want the sound to fire events while we work
-	    this._animStateDelegate = animationStateDelegate; // Set up the new delegate
-	};
-
-
-	/**
-	 * Sets the music to animate the show with.
-	 *
-	 * @param {Sound} soundObject The music.
-	 */
-	MusicAnimator.prototype.setMusic = function(soundObject) {
-	    this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
-	    var _this = this;
-	    this._sound = soundObject;
-	    this._sound.registerEventHandler("play", this._makeEventRouter("start"));
-	    this._sound.registerEventHandler("stop", function() {_this._musicStopped();});
-	    this._sound.registerEventHandler("finished", this._makeEventRouter("finished"));
-	    this._loadBeatsOntoSound();
-	    if (this.isReady()) {
-	        this._callEventHandler("ready");
-	    }
-	};
-
-	/**
-	 * Sets the TimedBeats object that will determine
-	 * where beats fall in the music.
-	 *
-	 * @param {TimedBeats} timedBeats The beats to associate with
-	 *   the music.
-	 */
-	MusicAnimator.prototype.setBeats = function(timedBeats) {
-	    this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
-	    this._beats = timedBeats;
-	    this._loadBeatsOntoSound();
-	    if (this.isReady()) {
-	        this._callEventHandler("ready");
-	    }
-	};
-
-	/**
-	 * Makes sure that the sound is prepared to inform us every
-	 * time one of the beats is reached in the music.
-	 */
-	MusicAnimator.prototype._loadBeatsOntoSound = function() {
-	    if (this._beats && this._sound) {
-	        this._sound.clearTimedEvents();
-	        var _this = this;
-	        var timedEventHandler = function() {
-	            _this._nextBeat();
-	        };
-	        var endBeatEventHandler = function() {
-	            _this._animStateDelegate.nextBeat();
-	            _this._callEventHandler("beat");
-	            _this._endOfShow();
-	        };
-	        //Beat 0 is the "start beat" - don't associate a timed event with it, just start the music at that time
-	        //The last beat is the "end beat" - make sure that the show finishes when this beat is hit
-	        for (var beatNum = 1; beatNum < this._beats.getNumBeats() - 1; beatNum++) {
-	            this._sound.addTimedEvent(this._beats.getBeatTime(beatNum), timedEventHandler);
-	        }
-	        this._sound.addTimedEvent(this._beats.getBeatTime(this._beats.getNumBeats() - 1), endBeatEventHandler);
-	    }
-	};
-
-	/**
-	 * Start playing the animation with music.
-	 */
-	MusicAnimator.prototype.start = function() {
-	    this.stop();
-	    // beat "0" of a given stuntsheet is really the last beat of the stuntsheet before
-	    var overallBeat = -1;
-	    var show = this._animStateDelegate.getShow();
-	    for (var sheet = 0; sheet < this._animStateDelegate.getCurrentSheetNum(); sheet++) {
-	        overallBeat += show.getSheet(sheet).getDuration();
-	    }
-	    overallBeat += this._animStateDelegate.getCurrentBeatNum();
-	    if (this._animStateDelegate.hasNextBeat() && overallBeat < this._beats.getNumBeats() - 1) {
-	        if (overallBeat < 0) {
-	            this._animStateDelegate.nextBeat();
-	            $(".js-beat-number").text("1");
-	            this._sound.play(0);
-	        } else {
-	            this._sound.play(this._beats.getBeatTime(overallBeat));
-	        }
-	    } else {
-	        this._endOfShow();
-	    }
-	};
-
-	/**
-	 * Stop playing the animation with music.
-	 */
-	MusicAnimator.prototype.stop = function() {
-	    if (this._sound !== null && this._sound.isPlaying()) {
-	        this._sound.stop();
-	    }
-	};
-
-	/**
-	 * Returns whether or not the animator is currently playing.
-	 *
-	 * @return {boolean} True if the animator is currently playing; false
-	 *   otherwise.
-	 */
-	MusicAnimator.prototype.isPlaying = function() {
-	    if (this._sound !== null) {
-	        return this._sound.isPlaying();
-	    } else {
-	        return false;
-	    }
-	};
-
-	/**
-	 * Returns whether or not the animator is ready to play.
-	 *
-	 * @return {boolean} True if the animator is ready to play; false
-	 *   otherwise.
-	 */
-	MusicAnimator.prototype.isReady = function() {
-	    return (
-	        this._sound && this._sound.isReady() &&
-	        this._beats &&
-	        this._animStateDelegate !== null
-	    );
-	};
-
-	/**
-	 * Registers an event handler, so that whenever a particular event occurs,
-	 * the event handler function is called.
-	 *
-	 * @param {string} eventName This is the name of the event to connect
-	 *   the event handler to. When this event occurs, the eventHandler will
-	 *   be called. Possible eventName inputs are:
-	 *     - "start" : occurs when the animator starts
-	 *     - "stop" : occurs when the animator stops, but NOT when the
-	 *         animator stops because it has finished
-	 *     - "finished" : occurs when the animator finishes
-	 *     - "beat" : occurs when the animator advances to the next beat
-	 * @param {function():*} eventHandler The function that will be called
-	 *   when the specified event occurs.
-	 */
-	MusicAnimator.prototype.registerEventHandler = function(eventName, eventHandler) {
-	    this._eventHandlers[eventName] = eventHandler;
-	};
-
-	/**
-	 * Makes a function that will call the event handler with the given
-	 * name. The returned function is flexible: it will call whatever
-	 * event handler is associated with the MusicAnimator (so if the
-	 * event handlers are changed in the MusicAnimator, they will be
-	 * be changed in the function), and it will skip a call to the
-	 * event handler if it is unset.
-	 *
-	 * @param {string} eventName The name of the event whose handler
-	 *   should be called.
-	 * @return {function():*} A function that, when called, will
-	 *   call the event handler associated with the specified event
-	 *   (but only if that event handler is set).
-	 */
-	MusicAnimator.prototype._makeEventRouter = function(eventName) {
-	    var _this = this;
-	    return function() {
-	        _this._callEventHandler(eventName);
-	    };
-	};
-
-	/**
-	 * Calls an event handler, if it is set.
-	 *
-	 * @param {string} eventName The event whose handler should be called.
-	 */
-	MusicAnimator.prototype._callEventHandler = function(eventName) {
-	    if (this._eventHandlers[eventName]) {
-	        this._eventHandlers[eventName]();
-	    }
-	};
-
-	/**
-	 * Responds to a timed event in the sound, and moves to the next
-	 * beat.
-	 */
-	MusicAnimator.prototype._nextBeat = function() {
-	    this._animStateDelegate.nextBeat();
-	    this._callEventHandler("beat");
-	    if (!this._animStateDelegate.hasNextBeat()) {
-	        this._endOfShow();
-	    }
-	};
-
-	/**
-	 * Called when the end of the show is reached before the
-	 * end of the music. This stops the animation and alerts
-	 * the event handler that the animation has finished.
-	 */
-	MusicAnimator.prototype._endOfShow = function() {
-	    this._stopAndBlockEvent();
-	    this._callEventHandler("finished");
-	};
-
-	/**
-	 * Stops the animation and the sound, but makes sure that
-	 * the music's "stop" event never reaches the event handler.
-	 * This is useful when the show finishes before the music,
-	 * because in that case, we need to stop the music prematurely,
-	 * but we want to throw a "finished" event instead of a "stopped"
-	 * event.
-	 */
-	MusicAnimator.prototype._stopAndBlockEvent = function() {
-	    this._blockStopEvent = true;
-	    this.stop();
-	};
-
-	/**
-	 * An intermediate event handler for when the music is stopped.
-	 * It can block stop events from reaching the real event handler.
-	 */
-	MusicAnimator.prototype._musicStopped = function() {
-	    if (this._blockStopEvent) {
-	        this._blockStopEvent = false;
-	    } else {
-	        this._callEventHandler("stop");
-	    }
-	};
-
-	module.exports = MusicAnimator;
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MusicPlayerFactory class, which is used to
-	 *   generate a MusicPlayer that will play audio for us.
-	 */
-
-	var SMMusicPlayer = __webpack_require__(21);
-	 
-	/**
-	 * MusicPlayerFactory objects can create an appropriate MusicPlayer object
-	 * for on the current environment and settings.
-	 */
-	var MusicPlayerFactory = function() {
-	};
-
-	/**
-	 * Creates and returns an appropriate MusicPlayer for the current
-	 * environment and settings.
-	 *
-	 * @return {MusicPlayer} A MusicPlayer object to play audio for
-	 *   the application.
-	 */
-	MusicPlayerFactory.prototype.createMusicPlayer = function() {
-	    return new SMMusicPlayer();
-	};
-
-	module.exports = MusicPlayerFactory;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Version class.
-	 */
-
-	/**
-	 * Version objects represent a version of a file
-	 * or application in the following format:
-	 * [major].[minor].[revision].
-	 *
-	 * @param {int} major The major version.
-	 * @param {int} minor The minor version.
-	 * @param {int} revision The revision number.
-	 */
-	var Version = function(major, minor, revision) {
-	    this._major = major;
-	    this._minor = minor;
-	    this._revision = revision;
-	};
-
-	/**
-	 * Builds a string representation of the Version.
-	 * String representations take the format:
-	 * [major].[minor].[revision].
-	 *
-	 * @return {string} A string representation of this
-	 *   version.
-	 */
-	Version.prototype.stringify = function() {
-	    return this._major + "." + this._minor + "." + this._revision;
-	};
-
-	/**
-	 * Compares this Version to another, and indicates which
-	 * version is an earlier one.
-	 *
-	 * @param {Version} otherVersion The version to compare
-	 *   this one against.
-	 * @return {int} A negative value if this version is
-	 *   an earlier one than the other; a positive value
-	 *   if this version is later than the other one;
-	 *   zero if the versions are identical.
-	 */
-	Version.prototype.compareTo = function(otherVersion) {
-	    var delta = this._major - otherVersion._major;
-	    if (delta != 0) {
-	        return delta;
-	    }
-	    delta = this._minor - otherVersion._minor;
-	    if (delta != 0) {
-	        return delta;
-	    }
-	    delta = this._revision - otherVersion._revision;
-	    return delta;
-	};
-
-	/**
-	 * Builds a Version object from a string.
-	 * These strings should be in the format:
-	 * [major].[minor].[revision].
-	 *
-	 * @param {string} stringVersion A string representation
-	 *   of a Version.
-	 * @return {Version} A Version which matches the
-	 *   provided string.
-	 */
-	Version.parse = function(stringVersion) {
-	    var versionPieces = stringVersion.split(".");
-	    return new Version(parseInt(versionPieces[0]), parseInt(versionPieces[1]), parseInt(versionPieces[2]));
-	};
-
-	module.exports = Version;
-
-/***/ },
-/* 11 */,
-/* 12 */,
-/* 13 */,
-/* 14 */,
-/* 15 */,
-/* 16 */,
-/* 17 */,
-/* 18 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1827,19 +1520,19 @@
 	 *   
 	 */
 
-	var FileLoadSelector = __webpack_require__(22);
-	var InvalidFileTypeError = __webpack_require__(23);
-	var JSUtils = __webpack_require__(2);
-	var Version = __webpack_require__(10);
-	var Dot = __webpack_require__(24);
-	var Sheet = __webpack_require__(25);
-	var Show = __webpack_require__(26);
-	var MovementCommandStand = __webpack_require__(27);
-	var MovementCommandMarkTime = __webpack_require__(28);
-	var MovementCommandArc = __webpack_require__(29);
-	var MovementCommandMove = __webpack_require__(30);
-	var MovementCommandGoto = __webpack_require__(31);
-	var MovementCommandEven = __webpack_require__(32);
+	var FileLoadSelector = __webpack_require__(21);
+	var InvalidFileTypeError = __webpack_require__(22);
+	var JSUtils = __webpack_require__(3);
+	var Version = __webpack_require__(12);
+	var Dot = __webpack_require__(23);
+	var Sheet = __webpack_require__(24);
+	var Show = __webpack_require__(25);
+	var MovementCommandStand = __webpack_require__(26);
+	var MovementCommandMarkTime = __webpack_require__(27);
+	var MovementCommandArc = __webpack_require__(28);
+	var MovementCommandMove = __webpack_require__(29);
+	var MovementCommandGoto = __webpack_require__(30);
+	var MovementCommandEven = __webpack_require__(31);
 	 
 	/**
 	 * Every version of the Viewer File needs to be loaded in a different way -
@@ -2128,7 +1821,315 @@
 	module.exports = ViewerFileLoadSelector;
 
 /***/ },
-/* 19 */
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MusicAnimator class. This is used to animate
+	 *   with music. For a basic description on how to use it, check the class
+	 *   description.
+	 *   To help keep the UI updated, the MusicAnimator can be set up to inform
+	 *   you when it changes state (e.g. when it starts, stops, finishes, etc.).
+	 *   You can submit event handlers to the MusicAnimator through the
+	 *   registerEventHandler(...) method.
+	 */
+
+	/**
+	 * A MusicAnimator will animate the show in sync with
+	 * music. To get the MusicAnimator to work, you must provide
+	 * it with music (through the setMusic(...) method)
+	 * and a TimedBeats object (through the setBeats(...) method), and
+	 * with an AnimationStateDelegate object (through the setAnimationStateDelegate(...) method).
+	 * After you set up the object, you should check if the MusicAnimator is 
+	 * ready to play using the isReady(...) method, since it may have encountered
+	 * an error while loading. If it is ready, then feel free to start and stop the
+	 * animator with the start(...) and stop(...) methods. The animator
+	 * will automatically stop when it reaches the end of the show, or when
+	 * it runs out of beats to animate in the music.
+	 *
+	 * @param {AnimationStateDelegate} The AnimationStateDelegate that will
+	 *   be used to animate the show. Whenever the music advances a beat, the
+	 *   delegate will advance a beat as well.
+	 * @param {MusicPlayer} The music player.
+	 */
+	var MusicAnimator = function() {
+	    this._animStateDelegate = null;
+	    this._sound = null;
+	    this._timedBeats = null;
+	    this._eventHandlers = {};
+	    this._blockStopEvent = false;
+	};
+
+	/**
+	 * Event strings that the music animator recognizes as hooks.
+	 * @type {Array}
+	 */
+	MusicAnimator.eventTypes = ["start", "stop", "finished", "beat", "ready"];
+
+	/**
+	 * Set the animation state delegate.
+	 */
+	MusicAnimator.prototype.setAnimationStateDelegate = function(animationStateDelegate) {
+	    this.stop(); // Stop before making changes - we don't want the sound to fire events while we work
+	    this._animStateDelegate = animationStateDelegate; // Set up the new delegate
+	};
+
+
+	/**
+	 * Sets the music to animate the show with.
+	 *
+	 * @param {Sound} soundObject The music.
+	 */
+	MusicAnimator.prototype.setMusic = function(soundObject) {
+	    this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
+	    var _this = this;
+	    this._sound = soundObject;
+	    this._sound.registerEventHandler("play", this._makeEventRouter("start"));
+	    this._sound.registerEventHandler("stop", function() {_this._musicStopped();});
+	    this._sound.registerEventHandler("finished", this._makeEventRouter("finished"));
+	    this._loadBeatsOntoSound();
+	    if (this.isReady()) {
+	        this._callEventHandler("ready");
+	    }
+	};
+
+	/**
+	 * Sets the TimedBeats object that will determine
+	 * where beats fall in the music.
+	 *
+	 * @param {TimedBeats} timedBeats The beats to associate with
+	 *   the music.
+	 */
+	MusicAnimator.prototype.setBeats = function(timedBeats) {
+	    this.stop(); //Stop before loading, so that the sound doesn't fire events while we work
+	    this._beats = timedBeats;
+	    this._loadBeatsOntoSound();
+	    if (this.isReady()) {
+	        this._callEventHandler("ready");
+	    }
+	};
+
+	/**
+	 * Makes sure that the sound is prepared to inform us every
+	 * time one of the beats is reached in the music.
+	 */
+	MusicAnimator.prototype._loadBeatsOntoSound = function() {
+	    if (this._beats && this._sound) {
+	        this._sound.clearTimedEvents();
+	        var _this = this;
+	        var timedEventHandler = function() {
+	            _this._nextBeat();
+	        };
+	        var endBeatEventHandler = function() {
+	            _this._animStateDelegate.nextBeat();
+	            _this._callEventHandler("beat");
+	            _this._endOfShow();
+	        };
+	        //Beat 0 is the "start beat" - don't associate a timed event with it, just start the music at that time
+	        //The last beat is the "end beat" - make sure that the show finishes when this beat is hit
+	        for (var beatNum = 1; beatNum < this._beats.getNumBeats() - 1; beatNum++) {
+	            this._sound.addTimedEvent(this._beats.getBeatTime(beatNum), timedEventHandler);
+	        }
+	        this._sound.addTimedEvent(this._beats.getBeatTime(this._beats.getNumBeats() - 1), endBeatEventHandler);
+	    }
+	};
+
+	/**
+	 * Start playing the animation with music.
+	 */
+	MusicAnimator.prototype.start = function() {
+	    this.stop();
+	    // beat "0" of a given stuntsheet is really the last beat of the stuntsheet before
+	    var overallBeat = -1;
+	    var show = this._animStateDelegate.getShow();
+	    for (var sheet = 0; sheet < this._animStateDelegate.getCurrentSheetNum(); sheet++) {
+	        overallBeat += show.getSheet(sheet).getDuration();
+	    }
+	    overallBeat += this._animStateDelegate.getCurrentBeatNum();
+	    if (this._animStateDelegate.hasNextBeat() && overallBeat < this._beats.getNumBeats() - 1) {
+	        if (overallBeat < 0) {
+	            this._animStateDelegate.nextBeat();
+	            $(".js-beat-number").text("1");
+	            this._sound.play(0);
+	        } else {
+	            this._sound.play(this._beats.getBeatTime(overallBeat));
+	        }
+	    } else {
+	        this._endOfShow();
+	    }
+	};
+
+	/**
+	 * Stop playing the animation with music.
+	 */
+	MusicAnimator.prototype.stop = function() {
+	    if (this._sound !== null && this._sound.isPlaying()) {
+	        this._sound.stop();
+	    }
+	};
+
+	/**
+	 * Returns whether or not the animator is currently playing.
+	 *
+	 * @return {boolean} True if the animator is currently playing; false
+	 *   otherwise.
+	 */
+	MusicAnimator.prototype.isPlaying = function() {
+	    if (this._sound !== null) {
+	        return this._sound.isPlaying();
+	    } else {
+	        return false;
+	    }
+	};
+
+	/**
+	 * Returns whether or not the animator is ready to play.
+	 *
+	 * @return {boolean} True if the animator is ready to play; false
+	 *   otherwise.
+	 */
+	MusicAnimator.prototype.isReady = function() {
+	    return (
+	        this._sound && this._sound.isReady() &&
+	        this._beats &&
+	        this._animStateDelegate !== null
+	    );
+	};
+
+	/**
+	 * Registers an event handler, so that whenever a particular event occurs,
+	 * the event handler function is called.
+	 *
+	 * @param {string} eventName This is the name of the event to connect
+	 *   the event handler to. When this event occurs, the eventHandler will
+	 *   be called. Possible eventName inputs are:
+	 *     - "start" : occurs when the animator starts
+	 *     - "stop" : occurs when the animator stops, but NOT when the
+	 *         animator stops because it has finished
+	 *     - "finished" : occurs when the animator finishes
+	 *     - "beat" : occurs when the animator advances to the next beat
+	 * @param {function():*} eventHandler The function that will be called
+	 *   when the specified event occurs.
+	 */
+	MusicAnimator.prototype.registerEventHandler = function(eventName, eventHandler) {
+	    this._eventHandlers[eventName] = eventHandler;
+	};
+
+	/**
+	 * Makes a function that will call the event handler with the given
+	 * name. The returned function is flexible: it will call whatever
+	 * event handler is associated with the MusicAnimator (so if the
+	 * event handlers are changed in the MusicAnimator, they will be
+	 * be changed in the function), and it will skip a call to the
+	 * event handler if it is unset.
+	 *
+	 * @param {string} eventName The name of the event whose handler
+	 *   should be called.
+	 * @return {function():*} A function that, when called, will
+	 *   call the event handler associated with the specified event
+	 *   (but only if that event handler is set).
+	 */
+	MusicAnimator.prototype._makeEventRouter = function(eventName) {
+	    var _this = this;
+	    return function() {
+	        _this._callEventHandler(eventName);
+	    };
+	};
+
+	/**
+	 * Calls an event handler, if it is set.
+	 *
+	 * @param {string} eventName The event whose handler should be called.
+	 */
+	MusicAnimator.prototype._callEventHandler = function(eventName) {
+	    if (this._eventHandlers[eventName]) {
+	        this._eventHandlers[eventName]();
+	    }
+	};
+
+	/**
+	 * Responds to a timed event in the sound, and moves to the next
+	 * beat.
+	 */
+	MusicAnimator.prototype._nextBeat = function() {
+	    this._animStateDelegate.nextBeat();
+	    this._callEventHandler("beat");
+	    if (!this._animStateDelegate.hasNextBeat()) {
+	        this._endOfShow();
+	    }
+	};
+
+	/**
+	 * Called when the end of the show is reached before the
+	 * end of the music. This stops the animation and alerts
+	 * the event handler that the animation has finished.
+	 */
+	MusicAnimator.prototype._endOfShow = function() {
+	    this._stopAndBlockEvent();
+	    this._callEventHandler("finished");
+	};
+
+	/**
+	 * Stops the animation and the sound, but makes sure that
+	 * the music's "stop" event never reaches the event handler.
+	 * This is useful when the show finishes before the music,
+	 * because in that case, we need to stop the music prematurely,
+	 * but we want to throw a "finished" event instead of a "stopped"
+	 * event.
+	 */
+	MusicAnimator.prototype._stopAndBlockEvent = function() {
+	    this._blockStopEvent = true;
+	    this.stop();
+	};
+
+	/**
+	 * An intermediate event handler for when the music is stopped.
+	 * It can block stop events from reaching the real event handler.
+	 */
+	MusicAnimator.prototype._musicStopped = function() {
+	    if (this._blockStopEvent) {
+	        this._blockStopEvent = false;
+	    } else {
+	        this._callEventHandler("stop");
+	    }
+	};
+
+	module.exports = MusicAnimator;
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MusicPlayerFactory class, which is used to
+	 *   generate a MusicPlayer that will play audio for us.
+	 */
+
+	var SMMusicPlayer = __webpack_require__(32);
+	 
+	/**
+	 * MusicPlayerFactory objects can create an appropriate MusicPlayer object
+	 * for on the current environment and settings.
+	 */
+	var MusicPlayerFactory = function() {
+	};
+
+	/**
+	 * Creates and returns an appropriate MusicPlayer for the current
+	 * environment and settings.
+	 *
+	 * @return {MusicPlayer} A MusicPlayer object to play audio for
+	 *   the application.
+	 */
+	MusicPlayerFactory.prototype.createMusicPlayer = function() {
+	    return new SMMusicPlayer();
+	};
+
+	module.exports = MusicPlayerFactory;
+
+/***/ },
+/* 19 */,
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2146,11 +2147,11 @@
 	 *   
 	 */
 
-	var Version = __webpack_require__(10);
-	var FileLoadSelector = __webpack_require__(22);
-	var JSUtils = __webpack_require__(2);
+	var Version = __webpack_require__(12);
+	var FileLoadSelector = __webpack_require__(21);
+	var JSUtils = __webpack_require__(3);
 	var TimedBeats = __webpack_require__(33);
-	var InvalidFileTypeError = __webpack_require__(23);
+	var InvalidFileTypeError = __webpack_require__(22);
 	 
 	/**
 	 * Every version of the Beats File needs to be loaded in a different way -
@@ -2261,83 +2262,7 @@
 	module.exports = BeatsFileLoadSelector;
 
 /***/ },
-/* 20 */,
 /* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the SMMusicPlayer class, a MusicPlayer
-	 *   type that uses SoundManager2 to play audio.
-	 */
-
-	var JSUtils = __webpack_require__(2);
-	var SMSound = __webpack_require__(34);
-	var MusicPlayer = __webpack_require__(35);
-	 
-	/**
-	 * A MusicPlayer that uses SoundManager2.
-	 */
-	var SMMusicPlayer = function() {
-	    this._onReadyHandler = null;
-	    this._isReady = false;
-	    this._error = false;
-	    var _this = this;
-	    soundManager.setup({
-	        url: './soundmanager/swf/',
-	        onready: function() {
-	            _this._isReady = true;
-	            _this._informReadyEventHandler();
-	        },
-	        ontimeout: function() {
-	            _this._error = true;
-	        },
-	        html5PollingInterval: 20,
-	        flashPollingInterval: 20
-	    });
-	};
-
-	JSUtils.extends(SMMusicPlayer, MusicPlayer);
-
-
-	SMMusicPlayer.prototype.createSound = function(musicURL) {
-	    return new SMSound(musicURL);
-	};
-
-
-	SMMusicPlayer.prototype.isReady = function() {
-	    this._isReady = true;
-	};
-
-	SMMusicPlayer.prototype.onReady = function(eventHandler) {
-	    this._onReadyHandler = eventHandler;
-	    if (this.isReady()) {
-	        this._informReadyEventHandler();
-	    }
-	};
-
-	/**
-	 * Returns whether or not an error was encountered while setting
-	 * up the MusicPlayer.
-	 *
-	 * @return {boolean} True if an error was encountered; false otherwise.
-	 */
-	SMMusicPlayer.prototype.errorFlag = function() {
-	    return this._error;
-	};
-
-	/**
-	 * Tells the event handler that the MusicPlayer is now ready.
-	 */
-	SMMusicPlayer.prototype._informReadyEventHandler = function() {
-	    if (this._onReadyHandler !== null) {
-	        this._onReadyHandler();
-	    }
-	};
-
-	module.exports = SMMusicPlayer;
-
-/***/ },
-/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2377,8 +2302,8 @@
 	 *         calling loadSelector.registerLoader(...)
 	 */
 
-	var ArrayUtils = __webpack_require__(36);
-	var Version = __webpack_require__(10);
+	var ArrayUtils = __webpack_require__(34);
+	var Version = __webpack_require__(12);
 	 
 	/**
 	 * Every version of a file needs to be loaded in a different way -
@@ -2456,7 +2381,7 @@
 	module.exports = FileLoadSelector;
 
 /***/ },
-/* 23 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2473,7 +2398,7 @@
 	module.exports = InvalidFileTypeError;
 
 /***/ },
-/* 24 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2541,7 +2466,7 @@
 	module.exports = Dot;
 
 /***/ },
-/* 25 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2672,7 +2597,7 @@
 	module.exports = Sheet;
 
 /***/ },
-/* 26 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2788,16 +2713,16 @@
 	module.exports = Show;
 
 /***/ },
-/* 27 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandStand class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	/**
 	 * A MovementCommand representing a period of standing.
@@ -2831,16 +2756,16 @@
 	module.exports = MovementCommandStand;
 
 /***/ },
-/* 28 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandMarkTime class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 
 	/**
 	 * A MovementCommand that represents a period of mark time.
@@ -2875,17 +2800,17 @@
 	module.exports = MovementCommandMarkTime;
 
 /***/ },
-/* 29 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandArc class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MathUtils = __webpack_require__(39);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MathUtils = __webpack_require__(37);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	/**
 	 * A MovementCommandArc object represents a movement along the
@@ -2969,17 +2894,17 @@
 	module.exports = MovementCommandArc;
 
 /***/ },
-/* 30 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandMove class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MathUtils = __webpack_require__(39);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MathUtils = __webpack_require__(37);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	/**
 	 * A MovementCommand which represents a constant movement in a
@@ -3036,16 +2961,16 @@
 	module.exports = MovementCommandMove;
 
 /***/ },
-/* 31 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandGoto class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	/**
 	 * A MovementCommand that represents a "Goto" movement:
@@ -3084,16 +3009,16 @@
 	module.exports = MovementCommandGoto;
 
 /***/ },
-/* 32 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandEven class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	 
 	/**
@@ -3185,6 +3110,81 @@
 	module.exports = MovementCommandEven;
 
 /***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the SMMusicPlayer class, a MusicPlayer
+	 *   type that uses SoundManager2 to play audio.
+	 */
+
+	var JSUtils = __webpack_require__(3);
+	var SMSound = __webpack_require__(38);
+	var MusicPlayer = __webpack_require__(39);
+	 
+	/**
+	 * A MusicPlayer that uses SoundManager2.
+	 */
+	var SMMusicPlayer = function() {
+	    this._onReadyHandler = null;
+	    this._isReady = false;
+	    this._error = false;
+	    var _this = this;
+	    soundManager.setup({
+	        url: './soundmanager/swf/',
+	        onready: function() {
+	            _this._isReady = true;
+	            _this._informReadyEventHandler();
+	        },
+	        ontimeout: function() {
+	            _this._error = true;
+	        },
+	        html5PollingInterval: 20,
+	        flashPollingInterval: 20
+	    });
+	};
+
+	JSUtils.extends(SMMusicPlayer, MusicPlayer);
+
+
+	SMMusicPlayer.prototype.createSound = function(musicURL) {
+	    return new SMSound(musicURL);
+	};
+
+
+	SMMusicPlayer.prototype.isReady = function() {
+	    this._isReady = true;
+	};
+
+	SMMusicPlayer.prototype.onReady = function(eventHandler) {
+	    this._onReadyHandler = eventHandler;
+	    if (this.isReady()) {
+	        this._informReadyEventHandler();
+	    }
+	};
+
+	/**
+	 * Returns whether or not an error was encountered while setting
+	 * up the MusicPlayer.
+	 *
+	 * @return {boolean} True if an error was encountered; false otherwise.
+	 */
+	SMMusicPlayer.prototype.errorFlag = function() {
+	    return this._error;
+	};
+
+	/**
+	 * Tells the event handler that the MusicPlayer is now ready.
+	 */
+	SMMusicPlayer.prototype._informReadyEventHandler = function() {
+	    if (this._onReadyHandler !== null) {
+	        this._onReadyHandler();
+	    }
+	};
+
+	module.exports = SMMusicPlayer;
+
+/***/ },
 /* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -3195,7 +3195,7 @@
 	 *   beats in the music.
 	 */
 	 
-	 var ArrayUtils = __webpack_require__(36);
+	 var ArrayUtils = __webpack_require__(34);
 
 	/**
 	 * TimedBeats objects record a sequence of
@@ -3301,12 +3301,629 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
+	 * @fileOverview Defines various utility functions that can be used
+	 *   to search/sort/operate on arrays.
+	 */
+
+	/**
+	 * A collection of all of the array functions.
+	 * @type {object}
+	 */
+	var ArrayUtils = {};
+
+	/**
+	 * A function that explores a sorted array using a binary search.
+	 * This function DOES NOT RETURN ANYTHING. However, the
+	 * guidFunc function (@see guideFunc) is called througout
+	 * the search, and can potentially collect results from the
+	 * search so that they can be accessed later.
+	 *
+	 * @param {Array<*>} array The array to search. The array MUST
+	 *   be sorted for the function to work. The ordering of the array
+	 *   is assumed to be 'smallest' to 'largest'.
+	 * @param {function(*,int):int} guideFunc A function that takes two parameters:
+	 *   first, an element from the array being searched; second, the
+	 *   index associated with that element. The function must return
+	 *   a number that indicates how to procede with the search: a negative
+	 *   value if the search should procede by looking at values that are
+	 *   'smaller' (earlier in the array) than the one passed in the first parameter;
+	 *   a positive value if the search should procede by looking at values that
+	 *   are 'larger' (later in the array) than the one passed in the first
+	 *   parameter; zero if the search should end. Though the binary
+	 *   search gives no return value, this function could be used to collect
+	 *   information about the findings of a search.
+	 */
+	ArrayUtils.binarySearchBase = function(array, guideFunc) {
+	    var currentBlockSize = array.length;
+	    var firstHalfBlockSize;
+	    var currentIndexOffset = 0;
+	    var guideVal;
+	    var targetIndex;
+	    var frontShave;
+	    while (currentBlockSize > 0) {
+	        firstHalfBlockSize = Math.floor(currentBlockSize / 2);
+	        targetIndex = currentIndexOffset + firstHalfBlockSize;
+	        guideVal = guideFunc(array[targetIndex], targetIndex);
+	        if (guideVal === 0) {
+	            break;
+	        }
+	        if (guideVal > 0) {
+	            frontShave = firstHalfBlockSize + 1;
+	            currentIndexOffset += frontShave;
+	            currentBlockSize -= frontShave;
+	        } else {
+	            currentBlockSize = firstHalfBlockSize;
+	        }
+	    }
+	};
+
+	/**
+	 * Searches a sorted array for a particular value. If
+	 * the value is found, its index in the array will be returned.
+	 * If the value is not found, then the index of the closest value
+	 * that is 'larger' (later in the array than the place where the
+	 * value would have been found) will be returned. This function
+	 * uses a binary search.
+	 *
+	 * @param {Array<*>} array The array to search. The array must be
+	 *   sorted. It is assumed that the array is sorted from 'smallest'
+	 *   to 'largest'.
+	 * @param {*} value The value to search for in the array.
+	 * @param {function(*,*):int} comparatorFunc A function that can
+	 *   be used to locate a particular element in the sorted array. It takes two
+	 *   parameters (of any type), and returns: a negative value
+	 *   if the first of the two values is 'smaller' (comes before the other
+	 *   in the sorted array); a positive value if the first of the two values
+	 *   is 'larger' (comes after the other value in the sorted array); zero
+	 *   if the two values are IDENTICAL and would ideally occupy the same position
+	 *   in the sorted array. The first value passed to this function will always
+	 *   be the value being searched for.
+	 * @return {int} The index of the specified value in the array, if it is found.
+	 *   If the value is not found, then the index of the closest value that
+	 *   is 'larger'. Returns undefined if the value is not in the array and
+	 *   no larger value is found.
+	 */
+	ArrayUtils.binarySearchForClosestLarger = function(array, value, comparatorFunc) {
+	    var searchResult;
+	    var guideFunc = function(checkValue, index) {
+	        var compResult = comparatorFunc(value, checkValue);
+	        if (compResult <= 0) {
+	            searchResult = index;
+	        }
+	        return compResult;
+	    };
+	    ArrayUtils.binarySearchBase(array, guideFunc);
+	    return searchResult;
+	};
+
+	/**
+	 * Searches a sorted array for a particular value. If
+	 * the value is found, its index in the array will be returned.
+	 * If the value is not found, then the index of the closest value
+	 * that is 'smaller' (earlier in the array than the place where the
+	 * value would have been found) will be returned. This function uses
+	 * a binary search.
+	 *
+	 * @param {Array<*>} array The array to search. The array must be
+	 *   sorted. It is assumed that the array is sorted from 'smallest'
+	 *   to 'largest'.
+	 * @param {*} value The value to search for in the array.
+	 * @param {function(*,*):int} comparatorFunc A function that can
+	 *   be used to locate a particular element in the sorted array. It takes two
+	 *   parameters (of any type), and returns: a negative value
+	 *   if the first of the two values is 'smaller' (comes before the other
+	 *   in the sorted array); a positive value if the first of the two values
+	 *   is 'larger' (comes after the other value in the sorted array); zero
+	 *   if the two values are IDENTICAL and would ideally occupy the same position
+	 *   in the sorted array. The first value passed to this function will always
+	 *   be the value being searched for.
+	 * @return {int} The index of the specified value in the array, if it is found.
+	 *   If the value is not found, then the index of the closest value that
+	 *   is 'smaller'. Returns undefined if the value is not found in the array,
+	 *   and no smaller value is found either.
+	 */
+	ArrayUtils.binarySearchForClosestSmaller = function(array, value, comparatorFunc) {
+	    var searchResult;
+	    var guideFunc = function(checkValue, index) {
+	        var compResult = comparatorFunc(value, checkValue);
+	        if (compResult >= 0) {
+	            searchResult = index;
+	        }
+	        return compResult;
+	    };
+	    ArrayUtils.binarySearchBase(array, guideFunc);
+	    return searchResult;
+	};
+
+	/**
+	 * Searches a sorted array for a particular value. If
+	 * the value is found, its index in the array will be returned.
+	 * This function uses a binary search.
+	 *
+	 * @param {Array<*>} array The array to search. The array must be
+	 *   sorted. It is assumed that the array is sorted from 'smallest'
+	 *   to 'largest'.
+	 * @param {*} value The value to search for in the array.
+	 * @param {function(*,*):int} comparatorFunc A function that can
+	 *   be used to locate a particular element in the sorted array. It takes two
+	 *   parameters (of any type), and returns: a negative value
+	 *   if the first of the two values is 'smaller' (comes before the other
+	 *   in the sorted array); a positive value if the first of the two values
+	 *   is 'larger' (comes after the other value in the sorted array); zero
+	 *   if the two values are IDENTICAL and would ideally occupy the same position
+	 *   in the sorted array. The first value passed to this function will always
+	 *   be the value being searched for.
+	 * @return {int} The index of the specified value in the array, if it is found;
+	 *   undefined otherwise.
+	 */
+	ArrayUtils.binarySearch = function(array, value, comparatorFunc) {
+	    var searchResult;
+	    var guideFunc = function(checkValue, index) {
+	        var compResult = comparatorFunc(value, checkValue);
+	        if (compResult === 0) {
+	            searchResult = index;
+	        }
+	        return compResult;
+	    };
+	    ArrayUtils.binarySearchBase(array, guideFunc);
+	    return searchResult;
+	};
+
+	/**
+	 * Merges two arrays into one large sorted array, given that the original
+	 * two arrays are sorted according to the same ordering scheme that the
+	 * final array will use.
+	 *
+	 * @param {Array<*>} first The first array to merge.
+	 * @param {Array<*>} second The second array to merge.
+	 * @param {function(*, *):int} comparator A function which will define
+	 *   the order in which the final array will be sorted. The original
+	 *   two arrays should also be sorted in a way that satisfies this function.
+	 *   It will be passed two objects that will be placed into the final array,
+	 *   and must return an integer indicating how they should be ordered in
+	 *   the final array: a negative value if the first of the two objects
+	 *   should come before the other in the final array; a positive value if
+	 *   the first of the two objects should come after the other in the final
+	 *   array; zero if the order in which the two objects appear in the final
+	 *   array, relative to each other, does not matter.
+	 * @return {Array<*>} A new array which contains all elements of the
+	 *   original two arrays, in sorted order.
+	 */
+	ArrayUtils.mergeSortedArrays = function(first, second, comparator) {
+	    var indexInFirst = 0;
+	    var indexInSecond = 0;
+	    var mergedArray = [];
+	    while (indexInFirst < first.length && indexInSecond < second.length) {
+	        if (comparator(first[indexInFirst], second[indexInSecond]) < 0) {
+	            mergedArray.push(first[indexInFirst]);
+	            indexInFirst++;
+	        } else {
+	            mergedArray.push(second[indexInSecond]);
+	            indexInSecond++;
+	        }
+	    }
+	    for (; indexInFirst < first.length; indexInFirst++) {
+	        mergedArray.push(first[indexInFirst]);
+	    }
+	    for (; indexInSecond < second.length; indexInSecond++) {
+	        mergedArray.push(second[indexInSecond]);
+	    }
+	    return mergedArray;
+	};
+
+	module.exports = ArrayUtils;
+
+/***/ },
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommand class.
+	 */
+
+	var Coordinate = __webpack_require__(40);
+
+	/**
+	 * MovementCommand class
+	 *
+	 * Represents an individual movement that a marcher executes during
+	 * a show.
+	 * 
+	 * This is an abstract class - do not make an instance of this
+	 * directly.
+	 *
+	 * @param {float} startX The x coordinate at which the movement starts.
+	 * @param {float} startY The y coordinate at which the movement starts.
+	 * @param {float} endX The x coordinate at which the movement starts.
+	 * @param {float} endY The y coordinate at which the movement starts.
+	 * @param {int} numBeats The duration of the movement, in beats. 
+	 **/
+	var MovementCommand = function(startX, startY, endX, endY, numBeats) {
+	    /**
+	     * The x component of the movement's start position, measured in
+	     * steps from the upper left corner of the field.
+	     * @type {float}
+	     */
+	    this._startX = startX;
+	    
+	    /**
+	     * The y component of the movement's start position, measured in
+	     * steps from the upper left corner of the field.
+	     * @type {float}
+	     */
+	    this._startY = startY;
+	    
+	    /**
+	     * The x component of the movement's end position, measured in
+	     * steps from the upper left corner of the field.
+	     * @type {float}
+	     */
+	    this._endX = endX;
+	    
+	    /**
+	     * The y component of the movement's end position, measured in
+	     * steps from the upper left corner of the field.
+	     * @type {float}
+	     */
+	    this._endY = endY;
+	    
+	    /**
+	     * The duration of the command, in beats.
+	     * @type {int}
+	     */
+	    this._numBeats = numBeats;
+	};
+
+	/**
+	 * Returns the position at which this movement starts.
+	 *
+	 * @return {Coordinate} The position where the movement begins.
+	 */
+	MovementCommand.prototype.getStartPosition = function() {
+	        return new Coordinate(this._startX, this._startY);
+	};
+
+	/**
+	 * Returns the position at which this movement ends.
+	 *
+	 * @return {Coordinate} The position where the movement ends.
+	 */
+	MovementCommand.prototype.getEndPosition = function() {
+	    return new Coordinate(this._endX, this._endY);
+	};
+
+	/**
+	 * Returns the number of beats required to complete this
+	 * command.
+	 *
+	 * @return {int} The duration of this command, in beats.
+	 */
+	MovementCommand.prototype.getBeatDuration = function() {
+	    return this._numBeats;
+	};
+
+	/**
+	 * Returns an AnimationState describing a marcher
+	 * who is executing this movement.
+	 *
+	 * @param {int} beatNum The beat of this movement that
+	 * the marcher is currently executing (relative
+	 * to the start of the movement).
+	 * @return {AnimationState} An AnimationState describing
+	 * a marcher who is executing this movement.
+	 */
+	MovementCommand.prototype.getAnimationState = function(beatNum) {
+	    console.log("getAnimationState called");
+	};
+
+	/**
+	 * Returns the continuity text associated with this movement
+	 * @return {String} the text displayed for this movement
+	 */
+	MovementCommand.prototype.getContinuityText = function() {
+	    console.log("getContinuityText called");
+	};
+
+	/**
+	 * Returns this movement's orientation (E,W,N,S). If the orientation isn't one of
+	 * 0, 90, 180, or 270, returns an empty String
+	 * @return {String} the orientation or an empty String if invalid orientation
+	 */
+	MovementCommand.prototype.getOrientation = function() {
+	    switch (this._orientation) {
+	        case 0:
+	            return "E";
+	            break;
+	        case 90:
+	            return "S";
+	            break;
+	        case 180:
+	            return "W";
+	            break;
+	        case 270:
+	            return "N";
+	            break;
+	        default:
+	            return "";
+	    }
+	};
+
+	module.exports = MovementCommand;
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the AnimationState struct.
+	 */
+
+	/**
+	 * An AnimationState struct describes the state of a dot at a specific time
+	 * in the show. It contains all information required to properly draw
+	 * the dot in the grapher.
+	 *
+	 * @param {float} posX The x position of the dot.
+	 * @param {float} posY The y position of the dot.
+	 * @param {float} facingAngle The angle at which the dot is oriented.
+	 */
+	var AnimationState = function(posX, posY, facingAngle) {
+	    this.x = posX;
+	    this.y = posY;
+	    this.angle = facingAngle;
+	};
+
+	module.exports = AnimationState;
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines various functions and constants that are
+	 *   useful in mathematical calculations.
+	 *
+	 * NOTES ABOUT THE COORDINATE SYSTEM USED:
+	 * Unless otherwise specified, all coordinates are expected to be
+	 * measured according to the coordinate system used by the Grapher.
+	 * That is, the positive y-axis points downward, and the positive
+	 * x-axis points rightward.
+	 
+	 * NOTES ABOUT ANGLE MEASUREMENT:
+	 * Unless otherwise specified, angles are measured in the same way
+	 * as they are measured for the Grapher: clockwise from the positive
+	 * y-axis. Thoughout this file, this angle measurement scheme will be
+	 * referred to as being relative to "Grapher standard position." Note
+	 * that this position derives from the fact that facing east, in the context of
+	 * memorial stadium, is the default: 0 degrees in the Grapher standard position
+	 * is straight east, and 90 degrees is south, etc.
+	 */
+
+	 
+	/**
+	 * The collection of all of the utility functions and constants defined in this
+	 * file.
+	 * @type {object}
+	 */
+	MathUtils = {};
+
+	 
+	//=============================================
+	//===============-- CONSTANTS
+	//=============================================
+	 
+	/**
+	 * PI/2
+	 * @type {float}
+	 */
+	MathUtils.PI_OVER_TWO = Math.PI / 2;
+
+	/**
+	 * 2*PI
+	 * @type {float}
+	 */
+	MathUtils.TWO_PI = Math.PI * 2;
+
+	/**
+	 * When multiplied by an angle measured in degrees,
+	 * this will produce an equivalent angle measured
+	 * in radians.
+	 * @type {float}
+	 */
+	MathUtils.DEGREES_TO_RADIANS_CONV_FACTOR = Math.PI/180;
+
+	/**
+	 * When multiplied by an angle measured in radians,
+	 * this will produce an equivalent angle measured
+	 * in degrees.
+	 * @type {float}
+	 */
+	MathUtils.RADIANS_TO_DEGREES_CONV_FACTOR = 1 / MathUtils.DEGREES_TO_RADIANS_CONV_FACTOR;
+
+	//=============================================
+	//===============-- FUNCTIONS
+	//=============================================
+
+	/**
+	 * Calculates the squared distance between two points.
+	 *
+	 * @param {float} fromX The x coordinate of the first point.
+	 * @param {float} fromY The y coordinate of the first point.
+	 * @param {float} toX The x coordinate of the second point.
+	 * @param {float} toY The y coordinate of the second point.
+	 * @return {float} The squared distance between points:
+	 *   {fromX, fromY} and  {toX, toY}.
+	 */
+	MathUtils.calcSquaredDistance = function(fromX, fromY, toX, toY) {
+	    var deltaX = toX - fromX;
+	    var deltaY = toY - fromY;
+	    return (deltaX * deltaX) + (deltaY * deltaY);
+	};
+
+	/**
+	 * Calculates the distance between two points.
+	 *
+	 * @param {float} fromX The x coordinate of the first point.
+	 * @param {float} fromY The y coordinate of the first point.
+	 * @param {float} toX The x coordinate of the second point.
+	 * @param {float} toY The y coordinate of the second point.
+	 * @return {float} The distance between points:
+	 *   {fromX, fromY} and  {toX, toY}.
+	 */
+	MathUtils.calcDistance = function(fromX, fromY, toX, toY) {
+	    return Math.sqrt(this.calcSquaredDistance(fromX, fromY, toX, toY));
+	};
+
+	/**
+	 * Calculates the angle toward which a vector is facing, in radians.
+	 * The angle is measured relative to Grapher standard position.
+	 *
+	 * @param {float} vectorX The x component of the vector.
+	 * @param {float} vectorY The y component of the vector.
+	 * @return {float} The angle toward which the vector is pointing, in
+	 * radians.
+	 */
+	MathUtils.calcAngle = function(vectorX, vectorY) {
+	    var angle = Math.atan(-vectorX / vectorY);
+	    if (vectorY < 0) {
+	        angle += Math.PI;
+	    }
+	    return angle;
+	};
+
+	/**
+	 * Returns the angle to which a point has been rotated
+	 * around a center.
+	 *
+	 * @param {float} pointX The x coordinate of the rotated point.
+	 * @param {float} pointY The y coordinate of the rotated point.
+	 * @param {float} centerX The x coordinate of the center.
+	 * @param {float} centerY The y coordinate of the center.
+	 * @return {float} The angle to which a point has been rotated
+	 *   around a center. The angle is measured in radians,
+	 *   relative to Grapher standard position.
+	 */
+	MathUtils.calcAngleAbout = function(pointX, pointY, centerX, centerY) {
+	    return this.calcAngle(pointX - centerX, pointY - centerY);
+	};
+
+	/**
+	 * Calculates the x position of a point rotated along the unit
+	 * circle by an angle measured relative to Grapher standard
+	 * position.
+	 *
+	 * @param {float} angle The angle by which to rotate the point,
+	 *   measured in radians relative to Grapher standard position.
+	 * @return {float} The final x position of the point, rotated along the
+	 *   unit circle.
+	 */
+	MathUtils.calcRotatedXPos = function(angle) {
+	    return -Math.sin(angle);
+	};
+
+	/**
+	 * Calculates the y position of a point rotated along the unit
+	 * circle by an angle measured relative to Grapher standard
+	 * position.
+	 *
+	 * @param {float} angle The angle by which to rotate the point,
+	 *   measured in radians relative to Grapher standard position.
+	 * @return {float} The final y position of the point, rotated along the
+	 *   unit circle.
+	 */
+	MathUtils.calcRotatedYPos = function(angle) {
+	    return Math.cos(angle);
+	};
+
+	/**
+	 * Rotates an angle by a quarter-turn in
+	 * a specified direction.
+	 *
+	 * @param {float} angle The angle to rotate, in radians.
+	 * @param {bool} isCW True if the angle should be
+	 *   rotated clockwise; false if the angle should 
+	 *   be rotated counter-clockwise.
+	 * @return The angle, rotated by a quarter turn.
+	 *   This angle is measured in radians.
+	 */
+	MathUtils.quarterTurn = function(angle, isCW) {
+	    return angle + ((isCW * 2 - 1) * this.PI_OVER_TWO);
+	};
+
+	/**
+	 * For an angle measured in degrees, will
+	 * find an equivalent angle between 0
+	 * and 360 degrees.
+	 *
+	 * @param {float} angle An angle measured in degrees.
+	 * @return {float} An equivalent angle between 0 and
+	 *   360 degrees.
+	 */
+	MathUtils.wrapAngleDegrees = function(angle) {
+	    while (angle >= 360) {
+	        angle -= 360;
+	    }
+	    while (angle < 0) {
+	        angle += 360;
+	    }
+	    return angle;
+	};
+
+	/**
+	 * For an angle measured in radians, will
+	 * find an equivalent angle between 0
+	 * and 2*PI radians.
+	 *
+	 * @param {float} angle An angle measured in radians.
+	 * @return {float} An equivalent angle between
+	 *   0 and 2*PI radians.
+	 */
+	MathUtils.wrapAngleRadians = function(angle) {
+	    while (angle >= TWO_PI) {
+	        angle -= this.TWO_PI;
+	    }
+	    while (angle < 0) {
+	        angle += this.TWO_PI;
+	    }
+	    return angle;
+	};
+
+	/**
+	 * Converts an angle measured in degrees to one
+	 * measured in radians.
+	 *
+	 * @param {float} angle An angle, measured in degrees.
+	 * @return {float} The angle, measured in radians.
+	 */
+	MathUtils.toRadians = function(angle) {
+	    return angle * this.DEGREES_TO_RADIANS_CONV_FACTOR;
+	};
+
+	/**
+	 * Converts an angle measured in radians to one
+	 * measured in degrees.
+	 *
+	 * @param {float} angle An angle, measured in radians.
+	 * @return {float} The angle, measured in degrees.
+	 */
+	MathUtils.toDegrees = function(angle) {
+	    return angle * this.RADIANS_TO_DEGREES_CONV_FACTOR;
+	};
+
+	module.exports = MathUtils;
+
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
 	 * @fileOverview Defines the SMSound class. This sound plays audio through
 	 *   SoundManager2.
 	 */
 	 
-	var Sound = __webpack_require__(40);
-	var JSUtils = __webpack_require__(2);
+	var Sound = __webpack_require__(41);
+	var JSUtils = __webpack_require__(3);
 	 
 	/**
 	 * SMSound objects play music through SoundManager2.
@@ -3595,7 +4212,7 @@
 	module.exports = SMSound;
 
 /***/ },
-/* 35 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3656,624 +4273,29 @@
 	module.exports = MusicPlayer;
 
 /***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines various utility functions that can be used
-	 *   to search/sort/operate on arrays.
-	 */
-
-	/**
-	 * A collection of all of the array functions.
-	 * @type {object}
-	 */
-	var ArrayUtils = {};
-
-	/**
-	 * A function that explores a sorted array using a binary search.
-	 * This function DOES NOT RETURN ANYTHING. However, the
-	 * guidFunc function (@see guideFunc) is called througout
-	 * the search, and can potentially collect results from the
-	 * search so that they can be accessed later.
-	 *
-	 * @param {Array<*>} array The array to search. The array MUST
-	 *   be sorted for the function to work. The ordering of the array
-	 *   is assumed to be 'smallest' to 'largest'.
-	 * @param {function(*,int):int} guideFunc A function that takes two parameters:
-	 *   first, an element from the array being searched; second, the
-	 *   index associated with that element. The function must return
-	 *   a number that indicates how to procede with the search: a negative
-	 *   value if the search should procede by looking at values that are
-	 *   'smaller' (earlier in the array) than the one passed in the first parameter;
-	 *   a positive value if the search should procede by looking at values that
-	 *   are 'larger' (later in the array) than the one passed in the first
-	 *   parameter; zero if the search should end. Though the binary
-	 *   search gives no return value, this function could be used to collect
-	 *   information about the findings of a search.
-	 */
-	ArrayUtils.binarySearchBase = function(array, guideFunc) {
-	    var currentBlockSize = array.length;
-	    var firstHalfBlockSize;
-	    var currentIndexOffset = 0;
-	    var guideVal;
-	    var targetIndex;
-	    var frontShave;
-	    while (currentBlockSize > 0) {
-	        firstHalfBlockSize = Math.floor(currentBlockSize / 2);
-	        targetIndex = currentIndexOffset + firstHalfBlockSize;
-	        guideVal = guideFunc(array[targetIndex], targetIndex);
-	        if (guideVal === 0) {
-	            break;
-	        }
-	        if (guideVal > 0) {
-	            frontShave = firstHalfBlockSize + 1;
-	            currentIndexOffset += frontShave;
-	            currentBlockSize -= frontShave;
-	        } else {
-	            currentBlockSize = firstHalfBlockSize;
-	        }
-	    }
-	};
-
-	/**
-	 * Searches a sorted array for a particular value. If
-	 * the value is found, its index in the array will be returned.
-	 * If the value is not found, then the index of the closest value
-	 * that is 'larger' (later in the array than the place where the
-	 * value would have been found) will be returned. This function
-	 * uses a binary search.
-	 *
-	 * @param {Array<*>} array The array to search. The array must be
-	 *   sorted. It is assumed that the array is sorted from 'smallest'
-	 *   to 'largest'.
-	 * @param {*} value The value to search for in the array.
-	 * @param {function(*,*):int} comparatorFunc A function that can
-	 *   be used to locate a particular element in the sorted array. It takes two
-	 *   parameters (of any type), and returns: a negative value
-	 *   if the first of the two values is 'smaller' (comes before the other
-	 *   in the sorted array); a positive value if the first of the two values
-	 *   is 'larger' (comes after the other value in the sorted array); zero
-	 *   if the two values are IDENTICAL and would ideally occupy the same position
-	 *   in the sorted array. The first value passed to this function will always
-	 *   be the value being searched for.
-	 * @return {int} The index of the specified value in the array, if it is found.
-	 *   If the value is not found, then the index of the closest value that
-	 *   is 'larger'. Returns undefined if the value is not in the array and
-	 *   no larger value is found.
-	 */
-	ArrayUtils.binarySearchForClosestLarger = function(array, value, comparatorFunc) {
-	    var searchResult;
-	    var guideFunc = function(checkValue, index) {
-	        var compResult = comparatorFunc(value, checkValue);
-	        if (compResult <= 0) {
-	            searchResult = index;
-	        }
-	        return compResult;
-	    };
-	    ArrayUtils.binarySearchBase(array, guideFunc);
-	    return searchResult;
-	};
-
-	/**
-	 * Searches a sorted array for a particular value. If
-	 * the value is found, its index in the array will be returned.
-	 * If the value is not found, then the index of the closest value
-	 * that is 'smaller' (earlier in the array than the place where the
-	 * value would have been found) will be returned. This function uses
-	 * a binary search.
-	 *
-	 * @param {Array<*>} array The array to search. The array must be
-	 *   sorted. It is assumed that the array is sorted from 'smallest'
-	 *   to 'largest'.
-	 * @param {*} value The value to search for in the array.
-	 * @param {function(*,*):int} comparatorFunc A function that can
-	 *   be used to locate a particular element in the sorted array. It takes two
-	 *   parameters (of any type), and returns: a negative value
-	 *   if the first of the two values is 'smaller' (comes before the other
-	 *   in the sorted array); a positive value if the first of the two values
-	 *   is 'larger' (comes after the other value in the sorted array); zero
-	 *   if the two values are IDENTICAL and would ideally occupy the same position
-	 *   in the sorted array. The first value passed to this function will always
-	 *   be the value being searched for.
-	 * @return {int} The index of the specified value in the array, if it is found.
-	 *   If the value is not found, then the index of the closest value that
-	 *   is 'smaller'. Returns undefined if the value is not found in the array,
-	 *   and no smaller value is found either.
-	 */
-	ArrayUtils.binarySearchForClosestSmaller = function(array, value, comparatorFunc) {
-	    var searchResult;
-	    var guideFunc = function(checkValue, index) {
-	        var compResult = comparatorFunc(value, checkValue);
-	        if (compResult >= 0) {
-	            searchResult = index;
-	        }
-	        return compResult;
-	    };
-	    ArrayUtils.binarySearchBase(array, guideFunc);
-	    return searchResult;
-	};
-
-	/**
-	 * Searches a sorted array for a particular value. If
-	 * the value is found, its index in the array will be returned.
-	 * This function uses a binary search.
-	 *
-	 * @param {Array<*>} array The array to search. The array must be
-	 *   sorted. It is assumed that the array is sorted from 'smallest'
-	 *   to 'largest'.
-	 * @param {*} value The value to search for in the array.
-	 * @param {function(*,*):int} comparatorFunc A function that can
-	 *   be used to locate a particular element in the sorted array. It takes two
-	 *   parameters (of any type), and returns: a negative value
-	 *   if the first of the two values is 'smaller' (comes before the other
-	 *   in the sorted array); a positive value if the first of the two values
-	 *   is 'larger' (comes after the other value in the sorted array); zero
-	 *   if the two values are IDENTICAL and would ideally occupy the same position
-	 *   in the sorted array. The first value passed to this function will always
-	 *   be the value being searched for.
-	 * @return {int} The index of the specified value in the array, if it is found;
-	 *   undefined otherwise.
-	 */
-	ArrayUtils.binarySearch = function(array, value, comparatorFunc) {
-	    var searchResult;
-	    var guideFunc = function(checkValue, index) {
-	        var compResult = comparatorFunc(value, checkValue);
-	        if (compResult === 0) {
-	            searchResult = index;
-	        }
-	        return compResult;
-	    };
-	    ArrayUtils.binarySearchBase(array, guideFunc);
-	    return searchResult;
-	};
-
-	/**
-	 * Merges two arrays into one large sorted array, given that the original
-	 * two arrays are sorted according to the same ordering scheme that the
-	 * final array will use.
-	 *
-	 * @param {Array<*>} first The first array to merge.
-	 * @param {Array<*>} second The second array to merge.
-	 * @param {function(*, *):int} comparator A function which will define
-	 *   the order in which the final array will be sorted. The original
-	 *   two arrays should also be sorted in a way that satisfies this function.
-	 *   It will be passed two objects that will be placed into the final array,
-	 *   and must return an integer indicating how they should be ordered in
-	 *   the final array: a negative value if the first of the two objects
-	 *   should come before the other in the final array; a positive value if
-	 *   the first of the two objects should come after the other in the final
-	 *   array; zero if the order in which the two objects appear in the final
-	 *   array, relative to each other, does not matter.
-	 * @return {Array<*>} A new array which contains all elements of the
-	 *   original two arrays, in sorted order.
-	 */
-	ArrayUtils.mergeSortedArrays = function(first, second, comparator) {
-	    var indexInFirst = 0;
-	    var indexInSecond = 0;
-	    var mergedArray = [];
-	    while (indexInFirst < first.length && indexInSecond < second.length) {
-	        if (comparator(first[indexInFirst], second[indexInSecond]) < 0) {
-	            mergedArray.push(first[indexInFirst]);
-	            indexInFirst++;
-	        } else {
-	            mergedArray.push(second[indexInSecond]);
-	            indexInSecond++;
-	        }
-	    }
-	    for (; indexInFirst < first.length; indexInFirst++) {
-	        mergedArray.push(first[indexInFirst]);
-	    }
-	    for (; indexInSecond < second.length; indexInSecond++) {
-	        mergedArray.push(second[indexInSecond]);
-	    }
-	    return mergedArray;
-	};
-
-	module.exports = ArrayUtils;
-
-/***/ },
-/* 37 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommand class.
-	 */
-
-	var Coordinate = __webpack_require__(41);
-
-	/**
-	 * MovementCommand class
-	 *
-	 * Represents an individual movement that a marcher executes during
-	 * a show.
-	 * 
-	 * This is an abstract class - do not make an instance of this
-	 * directly.
-	 *
-	 * @param {float} startX The x coordinate at which the movement starts.
-	 * @param {float} startY The y coordinate at which the movement starts.
-	 * @param {float} endX The x coordinate at which the movement starts.
-	 * @param {float} endY The y coordinate at which the movement starts.
-	 * @param {int} numBeats The duration of the movement, in beats. 
-	 **/
-	var MovementCommand = function(startX, startY, endX, endY, numBeats) {
-	    /**
-	     * The x component of the movement's start position, measured in
-	     * steps from the upper left corner of the field.
-	     * @type {float}
-	     */
-	    this._startX = startX;
-	    
-	    /**
-	     * The y component of the movement's start position, measured in
-	     * steps from the upper left corner of the field.
-	     * @type {float}
-	     */
-	    this._startY = startY;
-	    
-	    /**
-	     * The x component of the movement's end position, measured in
-	     * steps from the upper left corner of the field.
-	     * @type {float}
-	     */
-	    this._endX = endX;
-	    
-	    /**
-	     * The y component of the movement's end position, measured in
-	     * steps from the upper left corner of the field.
-	     * @type {float}
-	     */
-	    this._endY = endY;
-	    
-	    /**
-	     * The duration of the command, in beats.
-	     * @type {int}
-	     */
-	    this._numBeats = numBeats;
-	};
-
-	/**
-	 * Returns the position at which this movement starts.
-	 *
-	 * @return {Coordinate} The position where the movement begins.
-	 */
-	MovementCommand.prototype.getStartPosition = function() {
-	        return new Coordinate(this._startX, this._startY);
-	};
-
-	/**
-	 * Returns the position at which this movement ends.
-	 *
-	 * @return {Coordinate} The position where the movement ends.
-	 */
-	MovementCommand.prototype.getEndPosition = function() {
-	    return new Coordinate(this._endX, this._endY);
-	};
-
-	/**
-	 * Returns the number of beats required to complete this
-	 * command.
-	 *
-	 * @return {int} The duration of this command, in beats.
-	 */
-	MovementCommand.prototype.getBeatDuration = function() {
-	    return this._numBeats;
-	};
-
-	/**
-	 * Returns an AnimationState describing a marcher
-	 * who is executing this movement.
-	 *
-	 * @param {int} beatNum The beat of this movement that
-	 * the marcher is currently executing (relative
-	 * to the start of the movement).
-	 * @return {AnimationState} An AnimationState describing
-	 * a marcher who is executing this movement.
-	 */
-	MovementCommand.prototype.getAnimationState = function(beatNum) {
-	    console.log("getAnimationState called");
-	};
-
-	/**
-	 * Returns the continuity text associated with this movement
-	 * @return {String} the text displayed for this movement
-	 */
-	MovementCommand.prototype.getContinuityText = function() {
-	    console.log("getContinuityText called");
-	};
-
-	/**
-	 * Returns this movement's orientation (E,W,N,S). If the orientation isn't one of
-	 * 0, 90, 180, or 270, returns an empty String
-	 * @return {String} the orientation or an empty String if invalid orientation
-	 */
-	MovementCommand.prototype.getOrientation = function() {
-	    switch (this._orientation) {
-	        case 0:
-	            return "E";
-	            break;
-	        case 90:
-	            return "S";
-	            break;
-	        case 180:
-	            return "W";
-	            break;
-	        case 270:
-	            return "N";
-	            break;
-	        default:
-	            return "";
-	    }
-	};
-
-	module.exports = MovementCommand;
-
-/***/ },
-/* 38 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the AnimationState struct.
-	 */
-
-	/**
-	 * An AnimationState struct describes the state of a dot at a specific time
-	 * in the show. It contains all information required to properly draw
-	 * the dot in the grapher.
-	 *
-	 * @param {float} posX The x position of the dot.
-	 * @param {float} posY The y position of the dot.
-	 * @param {float} facingAngle The angle at which the dot is oriented.
-	 */
-	var AnimationState = function(posX, posY, facingAngle) {
-	    this.x = posX;
-	    this.y = posY;
-	    this.angle = facingAngle;
-	};
-
-	module.exports = AnimationState;
-
-/***/ },
-/* 39 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines various functions and constants that are
-	 *   useful in mathematical calculations.
-	 *
-	 * NOTES ABOUT THE COORDINATE SYSTEM USED:
-	 * Unless otherwise specified, all coordinates are expected to be
-	 * measured according to the coordinate system used by the Grapher.
-	 * That is, the positive y-axis points downward, and the positive
-	 * x-axis points rightward.
-	 
-	 * NOTES ABOUT ANGLE MEASUREMENT:
-	 * Unless otherwise specified, angles are measured in the same way
-	 * as they are measured for the Grapher: clockwise from the positive
-	 * y-axis. Thoughout this file, this angle measurement scheme will be
-	 * referred to as being relative to "Grapher standard position." Note
-	 * that this position derives from the fact that facing east, in the context of
-	 * memorial stadium, is the default: 0 degrees in the Grapher standard position
-	 * is straight east, and 90 degrees is south, etc.
-	 */
-
-	 
-	/**
-	 * The collection of all of the utility functions and constants defined in this
-	 * file.
-	 * @type {object}
-	 */
-	MathUtils = {};
-
-	 
-	//=============================================
-	//===============-- CONSTANTS
-	//=============================================
-	 
-	/**
-	 * PI/2
-	 * @type {float}
-	 */
-	MathUtils.PI_OVER_TWO = Math.PI / 2;
-
-	/**
-	 * 2*PI
-	 * @type {float}
-	 */
-	MathUtils.TWO_PI = Math.PI * 2;
-
-	/**
-	 * When multiplied by an angle measured in degrees,
-	 * this will produce an equivalent angle measured
-	 * in radians.
-	 * @type {float}
-	 */
-	MathUtils.DEGREES_TO_RADIANS_CONV_FACTOR = Math.PI/180;
-
-	/**
-	 * When multiplied by an angle measured in radians,
-	 * this will produce an equivalent angle measured
-	 * in degrees.
-	 * @type {float}
-	 */
-	MathUtils.RADIANS_TO_DEGREES_CONV_FACTOR = 1 / MathUtils.DEGREES_TO_RADIANS_CONV_FACTOR;
-
-	//=============================================
-	//===============-- FUNCTIONS
-	//=============================================
-
-	/**
-	 * Calculates the squared distance between two points.
-	 *
-	 * @param {float} fromX The x coordinate of the first point.
-	 * @param {float} fromY The y coordinate of the first point.
-	 * @param {float} toX The x coordinate of the second point.
-	 * @param {float} toY The y coordinate of the second point.
-	 * @return {float} The squared distance between points:
-	 *   {fromX, fromY} and  {toX, toY}.
-	 */
-	MathUtils.calcSquaredDistance = function(fromX, fromY, toX, toY) {
-	    var deltaX = toX - fromX;
-	    var deltaY = toY - fromY;
-	    return (deltaX * deltaX) + (deltaY * deltaY);
-	};
-
-	/**
-	 * Calculates the distance between two points.
-	 *
-	 * @param {float} fromX The x coordinate of the first point.
-	 * @param {float} fromY The y coordinate of the first point.
-	 * @param {float} toX The x coordinate of the second point.
-	 * @param {float} toY The y coordinate of the second point.
-	 * @return {float} The distance between points:
-	 *   {fromX, fromY} and  {toX, toY}.
-	 */
-	MathUtils.calcDistance = function(fromX, fromY, toX, toY) {
-	    return Math.sqrt(this.calcSquaredDistance(fromX, fromY, toX, toY));
-	};
-
-	/**
-	 * Calculates the angle toward which a vector is facing, in radians.
-	 * The angle is measured relative to Grapher standard position.
-	 *
-	 * @param {float} vectorX The x component of the vector.
-	 * @param {float} vectorY The y component of the vector.
-	 * @return {float} The angle toward which the vector is pointing, in
-	 * radians.
-	 */
-	MathUtils.calcAngle = function(vectorX, vectorY) {
-	    var angle = Math.atan(-vectorX / vectorY);
-	    if (vectorY < 0) {
-	        angle += Math.PI;
-	    }
-	    return angle;
-	};
-
-	/**
-	 * Returns the angle to which a point has been rotated
-	 * around a center.
-	 *
-	 * @param {float} pointX The x coordinate of the rotated point.
-	 * @param {float} pointY The y coordinate of the rotated point.
-	 * @param {float} centerX The x coordinate of the center.
-	 * @param {float} centerY The y coordinate of the center.
-	 * @return {float} The angle to which a point has been rotated
-	 *   around a center. The angle is measured in radians,
-	 *   relative to Grapher standard position.
-	 */
-	MathUtils.calcAngleAbout = function(pointX, pointY, centerX, centerY) {
-	    return this.calcAngle(pointX - centerX, pointY - centerY);
-	};
-
-	/**
-	 * Calculates the x position of a point rotated along the unit
-	 * circle by an angle measured relative to Grapher standard
-	 * position.
-	 *
-	 * @param {float} angle The angle by which to rotate the point,
-	 *   measured in radians relative to Grapher standard position.
-	 * @return {float} The final x position of the point, rotated along the
-	 *   unit circle.
-	 */
-	MathUtils.calcRotatedXPos = function(angle) {
-	    return -Math.sin(angle);
-	};
-
-	/**
-	 * Calculates the y position of a point rotated along the unit
-	 * circle by an angle measured relative to Grapher standard
-	 * position.
-	 *
-	 * @param {float} angle The angle by which to rotate the point,
-	 *   measured in radians relative to Grapher standard position.
-	 * @return {float} The final y position of the point, rotated along the
-	 *   unit circle.
-	 */
-	MathUtils.calcRotatedYPos = function(angle) {
-	    return Math.cos(angle);
-	};
-
-	/**
-	 * Rotates an angle by a quarter-turn in
-	 * a specified direction.
-	 *
-	 * @param {float} angle The angle to rotate, in radians.
-	 * @param {bool} isCW True if the angle should be
-	 *   rotated clockwise; false if the angle should 
-	 *   be rotated counter-clockwise.
-	 * @return The angle, rotated by a quarter turn.
-	 *   This angle is measured in radians.
-	 */
-	MathUtils.quarterTurn = function(angle, isCW) {
-	    return angle + ((isCW * 2 - 1) * this.PI_OVER_TWO);
-	};
-
-	/**
-	 * For an angle measured in degrees, will
-	 * find an equivalent angle between 0
-	 * and 360 degrees.
-	 *
-	 * @param {float} angle An angle measured in degrees.
-	 * @return {float} An equivalent angle between 0 and
-	 *   360 degrees.
-	 */
-	MathUtils.wrapAngleDegrees = function(angle) {
-	    while (angle >= 360) {
-	        angle -= 360;
-	    }
-	    while (angle < 0) {
-	        angle += 360;
-	    }
-	    return angle;
-	};
-
-	/**
-	 * For an angle measured in radians, will
-	 * find an equivalent angle between 0
-	 * and 2*PI radians.
-	 *
-	 * @param {float} angle An angle measured in radians.
-	 * @return {float} An equivalent angle between
-	 *   0 and 2*PI radians.
-	 */
-	MathUtils.wrapAngleRadians = function(angle) {
-	    while (angle >= TWO_PI) {
-	        angle -= this.TWO_PI;
-	    }
-	    while (angle < 0) {
-	        angle += this.TWO_PI;
-	    }
-	    return angle;
-	};
-
-	/**
-	 * Converts an angle measured in degrees to one
-	 * measured in radians.
-	 *
-	 * @param {float} angle An angle, measured in degrees.
-	 * @return {float} The angle, measured in radians.
-	 */
-	MathUtils.toRadians = function(angle) {
-	    return angle * this.DEGREES_TO_RADIANS_CONV_FACTOR;
-	};
-
-	/**
-	 * Converts an angle measured in radians to one
-	 * measured in degrees.
-	 *
-	 * @param {float} angle An angle, measured in radians.
-	 * @return {float} The angle, measured in degrees.
-	 */
-	MathUtils.toDegrees = function(angle) {
-	    return angle * this.RADIANS_TO_DEGREES_CONV_FACTOR;
-	};
-
-	module.exports = MathUtils;
-
-
-/***/ },
 /* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the Coordinate struct.
+	 */
+
+	/**
+	 * A Coordinate struct marks a two-dimensional position:
+	 * {x: __,y: __}.
+	 *
+	 * @param {float} x The x component of the coordinate.
+	 * @param {float} y The y component of the coordinate.
+	 */
+	var Coordinate = function(x, y) {
+	    this.x = x;
+	    this.y = y;
+	};
+
+	module.exports = Coordinate;
+
+/***/ },
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -4425,28 +4447,6 @@
 
 	module.exports = Sound;
 
-
-/***/ },
-/* 41 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Coordinate struct.
-	 */
-
-	/**
-	 * A Coordinate struct marks a two-dimensional position:
-	 * {x: __,y: __}.
-	 *
-	 * @param {float} x The x component of the coordinate.
-	 * @param {float} y The y component of the coordinate.
-	 */
-	var Coordinate = function(x, y) {
-	    this.x = x;
-	    this.y = y;
-	};
-
-	module.exports = Coordinate;
 
 /***/ }
 /******/ ])

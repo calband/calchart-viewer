@@ -44,9 +44,9 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var PDFGenerator = __webpack_require__(4);
-	var ShowUtils = __webpack_require__(3);
-	var JSUtils = __webpack_require__(2);
+	var PDFGenerator = __webpack_require__(1);
+	var ShowUtils = __webpack_require__(2);
+	var JSUtils = __webpack_require__(3);
 
 	var options = JSUtils.getAllURLParams();
 	options.dots = options.dots ? options.dots.split(",") : [];
@@ -97,6 +97,10 @@
 	        });
 	    $("<p>")
 	        .append(link)
+	        .appendTo(".js-pdf-loading");
+	        
+	    $("<p>")
+	        .text("Are you on Google Chrome? Try opening the PDF outside of Chrome.")
 	        .appendTo(".js-pdf-loading");
 	};
 
@@ -220,145 +224,36 @@
 
 
 /***/ },
-/* 1 */,
-/* 2 */
+/* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * @fileOverview Defines miscellaneous utility functions.
-	 */
-
-	/**
-	 * A collection of javascript utility functions.
-	 */
-	var JSUtils = {};
-	 
-	/**
-	 * Causes a child class to inherit from a parent class.
-	 *
-	 * @param {function} ChildClass The class that will inherit
-	 *   from another.
-	 * @param {function} ParentClass The class to inherit from.
-	 */
-	JSUtils.extends = function (ChildClass, ParentClass) {
-	    var Inheritor = function () {}; // dummy constructor
-	    Inheritor.prototype = ParentClass.prototype;
-	    ChildClass.prototype = new Inheritor();
-	};
-
-	/**
-	 * Returns the value of the given name in the URL query string
-	 *
-	 * getQueryValue("hello") on http://foo.bar?hello=world should return "world"
-	 *
-	 * @param {String} name
-	 * @returns {String|null} the value of the name or null if name not in URL query string
-	 */
-	JSUtils.getURLValue = function(name) {
-	    var vals = this.getAllURLParams();
-	    if (vals[name] !== undefined) {
-	        return vals[name];
-	    } else {
-	        return null;
-	    }
-	};
-
-	/**
-	 * Returns all name-value pairs in the URL query string
-	 *
-	 * @returns {object} a dictionary mapping name to value
-	 */
-	JSUtils.getAllURLParams = function() {
-	    var vals = {};
-	    var query = window.location.search.substr(1);
-	    var vars = query.split("&");
-	    for (var i = 0; i < vars.length; i++) {
-	        var pair = vars[i].split("=");
-	        var name = decodeURIComponent(pair[0]);
-	        var value = decodeURIComponent(pair[1]);
-	        vals[name] = value;
-	    }
-	    return vals;
-	};
-
-	module.exports = JSUtils;
-
-/***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines a collection of functions that are
-	 *   used to create and manage Show objects.
-	 */
-
-	 var ViewerFileLoadSelector = __webpack_require__(18);
-	 var Version = __webpack_require__(10);
-	 
-	 /**
-	  * The collection of all functions related to creating and
-	  * managing Show objects.
-	  */
-	 var ShowUtils = {};
-	 
-	/**
-	 * Builds a show from a viewer file, given the content
-	 * of a viewer file as a string.
-	 *
-	 * @param {string} fileContent The content of the
-	 *   viewer file to load the show from.
-	 * @return {Show} The show represented in the viewer
-	 *   file.
-	 */
-	ShowUtils.fromJSONString = function(fileContent) {
-	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
-	    return this.fromJSON(viewerObject);
-	};
-	 
-	/**
-	 * Builds a show from a viewer file, as a JSON object
-	 *
-	 * @param {object} viewerObject The content of the
-	 *   viewer file to load the show from.
-	 * @return {Show} The show represented in the viewer
-	 *   file.
-	 */
-	ShowUtils.fromJSON = function(viewerObject) {
-	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
-	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
-	};
-
-	module.exports = ShowUtils;
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var PDFUtils = __webpack_require__(11);
-	var HeaderWidget = __webpack_require__(12);
-	var DotContinuityWidget = __webpack_require__(13);
-	var IndividualContinuityWidget = __webpack_require__(14);
-	var MovementDiagramWidget = __webpack_require__(15);
-	var BirdsEyeWidget = __webpack_require__(16);
-	var SurroundingDotsWidget = __webpack_require__(17);
+	var PDFUtils = __webpack_require__(5);
+	var HeaderWidget = __webpack_require__(6);
+	var DotContinuityWidget = __webpack_require__(7);
+	var IndividualContinuityWidget = __webpack_require__(8);
+	var MovementDiagramWidget = __webpack_require__(9);
+	var BirdsEyeWidget = __webpack_require__(10);
+	var SurroundingDotsWidget = __webpack_require__(11);
 
 	/**
 	 * @constant WIDTH is the width of the PDF document, in millimeters
 	 * @constant HEIGHT is the height of the PDF document, in millimeters
+	 * @constant SIDE_MARGIN is the left/right margin of the PDF document, in millimeters
 	 * @constant QUADRANT contains (x,y) coordinates for the top left corner of each quadrant
 	 *      of the document. y coordinates offset by headers
 	 */
 	var WIDTH = 215.9;
 	var HEIGHT = 279.4;
+	var SIDE_MARGIN = 10;
 
 	var QUADRANT = [
-	    {x: 3, y: 24},                     // top left
-	    {x: WIDTH/2 + 3, y: 24},           // top right
-	    {x: 3, y: HEIGHT/2 + 16},          // bottom left
-	    {x: WIDTH/2 + 3, y: HEIGHT/2 + 16} // bottom right
+	    {x: SIDE_MARGIN, y: 24},                     // top left
+	    {x: WIDTH/2 + SIDE_MARGIN, y: 24},           // top right
+	    {x: SIDE_MARGIN, y: HEIGHT/2 + 16},          // bottom left
+	    {x: WIDTH/2 + SIDE_MARGIN, y: HEIGHT/2 + 16} // bottom right
 	];
 	var QUADRANT_HEIGHT = HEIGHT/2 - 22;
-	var QUADRANT_WIDTH = WIDTH/2 - 6;
+	var QUADRANT_WIDTH = WIDTH/2 - SIDE_MARGIN * 2;
 
 	/**
 	 * This PDFGenerator class will be able to generate the PDF representation of the given
@@ -442,14 +337,8 @@
 	        });
 	        // drawing lines between quadrants
 	        this.pdf.setDrawColor(150);
-	        this.pdf.line(
-	            WIDTH/2, 24,
-	            WIDTH/2, HEIGHT
-	        );
-	        this.pdf.line(
-	            0, HEIGHT/2 + 2.5,
-	            WIDTH, HEIGHT/2 + 2.5
-	        );
+	        this.pdf.vLine(WIDTH/2, 24, HEIGHT - 24);
+	        this.pdf.hLine(0, HEIGHT/2 + 2.5, WIDTH);
 	        this.pdf.setDrawColor(0);
 
 	        var quadrantOrder = [0, 1, 2, 3]; // top left, top right, bottom left, bottom right
@@ -589,10 +478,7 @@
 	 */
 	PDFGenerator.prototype._addEndSheet = function(widget, options) {
 	    this.pdf.addPage();
-	    this.pdf.line(
-	        WIDTH/2, 10,
-	        WIDTH/2, HEIGHT
-	    );
+	    this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
 	    var title = this.show.getTitle() + " - Dot " + this.dot;
 	    this.pdf.setFontSize(15);
 	    this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
@@ -604,7 +490,7 @@
 	    var labelWidth = PDFUtils.getTextWidth("00", labelSize) + paddingX * 2;
 	    var labelHeight = PDFUtils.getTextHeight(labelSize);
 	    var widgetSize = 30;
-	    var continuitySize = WIDTH/2 - widgetSize - labelWidth - paddingX * 4;
+	    var continuitySize = WIDTH/2 - widgetSize - labelWidth - paddingX * 3 - SIDE_MARGIN;
 	    var x = 0;
 	    var y = 10;
 	    for (var i = 0; i < this.sheets.length; i++) {
@@ -619,13 +505,10 @@
 
 	        if (y + height > HEIGHT - 5) {
 	            if (x == 0) {
-	                x = WIDTH/2 + paddingX;
+	                x = WIDTH/2 + paddingX - SIDE_MARGIN;
 	            } else {
 	                this.pdf.addPage();
-	                this.pdf.line(
-	                    WIDTH/2, 10,
-	                    WIDTH/2, HEIGHT
-	                );
+	                this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
 	                this.pdf.setFontSize(15);
 	                this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
 	                x = 0;
@@ -635,11 +518,11 @@
 	        this.pdf.setFontSize(labelSize);
 	        this.pdf.text(
 	            String(i + 1),
-	            x + paddingX * 2,
+	            x + paddingX + SIDE_MARGIN,
 	            y + paddingY + labelHeight
 	        );
 	        this.individualContinuityWidget.draw(
-	            x + labelWidth + paddingX,
+	            x + labelWidth + paddingX + SIDE_MARGIN,
 	            y + paddingY,
 	            continuitySize,
 	            height,
@@ -657,7 +540,7 @@
 	            widgetOptions["movements"] = options["movements"][i];
 	        }
 	        widget.draw(
-	            x + labelWidth + continuitySize + paddingX * 2,
+	            x + labelWidth + continuitySize + paddingX + SIDE_MARGIN,
 	            y + paddingY,
 	            widgetSize,
 	            height,
@@ -671,88 +554,118 @@
 
 
 /***/ },
-/* 5 */,
-/* 6 */,
-/* 7 */,
-/* 8 */,
-/* 9 */,
-/* 10 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * @fileOverview Defines the Version class.
+	 * @fileOverview Defines a collection of functions that are
+	 *   used to create and manage Show objects.
 	 */
 
+	 var ViewerFileLoadSelector = __webpack_require__(16);
+	 var Version = __webpack_require__(12);
+	 
+	 /**
+	  * The collection of all functions related to creating and
+	  * managing Show objects.
+	  */
+	 var ShowUtils = {};
+	 
 	/**
-	 * Version objects represent a version of a file
-	 * or application in the following format:
-	 * [major].[minor].[revision].
+	 * Builds a show from a viewer file, given the content
+	 * of a viewer file as a string.
 	 *
-	 * @param {int} major The major version.
-	 * @param {int} minor The minor version.
-	 * @param {int} revision The revision number.
+	 * @param {string} fileContent The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
 	 */
-	var Version = function(major, minor, revision) {
-	    this._major = major;
-	    this._minor = minor;
-	    this._revision = revision;
+	ShowUtils.fromJSONString = function(fileContent) {
+	    var viewerObject = JSON.parse(fileContent); //Parse the JSON file text into an object
+	    return this.fromJSON(viewerObject);
+	};
+	 
+	/**
+	 * Builds a show from a viewer file, as a JSON object
+	 *
+	 * @param {object} viewerObject The content of the
+	 *   viewer file to load the show from.
+	 * @return {Show} The show represented in the viewer
+	 *   file.
+	 */
+	ShowUtils.fromJSON = function(viewerObject) {
+	    var fileVersion = Version.parse(viewerObject.meta.version); //Get the version of the viewer file
+	    return ViewerFileLoadSelector.getInstance().getAppropriateLoader(fileVersion).loadFile(viewerObject); //Get the appropriate ViewerLoader and use it to load the file
 	};
 
-	/**
-	 * Builds a string representation of the Version.
-	 * String representations take the format:
-	 * [major].[minor].[revision].
-	 *
-	 * @return {string} A string representation of this
-	 *   version.
-	 */
-	Version.prototype.stringify = function() {
-	    return this._major + "." + this._minor + "." + this._revision;
-	};
-
-	/**
-	 * Compares this Version to another, and indicates which
-	 * version is an earlier one.
-	 *
-	 * @param {Version} otherVersion The version to compare
-	 *   this one against.
-	 * @return {int} A negative value if this version is
-	 *   an earlier one than the other; a positive value
-	 *   if this version is later than the other one;
-	 *   zero if the versions are identical.
-	 */
-	Version.prototype.compareTo = function(otherVersion) {
-	    var delta = this._major - otherVersion._major;
-	    if (delta != 0) {
-	        return delta;
-	    }
-	    delta = this._minor - otherVersion._minor;
-	    if (delta != 0) {
-	        return delta;
-	    }
-	    delta = this._revision - otherVersion._revision;
-	    return delta;
-	};
-
-	/**
-	 * Builds a Version object from a string.
-	 * These strings should be in the format:
-	 * [major].[minor].[revision].
-	 *
-	 * @param {string} stringVersion A string representation
-	 *   of a Version.
-	 * @return {Version} A Version which matches the
-	 *   provided string.
-	 */
-	Version.parse = function(stringVersion) {
-	    var versionPieces = stringVersion.split(".");
-	    return new Version(parseInt(versionPieces[0]), parseInt(versionPieces[1]), parseInt(versionPieces[2]));
-	};
-
-	module.exports = Version;
+	module.exports = ShowUtils;
 
 /***/ },
-/* 11 */
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines miscellaneous utility functions.
+	 */
+
+	/**
+	 * A collection of javascript utility functions.
+	 */
+	var JSUtils = {};
+	 
+	/**
+	 * Causes a child class to inherit from a parent class.
+	 *
+	 * @param {function} ChildClass The class that will inherit
+	 *   from another.
+	 * @param {function} ParentClass The class to inherit from.
+	 */
+	JSUtils.extends = function (ChildClass, ParentClass) {
+	    var Inheritor = function () {}; // dummy constructor
+	    Inheritor.prototype = ParentClass.prototype;
+	    ChildClass.prototype = new Inheritor();
+	};
+
+	/**
+	 * Returns the value of the given name in the URL query string
+	 *
+	 * getQueryValue("hello") on http://foo.bar?hello=world should return "world"
+	 *
+	 * @param {String} name
+	 * @returns {String|null} the value of the name or null if name not in URL query string
+	 */
+	JSUtils.getURLValue = function(name) {
+	    var vals = this.getAllURLParams();
+	    if (vals[name] !== undefined) {
+	        return vals[name];
+	    } else {
+	        return null;
+	    }
+	};
+
+	/**
+	 * Returns all name-value pairs in the URL query string
+	 *
+	 * @returns {object} a dictionary mapping name to value
+	 */
+	JSUtils.getAllURLParams = function() {
+	    var vals = {};
+	    var query = window.location.search.substr(1);
+	    var vars = query.split("&");
+	    for (var i = 0; i < vars.length; i++) {
+	        var pair = vars[i].split("=");
+	        var name = decodeURIComponent(pair[0]);
+	        var value = decodeURIComponent(pair[1]);
+	        vals[name] = value;
+	    }
+	    return vals;
+	};
+
+	module.exports = JSUtils;
+
+/***/ },
+/* 4 */,
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -929,28 +842,54 @@
 	        this.setLineWidth(.3);
 	        return this;
 	    };
+
+	    /**
+	     * This jsPDF plugin draws a horizontal line from the given (x,y) coordinate to
+	     * the coordinate (x + width, y)
+	     *
+	     * @param {float} x
+	     * @param {float} y
+	     * @param {float} width
+	     */
+	    jsPDFAPI.hLine = function(x, y, width) {
+	        this.line(x, y, x + width, y);
+	    };
+
+	    /**
+	     * This jsPDF plugin draws a vertical line from the given (x,y) coordinate to
+	     * the coordinate (x, y + height)
+	     *
+	     * @param {float} x
+	     * @param {float} y
+	     * @param {float} height
+	     */
+	    jsPDFAPI.vLine = function(x, y, height) {
+	        this.line(x, y, x, y + height);
+	    };
 	})(jsPDF.API);
 
 	module.exports = PDFUtils;
 
 /***/ },
-/* 12 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the widget for generating the page's headers
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var PDFUtils = __webpack_require__(11);
-	var PDFWidget = __webpack_require__(20);
+	var JSUtils = __webpack_require__(3);
+	var PDFUtils = __webpack_require__(5);
+	var PDFWidget = __webpack_require__(19);
 
 	/**
 	 * @constant WIDTH is the width of the PDF document, in millimeters
 	 * @constant HEIGHT is the height of the PDF document, in millimeters
+	 * @constant SIDE_MARGIN is the left/right margin of the PDF document, in millimeters
 	 */
 	var WIDTH = 215.9;
 	var HEIGHT = 279.4;
+	var SIDE_MARGIN = 10;
 
 	/**
 	 * Represents the widget for a page's headers
@@ -985,9 +924,9 @@
 	    var isLeftToRight = options["isLeftToRight"];
 
 	    var header = {
-	        x: WIDTH * 1/6,
+	        x: WIDTH * 1/4,
 	        y: 5,
-	        width: WIDTH * 2/3,
+	        width: WIDTH * 1/2,
 	        height: 17, // PDFUtils.getTextHeight(16) * 3
 	        paddingX: 3,
 	        paddingY: 1,
@@ -1011,7 +950,7 @@
 	    };
 
 	    var sheetInfo = {
-	        marginX: 4,
+	        marginX: SIDE_MARGIN,
 	        marginY: 3,
 	        size: 28,
 	        sheet: (pageNum - 1) * 4 + 1,
@@ -1066,7 +1005,7 @@
 	    var y = header.y + header.height/2 + PDFUtils.getTextHeight(pageInfo.size)/2;
 	    pageInfo.draw(x, y);
 
-	    x = WIDTH * 5/6 - header.paddingX - PDFUtils.getTextWidth("Page 0/0", pageInfo.size);
+	    x = WIDTH * 3/4 - header.paddingX - PDFUtils.getTextWidth("Page 0/0", pageInfo.size);
 	    pageInfo.draw(x, y);
 
 	    /* Stuntsheet */
@@ -1100,16 +1039,16 @@
 	module.exports = HeaderWidget;
 
 /***/ },
-/* 13 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the widget for generating a dot type's continuity
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var PDFUtils = __webpack_require__(11);
-	var PDFWidget = __webpack_require__(20);
+	var JSUtils = __webpack_require__(3);
+	var PDFUtils = __webpack_require__(5);
+	var PDFWidget = __webpack_require__(19);
 
 	/**
 	 * Represents the widget for a given dot type's continuity
@@ -1191,16 +1130,16 @@
 	module.exports = DotContinuityWidget;
 
 /***/ },
-/* 14 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the widget for generating a dot's individual continuity
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var PDFUtils = __webpack_require__(11);
-	var PDFWidget = __webpack_require__(20);
+	var JSUtils = __webpack_require__(3);
+	var PDFUtils = __webpack_require__(5);
+	var PDFWidget = __webpack_require__(19);
 
 	/**
 	 * Represents the widget for a given dot's individual continuity
@@ -1290,16 +1229,16 @@
 	module.exports = IndividualContinuityWidget;
 
 /***/ },
-/* 15 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the widget for generating a dot's movement diagram
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var PDFUtils = __webpack_require__(11);
-	var PDFWidget = __webpack_require__(20);
+	var JSUtils = __webpack_require__(3);
+	var PDFUtils = __webpack_require__(5);
+	var PDFWidget = __webpack_require__(19);
 
 	/**
 	 * Represents the widget for a given dot's movement diagram
@@ -1531,29 +1470,25 @@
 	        // drawing the yardline
 	        if (isSplitting) {
 	            this.pdf.setDrawColor(200);
-	            this.pdf.line(
-	                yardlineX, y,
-	                yardlineX, y + height
-	            );
+	            this.pdf.vLine(yardlineX, y, height);
 	            continue;
 	        }
 	        this.pdf.setDrawColor(0);
-	        this.pdf.line(
-	            yardlineX, y,
-	            yardlineX, y + height
-	        );
+	        this.pdf.vLine(yardlineX, y, height);
 
 	        // drawing hashes
 	        if (westHash) {
-	            this.pdf.line(
-	                yardlineX - hashLength/2, westHashY,
-	                yardlineX + hashLength/2, westHashY
+	            this.pdf.hLine(
+	                yardlineX - hashLength/2,
+	                westHashY,
+	                hashLength
 	            );
 	        }
 	        if (eastHash) {
-	            this.pdf.line(
-	                yardlineX - hashLength/2, eastHashY,
-	                yardlineX + hashLength/2, eastHashY
+	            this.pdf.hLine(
+	                yardlineX - hashLength/2,
+	                eastHashY,
+	                hashLength
 	            );
 	        }
 
@@ -1603,10 +1538,7 @@
 	MovementDiagramWidget.prototype._drawPosition = function(box, y, offset, closeToLeft) {
 	    var lineY = box.y + offset;
 	    var text = PDFUtils.getYCoordinateText(y);
-	    this.pdf.line(
-	        box.x, lineY,
-	        box.x + box.width, lineY
-	    );
+	    this.pdf.hLine(box.x, lineY, box.width);
 	    this.pdf.setFontSize(8);
 	    if (closeToLeft) {
 	        this.pdf.text(
@@ -1628,16 +1560,16 @@
 
 
 /***/ },
-/* 16 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the widget for generating the bird's eye view widget
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var PDFUtils = __webpack_require__(11);
-	var PDFWidget = __webpack_require__(20);
+	var JSUtils = __webpack_require__(3);
+	var PDFUtils = __webpack_require__(5);
+	var PDFWidget = __webpack_require__(19);
 
 	/**
 	 * Represents the widget for the bird's eye view
@@ -1695,14 +1627,8 @@
 	    this.pdf.setDrawColor(150);
 	    for (var i = 0; i < numDashes; i += 2) {
 	        var x = box.x + i * dashLength;
-	        this.pdf.line(
-	            x, topHash,
-	            x + dashLength, topHash
-	        );
-	        this.pdf.line(
-	            x, bottomHash,
-	            x + dashLength, bottomHash
-	        );
+	        this.pdf.hLine(x, topHash, dashLength);
+	        this.pdf.hLine(x, bottomHash, dashLength);
 	    }
 
 	    // drawing all the dots
@@ -1746,14 +1672,8 @@
 	    this.pdf.setDrawColor(180);
 	    this.pdf.setFontSize(coordinates.textSize);
 
-	    this.pdf.line(
-	        box.x + x, box.y,
-	        box.x + x, box.y + box.height
-	    );
-	    this.pdf.line(
-	        box.x, box.y + y,
-	        box.x + box.width, box.y + y
-	    );
+	    this.pdf.vLine(box.x + x, box.y, box.height);
+	    this.pdf.hLine(box.x, box.y + y, box.width);
 
 	    // Put vertical coordinate text on opposite side of the field
 	    if (position.x > 80) {
@@ -1791,16 +1711,16 @@
 	module.exports = BirdsEyeWidget;
 
 /***/ },
-/* 17 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the widget for generating the surrounding dots widget
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var PDFUtils = __webpack_require__(11);
-	var PDFWidget = __webpack_require__(20);
+	var JSUtils = __webpack_require__(3);
+	var PDFUtils = __webpack_require__(5);
+	var PDFWidget = __webpack_require__(19);
 
 	/**
 	 * Represents the widget for the surrounding dots
@@ -1853,22 +1773,26 @@
 	        x: box.x + box.width/2,
 	        y: box.y + box.height/2
 	    };
-
-	    this.pdf.setDrawColor(150);
-	    this.pdf.setLineWidth(.1);
-	    // cross hairs for selected dot
-	    this.pdf.line(
-	        origin.x, box.y,
-	        origin.x, box.y + box.height
-	    );
-	    this.pdf.line(
-	        box.x, origin.y,
-	        box.x + box.width, origin.y
-	    );
-
 	    var sheet = options["sheet"];
 	    var start = options["dot"].getAnimationState(0);
 	    var orientationFactor = this.westUp ? 1 : -1;
+	    var scale = box.height / 11.5; // radius of 4 steps + 1.75 steps of padding
+
+	    // yardlines
+	    this.pdf.setDrawColor(150);
+	    this.pdf.setLineWidth(.1);
+	    // # of steps north of the yardline the dot is at
+	    var yardlineDelta = start.x % 8;
+	    if (yardlineDelta > 4) {
+	        yardlineDelta = 4 - yardlineDelta;
+	    }
+	    var yardlineX = origin.x - yardlineDelta * scale * orientationFactor;
+	    this.pdf.vLine(yardlineX, box.y, box.height);
+	    // the only time 2 yardlines will be drawn is if the dot is splitting
+	    if (Math.abs(yardlineDelta) === 4) {
+	        yardlineX = origin.x + yardlineDelta * scale * orientationFactor;
+	        this.pdf.vLine(yardlineX, box.y, box.height);
+	    }
 
 	    var allDots = sheet.getDots();
 	    var surroundingDots = [];
@@ -1887,7 +1811,6 @@
 	        }
 	    });
 
-	    var scale = box.height / 11.5; // radius of 4 steps + 1.75 steps of padding
 	    var labelSize = box.height * 7/29;
 	    var dotRadius = box.height * .04;
 	    this.pdf.setFontSize(labelSize);
@@ -1904,7 +1827,86 @@
 	module.exports = SurroundingDotsWidget;
 
 /***/ },
-/* 18 */
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the Version class.
+	 */
+
+	/**
+	 * Version objects represent a version of a file
+	 * or application in the following format:
+	 * [major].[minor].[revision].
+	 *
+	 * @param {int} major The major version.
+	 * @param {int} minor The minor version.
+	 * @param {int} revision The revision number.
+	 */
+	var Version = function(major, minor, revision) {
+	    this._major = major;
+	    this._minor = minor;
+	    this._revision = revision;
+	};
+
+	/**
+	 * Builds a string representation of the Version.
+	 * String representations take the format:
+	 * [major].[minor].[revision].
+	 *
+	 * @return {string} A string representation of this
+	 *   version.
+	 */
+	Version.prototype.stringify = function() {
+	    return this._major + "." + this._minor + "." + this._revision;
+	};
+
+	/**
+	 * Compares this Version to another, and indicates which
+	 * version is an earlier one.
+	 *
+	 * @param {Version} otherVersion The version to compare
+	 *   this one against.
+	 * @return {int} A negative value if this version is
+	 *   an earlier one than the other; a positive value
+	 *   if this version is later than the other one;
+	 *   zero if the versions are identical.
+	 */
+	Version.prototype.compareTo = function(otherVersion) {
+	    var delta = this._major - otherVersion._major;
+	    if (delta != 0) {
+	        return delta;
+	    }
+	    delta = this._minor - otherVersion._minor;
+	    if (delta != 0) {
+	        return delta;
+	    }
+	    delta = this._revision - otherVersion._revision;
+	    return delta;
+	};
+
+	/**
+	 * Builds a Version object from a string.
+	 * These strings should be in the format:
+	 * [major].[minor].[revision].
+	 *
+	 * @param {string} stringVersion A string representation
+	 *   of a Version.
+	 * @return {Version} A Version which matches the
+	 *   provided string.
+	 */
+	Version.parse = function(stringVersion) {
+	    var versionPieces = stringVersion.split(".");
+	    return new Version(parseInt(versionPieces[0]), parseInt(versionPieces[1]), parseInt(versionPieces[2]));
+	};
+
+	module.exports = Version;
+
+/***/ },
+/* 13 */,
+/* 14 */,
+/* 15 */,
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1922,19 +1924,19 @@
 	 *   
 	 */
 
-	var FileLoadSelector = __webpack_require__(22);
-	var InvalidFileTypeError = __webpack_require__(23);
-	var JSUtils = __webpack_require__(2);
-	var Version = __webpack_require__(10);
-	var Dot = __webpack_require__(24);
-	var Sheet = __webpack_require__(25);
-	var Show = __webpack_require__(26);
-	var MovementCommandStand = __webpack_require__(27);
-	var MovementCommandMarkTime = __webpack_require__(28);
-	var MovementCommandArc = __webpack_require__(29);
-	var MovementCommandMove = __webpack_require__(30);
-	var MovementCommandGoto = __webpack_require__(31);
-	var MovementCommandEven = __webpack_require__(32);
+	var FileLoadSelector = __webpack_require__(21);
+	var InvalidFileTypeError = __webpack_require__(22);
+	var JSUtils = __webpack_require__(3);
+	var Version = __webpack_require__(12);
+	var Dot = __webpack_require__(23);
+	var Sheet = __webpack_require__(24);
+	var Show = __webpack_require__(25);
+	var MovementCommandStand = __webpack_require__(26);
+	var MovementCommandMarkTime = __webpack_require__(27);
+	var MovementCommandArc = __webpack_require__(28);
+	var MovementCommandMove = __webpack_require__(29);
+	var MovementCommandGoto = __webpack_require__(30);
+	var MovementCommandEven = __webpack_require__(31);
 	 
 	/**
 	 * Every version of the Viewer File needs to be loaded in a different way -
@@ -2223,15 +2225,16 @@
 	module.exports = ViewerFileLoadSelector;
 
 /***/ },
-/* 19 */,
-/* 20 */
+/* 17 */,
+/* 18 */,
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines a base class for the PDFGenerator Widget classes
 	 */
 
-	 var PDFUtils = __webpack_require__(11);
+	 var PDFUtils = __webpack_require__(5);
 
 	/**
 	 * PDFWidget class
@@ -2326,8 +2329,8 @@
 	module.exports = PDFWidget;
 
 /***/ },
-/* 21 */,
-/* 22 */
+/* 20 */,
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2367,8 +2370,8 @@
 	 *         calling loadSelector.registerLoader(...)
 	 */
 
-	var ArrayUtils = __webpack_require__(36);
-	var Version = __webpack_require__(10);
+	var ArrayUtils = __webpack_require__(34);
+	var Version = __webpack_require__(12);
 	 
 	/**
 	 * Every version of a file needs to be loaded in a different way -
@@ -2446,7 +2449,7 @@
 	module.exports = FileLoadSelector;
 
 /***/ },
-/* 23 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2463,7 +2466,7 @@
 	module.exports = InvalidFileTypeError;
 
 /***/ },
-/* 24 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2531,7 +2534,7 @@
 	module.exports = Dot;
 
 /***/ },
-/* 25 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2662,7 +2665,7 @@
 	module.exports = Sheet;
 
 /***/ },
-/* 26 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2778,16 +2781,16 @@
 	module.exports = Show;
 
 /***/ },
-/* 27 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandStand class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	/**
 	 * A MovementCommand representing a period of standing.
@@ -2821,16 +2824,16 @@
 	module.exports = MovementCommandStand;
 
 /***/ },
-/* 28 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandMarkTime class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 
 	/**
 	 * A MovementCommand that represents a period of mark time.
@@ -2865,17 +2868,17 @@
 	module.exports = MovementCommandMarkTime;
 
 /***/ },
-/* 29 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandArc class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MathUtils = __webpack_require__(39);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MathUtils = __webpack_require__(37);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	/**
 	 * A MovementCommandArc object represents a movement along the
@@ -2959,17 +2962,17 @@
 	module.exports = MovementCommandArc;
 
 /***/ },
-/* 30 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandMove class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MathUtils = __webpack_require__(39);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MathUtils = __webpack_require__(37);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	/**
 	 * A MovementCommand which represents a constant movement in a
@@ -3026,16 +3029,16 @@
 	module.exports = MovementCommandMove;
 
 /***/ },
-/* 31 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandGoto class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	/**
 	 * A MovementCommand that represents a "Goto" movement:
@@ -3074,16 +3077,16 @@
 	module.exports = MovementCommandGoto;
 
 /***/ },
-/* 32 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommandEven class.
 	 */
 
-	var JSUtils = __webpack_require__(2);
-	var MovementCommand = __webpack_require__(37);
-	var AnimationState = __webpack_require__(38);
+	var JSUtils = __webpack_require__(3);
+	var MovementCommand = __webpack_require__(35);
+	var AnimationState = __webpack_require__(36);
 	 
 	 
 	/**
@@ -3175,10 +3178,9 @@
 	module.exports = MovementCommandEven;
 
 /***/ },
+/* 32 */,
 /* 33 */,
-/* 34 */,
-/* 35 */,
-/* 36 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3395,14 +3397,14 @@
 	module.exports = ArrayUtils;
 
 /***/ },
-/* 37 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommand class.
 	 */
 
-	var Coordinate = __webpack_require__(41);
+	var Coordinate = __webpack_require__(40);
 
 	/**
 	 * MovementCommand class
@@ -3532,7 +3534,7 @@
 	module.exports = MovementCommand;
 
 /***/ },
-/* 38 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3557,7 +3559,7 @@
 	module.exports = AnimationState;
 
 /***/ },
-/* 39 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -3795,8 +3797,9 @@
 
 
 /***/ },
-/* 40 */,
-/* 41 */
+/* 38 */,
+/* 39 */,
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
