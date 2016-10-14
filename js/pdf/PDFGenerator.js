@@ -108,14 +108,8 @@ PDFGenerator.prototype._generate = function(options) {
         });
         // drawing lines between quadrants
         this.pdf.setDrawColor(150);
-        this.pdf.line(
-            WIDTH/2, 24,
-            WIDTH/2, HEIGHT
-        );
-        this.pdf.line(
-            0, HEIGHT/2 + 2.5,
-            WIDTH, HEIGHT/2 + 2.5
-        );
+        this.pdf.vLine(WIDTH/2, 24, HEIGHT - 24);
+        this.pdf.hLine(0, HEIGHT/2 + 2.5, WIDTH);
         this.pdf.setDrawColor(0);
 
         var quadrantOrder = [0, 1, 2, 3]; // top left, top right, bottom left, bottom right
@@ -255,10 +249,7 @@ PDFGenerator.prototype._getMovements = function() {
  */
 PDFGenerator.prototype._addEndSheet = function(widget, options) {
     this.pdf.addPage();
-    this.pdf.line(
-        WIDTH/2, 10,
-        WIDTH/2, HEIGHT
-    );
+    this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
     var title = this.show.getTitle() + " - Dot " + this.dot;
     this.pdf.setFontSize(15);
     this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
@@ -288,10 +279,7 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
                 x = WIDTH/2 + paddingX - SIDE_MARGIN;
             } else {
                 this.pdf.addPage();
-                this.pdf.line(
-                    WIDTH/2, 10,
-                    WIDTH/2, HEIGHT
-                );
+                this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
                 this.pdf.setFontSize(15);
                 this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
                 x = 0;
