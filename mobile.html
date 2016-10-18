@@ -1,0 +1,83 @@
+<html>
+<head>
+    <title>Calchart Viewer</title>
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <link rel="shortcut icon" href="img/favicon.png">
+    <link rel="stylesheet" type="text/css" href="build/css/app.css">
+    <link rel="stylesheet" type="text/css" href="build/css/mobile.css">
+    <link rel="stylesheet" type="text/css" href="build/css/graph.css">
+    <link rel="stylesheet" type="text/css" href="css/vendor/chosen.min.css">
+    <script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="js/vendor/d3.min.js"></script>
+    <script type="text/javascript" src="js/vendor/soundmanager2-nodebug-jsmin.js"></script>
+    <script type="text/javascript" src="js/vendor/chosen.jquery.min.js"></script>
+    <script type="text/javascript" src="build/js/mobile.js"></script>
+    <script type="text/javascript" src="build/js/application.js"></script>
+
+    <!-- Google Analytics -->
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-54540728-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+    <!--  -->
+
+</head>
+<body>
+    <!-- Loading screen -->
+    <div class="loading">
+        <div class="wrapper">
+            <h1>Loading</h1>
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <img src="img/calchart-viewer-highstepper.png">
+            <div class="header-contents">
+                <h1>Calchart Viewer</h1>
+                <label>Show:</label>
+                <select class="js-select-show select-show" data-placeholder="None"></select>
+            </div>
+        </div>
+        <div class="main">
+            <div class="graph-container">
+                <div class="graph js-grapher-draw-target"></div>
+            </div>
+            <div class="controls-container">
+                <div class="control-button js-prev-stuntsheet">
+                    <span class="prev-stuntsheet"></span>
+                </div>
+                <div class="control-button js-prev-beat">
+                    <span class="prev-beat"></span>
+                </div>
+                <div class="control-button js-animate disabled">
+                    <span class="play-button"></span>
+                </div>
+                <div class="control-button js-next-beat">
+                    <span class="next-beat"></span>
+                </div>
+                <div class="control-button js-next-stuntsheet">
+                    <span class="next-stuntsheet"></span>
+                </div>
+                <!--
+                <div class="control-container">
+                    <label>Show my dot:</label>
+                    <select class="js-dot-labels" data-placeholder="None">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="control-button js-generate-continuity">
+                    Generate continuity for <span class="js-selected-dot-label">dots</span>
+                </div>
+                -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

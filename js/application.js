@@ -9,6 +9,12 @@ var JSUtils = require("./viewer/utils/JSUtils");
  * @todo: implement the Calchart Viewer app here
  */
 $(document).ready(function () {
+    // if viewing on mobile, redirect to the mobile page
+    var mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+    if (!window.isMobile && mobileRegex.test(navigator.userAgent.toLowerCase())) {
+        window.location = "mobile.html";
+    }
+
     var applicationController = ApplicationController.getInstance();
     applicationController.init();
 
@@ -90,7 +96,7 @@ $(document).ready(function () {
 
     // Detect browser from http://stackoverflow.com/questions/5899783/detect-safari-using-jquery
     var browserString = navigator.userAgent;
-    var isSafari = (browserString.indexOf("Safari") > -1) && (browserString.indexOf("Chrome") == -1);
+    var isSafari = !window.isMobile && (browserString.indexOf("Safari") > -1) && (browserString.indexOf("Chrome") == -1);
     // alert about safari not supporting ogg files. can remove if we stop using ogg files completely
     if (isSafari) {
         alert("You may not be able to upload .ogg files using Safari. Either use an mp3 version of the file or use the Viewer on another browser.")
