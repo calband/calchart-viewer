@@ -80,20 +80,25 @@ html, body {
                         font-family: "icomoon";
                         font-size: 20px;
                     }
-                    &.prev-beat:before {
-                        content: "\ea23";
-                    }
-                    &.next-beat:before {
-                        content: "\ea24";
-                    }
-                    &.prev-stuntsheet:before {
-                        content: "\ea21";
-                    }
-                    &.next-stuntsheet:before {
-                        content: "\ea22";
-                    }
-                    &.play-button:before {
+                }
+                &.prev-beat span:before {
+                    content: "\ea23";
+                }
+                &.next-beat span:before {
+                    content: "\ea24";
+                }
+                &.prev-stuntsheet span:before {
+                    content: "\ea21";
+                }
+                &.next-stuntsheet span:before {
+                    content: "\ea22";
+                }
+                &.play-button {
+                    span:before {
                         content: "\ea1c";
+                    }
+                    &.playing span:before {
+                        content: "\ea1d";
                     }
                 }
             }
