@@ -3,6 +3,12 @@
 ## Automatically pushes the current branch to the calchart-viewer-demo repo, where
 ## the branch could be viewed at calband.github.io/calchart-viewer-demo.
 
+# if any files have changed, don't run script
+if [[ ! -z $(git status --porcelain) ]]; then
+    echo "You have modified/untracked files!"
+    return 1
+fi
+
 # http://stackoverflow.com/a/12142066/4966649
 CURR_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
