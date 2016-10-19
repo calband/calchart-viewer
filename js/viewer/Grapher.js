@@ -310,11 +310,7 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
     };
 
     // pixels, represents length and width since the dots are square
-    if (window.isMobile) {
-        var dotRectSize = 4;
-    } else {
-        var dotRectSize = 5;
-    }
+    var dotRectSize = window.isMobile ? 4 : 5;
 
     var dotsGroup = this._svg.append("g")
         .attr("class", "dots-wrap");
