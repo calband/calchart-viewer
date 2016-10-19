@@ -1,6 +1,28 @@
 var ApplicationController = require("./viewer/ApplicationController");
 var JSUtils = require("./viewer/utils/JSUtils");
 
+// will hold timeout event for long pressing buttons
+var longPress = null;
+
+/**
+ * Run the callback on the given jQuery selector repeatedly when
+ * held for a long period of time.
+ */
+var onLongPress = function(selector, callback) {
+    $(selector)
+        .on("mousedown", function() {
+            callback();
+            longPress = setTimeout(function() {
+                longPress = setInterval(callback, 50);
+            }, 500);
+        })
+        .on("mouseup mouseleave", function() {
+            clearTimeout(longPress);
+        });
+
+    // TODO: may not work on mobile, if the context menu is displayed?
+};
+
 /**
  * This function will be executed by jQuery when the HTML DOM is loaded. Here,
  * we should instantiate the ApplicationController and bind the necessary click
@@ -35,13 +57,13 @@ $(document).ready(function () {
     $(".js-audio-file").change(applicationController.getMusicFileHandler());
 
     // bindings for user interface components
-    $(".js-prev-beat").click(function () {
+    onLongPress(".js-prev-beat", function() {
         applicationController.applyAnimationAction("prevBeat");
     });
     $(".js-prev-stuntsheet").click(function () {
         applicationController.applyAnimationAction("prevSheet");
     });
-    $(".js-next-beat").click(function () {
+    onLongPress(".js-next-beat", function() {
         applicationController.applyAnimationAction("nextBeat");
     });
     $(".js-next-stuntsheet").click(function () {
