@@ -9,7 +9,7 @@ $(document).ready(function() {
     $(".js-dot-labels").change(function() {
         var show = $(".js-select-show").val();
         var dot = $(this).val();
-        var defaults = "&md-orientation=west&bev-orientation=east&sd-orientation=east&layout-order=ltr&endsheet-widget=md";
+        var defaults = "&md-orientation=east&bev-orientation=east&sd-orientation=east&layout-order=ltr&endsheet-widget=md";
         window.location.href = "pdf.html?show=" + show + "&dots=" + dot + defaults;
     });
 });
