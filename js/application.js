@@ -10,13 +10,13 @@ var longPress = null;
  */
 var onLongPress = function(selector, callback) {
     $(selector)
-        .on("mousedown", function() {
+        .on("mousedown touchstart", function() {
             callback();
             longPress = setTimeout(function() {
                 longPress = setInterval(callback, 50);
             }, 500);
         })
-        .on("mouseup mouseleave", function() {
+        .on("mouseup mouseleave touchend touchleave", function() {
             clearTimeout(longPress);
         });
 
