@@ -9,18 +9,23 @@ var longPress = null;
  * held for a long period of time.
  */
 var onLongPress = function(selector, callback) {
+    var down = "mousedown";
+    var up = "mouseup mouseleave";
+    if (window.ontouchstart !== undefined) {
+        var down = "touchstart";
+        var up = "touchend touchcancel";
+    }
+
     $(selector)
-        .on("mousedown touchstart", function() {
+        .on(down, function() {
             callback();
             longPress = setTimeout(function() {
                 longPress = setInterval(callback, 50);
             }, 500);
         })
-        .on("mouseup mouseleave touchend touchleave", function() {
+        .on(up, function() {
             clearTimeout(longPress);
         });
-
-    // TODO: may not work on mobile, if the context menu is displayed?
 };
 
 /**
