@@ -126,7 +126,7 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
     var top, bottom, left, right;
     // first yardline in viewport
     var yardline;
-    if (_this.westUp) {
+    if (this.westUp) {
         top = west;
         bottom = east;
         left = south;
@@ -139,8 +139,15 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
         right = south;
         yardline = Math.floor(left/8) * 5;
     }
+    var yardlineViewport = {
+        east: east,
+        west: west,
+        south: south,
+        north: north,
+        westUp: this.westUp,
+    };
 
-    this._drawYardlines(box, top, right, bottom, left, yardline, scale);
+    this._drawYardlines(box, yardlineViewport, scale);
 
     var currX = box.x + Math.abs(left - viewport.startX) * scale;
     var currY = box.y + Math.abs(top - viewport.startY) * scale;
@@ -181,115 +188,6 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
             currY - box.y,
             Math.abs(left - viewport.startX - viewport.deltaX) < Math.abs(left - right) / 2
         );
-    }
-    this.pdf.resetFormat();
-};
-
-/**
- * Draws the yardlines for this widget with the given parameters
- *
- * @param {object} box, holds the various properties of the enclosing box
- * @param {float} top, steps from the corresponding sideline to the edge of the view
- * @param {float} right, steps from the corresponding sideline to the edge of the view
- * @param {float} bottom, steps from the corresponding sideline to the edge of the view
- * @param {float} left, steps from the corresponding sideline to the edge of the view
- * @param {int} yardline, the first yardline in view, from 0 to 100
- * @param {float} scale, the multiplier to convert from steps to pdf units
- */
-MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, bottom, left, yardline, scale) {
-    var x = box.x;
-    var y = box.y;
-    var width = box.width;
-    var height = box.height;
-
-    var yardlineSize = height * 12/47.1; // at the usual height, yardline text should be 12
-    this.pdf.setFontSize(yardlineSize);
-
-    var westHash, eastHash, westHashY, eastHashY;
-    if (this.westUp) {
-        westHash = top < 32 && bottom > 32;
-        eastHash = top < 52 && bottom > 52;
-        westHashY = y + (32 - top) * scale;
-        eastHashY = y + (52 - top) * scale;
-    } else {
-        eastHash = top > 52 && bottom < 52;
-        westHash = top > 32 && bottom < 32;
-        eastHashY = y + (top - 52) * scale;
-        westHashY = y + (top - 32) * scale;
-    }
-
-    // position of first yardline from edge of viewport
-    var deltaX = Math.abs(yardline * 8/5 - left) * scale;
-    var hashLength = 3;
-    var isSplitting = false;
-
-    // 4-step line before first line
-    if (deltaX > scale * 4) {
-        deltaX -= scale * 4;
-        isSplitting = true;
-    }
-
-    // draw yardlines
-    this.pdf.setTextColor(150);
-    for (; deltaX < width; deltaX += scale * 4, isSplitting = !isSplitting) {
-        var yardlineX = x + deltaX;
-
-        // drawing the yardline
-        if (isSplitting) {
-            this.pdf.setDrawColor(200);
-            this.pdf.vLine(yardlineX, y, height);
-            continue;
-        }
-        this.pdf.setDrawColor(0);
-        this.pdf.vLine(yardlineX, y, height);
-
-        // drawing hashes
-        if (westHash) {
-            this.pdf.hLine(
-                yardlineX - hashLength/2,
-                westHashY,
-                hashLength
-            );
-        }
-        if (eastHash) {
-            this.pdf.hLine(
-                yardlineX - hashLength/2,
-                eastHashY,
-                hashLength
-            );
-        }
-
-        // writing yardline numbers
-        var yardlineText = "";
-        if (yardline < 50) {
-            yardlineText = String(yardline);
-        } else {
-            yardlineText = String(100 - yardline);
-        }
-        if (yardlineText.length === 1) {
-            yardlineText = "0" + yardlineText;
-        }
-        var halfTextWidth = PDFUtils.getTextWidth(yardlineText, yardlineSize)/2;
-        if (deltaX > halfTextWidth) { // include first character if room
-            this.pdf.text(
-                yardlineText[0],
-                yardlineX - halfTextWidth - .5,
-                y + height - 2
-            );
-        }
-        if (deltaX < width - halfTextWidth) { // include second character if room
-            this.pdf.text(
-                yardlineText[1],
-                yardlineX + .5,
-                y + height - 2
-            );
-        }
-
-        // go to next yardline
-        yardline += this.westUp ? 5 : -5;
-        if (yardline < 0 || yardline > 100) {
-            break;
-        }
     }
     this.pdf.resetFormat();
 };

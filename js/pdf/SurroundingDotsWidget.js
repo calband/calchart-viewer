@@ -20,7 +20,7 @@ FONT_SIZE = 7;
  * @param {String} orientation, the direction on the top of the box
  */
 var SurroundingDotsWidget = function(pdf, orientation) {
-    this.westUp = (orientation === "west") ? true : false;
+    this.westUp = orientation === "west";
     PDFWidget.apply(this, [pdf]);
 };
 
@@ -49,37 +49,32 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     box.x += width/2 - box.width/2;
     box.y += height/2 - box.height/2;
 
-    if (options["minimal"]) {
+    if (options.minimal) {
         box.y -= textHeight;
     }
 
-    this._drawBox(box.x, box.y, box.width, box.height, this.westUp, options["minimal"]);
+    this._drawBox(box.x, box.y, box.width, box.height, this.westUp, options.minimal);
 
     var origin = {
         x: box.x + box.width/2,
         y: box.y + box.height/2
     };
-    var sheet = options["sheet"];
-    var start = options["dot"].getAnimationState(0);
+    var sheet = options.sheet;
+    var start = options.dot.getAnimationState(0);
     var orientationFactor = this.westUp ? 1 : -1;
     var scale = box.height / 19.5; // radius of 8 steps + 1.75 steps of padding
 
-    // YARDLINES
-
-    this.pdf.setDrawColor(150);
-    this.pdf.setLineWidth(.1);
-    // # of steps north of the yardline the dot is at
-    var yardlineDelta = start.x % 8;
-    if (yardlineDelta > 4) {
-        yardlineDelta = 4 - yardlineDelta;
-    }
-    var yardlineX = origin.x - yardlineDelta * scale * orientationFactor;
-    this.pdf.vLine(yardlineX, box.y, box.height);
-    // the only time 2 yardlines will be drawn is if the dot is splitting
-    if (Math.abs(yardlineDelta) === 4) {
-        yardlineX = origin.x + yardlineDelta * scale * orientationFactor;
-        this.pdf.vLine(yardlineX, box.y, box.height);
-    }
+    var radiusX = 14;
+    var radiusY = 8;
+    var left = this.westUp ? start.x - radiusX : start.x + radiusX;
+    var viewport = {
+        east: start.y + box.height/2 / scale,
+        west: start.y - box.height/2 / scale,
+        north: start.x + box.width/2 / scale,
+        south: start.x - box.width/2 / scale,
+        westUp: this.westUp,
+    };
+    this._drawYardlines(box, viewport, scale);
 
     // DOTS
 
@@ -89,7 +84,7 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
         var position = dot.getAnimationState(0);
         var deltaX = orientationFactor * (position.x - start.x);
         var deltaY = orientationFactor * (position.y - start.y);
-        if (Math.abs(deltaX) <= 14 && Math.abs(deltaY) <= 8) {
+        if (Math.abs(deltaX) <= radiusX && Math.abs(deltaY) <= radiusY) {
             var label = dot.getLabel();
             surroundingDots.push({
                 deltaX: deltaX,
