@@ -8,6 +8,7 @@ var PDFWidget = require("./PDFWidget");
 
 // font size is smaller for dot labels
 FONT_SIZE = 7;
+DOT_RADIUS = 1;
 
 /**
  * Represents the widget for the surrounding dots
@@ -64,6 +65,7 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     var orientationFactor = this.westUp ? 1 : -1;
     var scale = box.height / 19.5; // radius of 8 steps + 1.75 steps of padding
 
+    // YARDLINES
     var radiusX = 14;
     var radiusY = 8;
     var left = this.westUp ? start.x - radiusX : start.x + radiusX;
@@ -77,40 +79,28 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     this._drawYardlines(box, viewport, scale);
 
     // DOTS
-
-    var allDots = sheet.getDots();
-    var surroundingDots = [];
-    allDots.forEach(function(dot) {
+    this.pdf.setFontSize(FONT_SIZE);
+    sheet.getDots().forEach(function(dot) {
         var position = dot.getAnimationState(0);
         var deltaX = orientationFactor * (position.x - start.x);
         var deltaY = orientationFactor * (position.y - start.y);
-        if (Math.abs(deltaX) <= radiusX && Math.abs(deltaY) <= radiusY) {
-            var label = dot.getLabel();
-            surroundingDots.push({
-                deltaX: deltaX,
-                deltaY: deltaY,
-                label: label,
-                type: sheet.getDotType(label)
-            });
+        if (Math.abs(deltaX) > radiusX || Math.abs(deltaY) > radiusY) {
+            return;
         }
+
+        var label = dot.getLabel();
+        if (deltaX === 0 && deltaY === 0) {
+            _this.pdf.setFontStyle("bold");
+        } else {
+            _this.pdf.setFontStyle("normal");
+        }
+
+        var x = deltaX * scale + origin.x;
+        var y = deltaY * scale + origin.y;
+        _this.pdf.drawDot(sheet.getDotType(label), x, y, DOT_RADIUS);
+        _this.pdf.text(label, x - DOT_RADIUS * 2, y - DOT_RADIUS * 1.5);
     });
 
-    var dotRadius = 1;
-    this.pdf.setFontSize(FONT_SIZE);
-    for (var i = 0; i < surroundingDots.length; i++) {
-        var dot = surroundingDots[i];
-
-        if (dot.deltaX === 0 && dot.deltaY === 0) {
-            this.pdf.setFontStyle("bold");
-        } else {
-            this.pdf.setFontStyle("normal");
-        }
-
-        var x = dot.deltaX * scale + origin.x;
-        var y = dot.deltaY * scale + origin.y;
-        this.pdf.drawDot(dot.type, x, y, dotRadius);
-        this.pdf.text(dot.label, x - dotRadius * 2, y - dotRadius * 1.5);
-    }
     this.pdf.resetFormat();
 };
 
