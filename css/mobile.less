@@ -1,0 +1,113 @@
+@import "utils.less";
+
+html, body {
+    margin: 0;
+}
+
+.loading .wrapper {
+    width: initial;
+}
+
+.header {
+    margin: 0;
+    padding: 0;
+    img {
+        margin: 10px;
+        height: 100px;
+    }
+    .header-contents {
+        display: inline-block;
+        vertical-align: top;
+        margin: 10px;
+        font-size: 20px;
+        font-family: @sans;
+        color: @calband-blue;
+        h1 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: normal;
+        }
+        label {
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        select {
+            vertical-align: middle;
+        }
+    }
+}
+
+.container {
+    width: initial;
+    .main {
+        padding: 20px;
+        .graph-container {
+            width: 100%;
+            margin: 0;
+            .graph {
+                height: initial;
+            }
+        }
+        .controls-container {
+            display: block;
+            width: 100%;
+            margin: 0;
+            text-align: center;
+            label {
+                font-size: 18px;
+            }
+            .animation-state {
+                margin-top: 10px;
+            }
+            .buttons .control-button {
+                display: inline-block;
+                width: 50px;
+                height: 50px;
+                vertical-align: top;
+                margin-right: 10px;
+                &.disabled {
+                    text-decoration: none;
+                }
+                &:last-child {
+                    margin-right: 0;
+                }
+                &:before {
+                    content: "";
+                    height: 100%;
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+                span {
+                    position: relative;
+                    vertical-align: middle;
+                    display: inline-block;
+                    left: -1px; // slight manual adjustment to be centered
+                    &:before {
+                        font-family: "icomoon";
+                        font-size: 20px;
+                    }
+                }
+                &.prev-beat span:before {
+                    content: "\ea23";
+                }
+                &.next-beat span:before {
+                    content: "\ea24";
+                }
+                &.prev-stuntsheet span:before {
+                    content: "\ea21";
+                }
+                &.next-stuntsheet span:before {
+                    content: "\ea22";
+                }
+                &.play-button {
+                    span:before {
+                        content: "\ea1c";
+                    }
+                    &.playing span:before {
+                        content: "\ea1d";
+                    }
+                }
+            }
+        }
+    }
+}

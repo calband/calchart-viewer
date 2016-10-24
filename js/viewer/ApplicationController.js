@@ -507,9 +507,17 @@ ApplicationController.prototype.toggleAnimation = function() {
  */
 ApplicationController.prototype._updateAnimationControl = function() {
     if (this._animator.isPlaying()) {
-        $(".js-animate").text("Stop animation");
+        if (window.isMobile) {
+            $(".js-animate").addClass("playing");
+        } else {
+            $(".js-animate").text("Stop animation");
+        }
     } else {
-        $(".js-animate").text("Animate with music");
+        if (window.isMobile) {
+            $(".js-animate").removeClass("playing");
+        } else {
+            $(".js-animate").text("Animate with music");
+        }
         if (this._animator.isReady()) {
             $(".js-animate").removeClass("disabled");
         } else {

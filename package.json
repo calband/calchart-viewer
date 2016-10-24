@@ -11,6 +11,8 @@
     "grunt": "=0.4.5",
     "grunt-contrib-less": "latest",
     "grunt-contrib-watch": "latest",
-    "grunt-webpack": "latest"
+    "grunt-webpack": "latest",
+    "webpack": "latest",
+    "webpack-dev-server": "latest"
   }
 }

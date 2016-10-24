@@ -1,6 +1,33 @@
 var ApplicationController = require("./viewer/ApplicationController");
 var JSUtils = require("./viewer/utils/JSUtils");
 
+// will hold timeout event for long pressing buttons
+var longPress = null;
+
+/**
+ * Run the callback on the given jQuery selector repeatedly when
+ * held for a long period of time.
+ */
+var onLongPress = function(selector, callback) {
+    var down = "mousedown";
+    var up = "mouseup mouseleave";
+    if (window.ontouchstart !== undefined) {
+        var down = "touchstart";
+        var up = "touchend touchcancel";
+    }
+
+    $(selector)
+        .on(down, function() {
+            callback();
+            longPress = setTimeout(function() {
+                longPress = setInterval(callback, 50);
+            }, 500);
+        })
+        .on(up, function() {
+            clearTimeout(longPress);
+        });
+};
+
 /**
  * This function will be executed by jQuery when the HTML DOM is loaded. Here,
  * we should instantiate the ApplicationController and bind the necessary click
@@ -9,6 +36,12 @@ var JSUtils = require("./viewer/utils/JSUtils");
  * @todo: implement the Calchart Viewer app here
  */
 $(document).ready(function () {
+    // if viewing on mobile, redirect to the mobile page
+    var mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+    if (!window.isMobile && mobileRegex.test(navigator.userAgent.toLowerCase())) {
+        window.location = "mobile.html";
+    }
+
     var applicationController = ApplicationController.getInstance();
     applicationController.init();
 
@@ -29,13 +62,13 @@ $(document).ready(function () {
     $(".js-audio-file").change(applicationController.getMusicFileHandler());
 
     // bindings for user interface components
-    $(".js-prev-beat").click(function () {
+    onLongPress(".js-prev-beat", function() {
         applicationController.applyAnimationAction("prevBeat");
     });
     $(".js-prev-stuntsheet").click(function () {
         applicationController.applyAnimationAction("prevSheet");
     });
-    $(".js-next-beat").click(function () {
+    onLongPress(".js-next-beat", function() {
         applicationController.applyAnimationAction("nextBeat");
     });
     $(".js-next-stuntsheet").click(function () {
@@ -63,7 +96,7 @@ $(document).ready(function () {
     $(".js-generate-continuity").click(function () {
         var show = $(".js-select-show").val();
         var dot = $(".js-dot-labels").val();
-        var defaults = "&md-orientation=west&bev-orientation=east&sd-orientation=east&layout-order=ltr&endsheet-widget=md";
+        var defaults = "&md-orientation=east&bev-orientation=east&sd-orientation=east&layout-order=ltr&endsheet-widget=md";
         window.location.href = "pdf.html?show=" + show + "&dots=" + dot + defaults;
     });
     
@@ -90,7 +123,7 @@ $(document).ready(function () {
 
     // Detect browser from http://stackoverflow.com/questions/5899783/detect-safari-using-jquery
     var browserString = navigator.userAgent;
-    var isSafari = (browserString.indexOf("Safari") > -1) && (browserString.indexOf("Chrome") == -1);
+    var isSafari = !window.isMobile && (browserString.indexOf("Safari") > -1) && (browserString.indexOf("Chrome") == -1);
     // alert about safari not supporting ogg files. can remove if we stop using ogg files completely
     if (isSafari) {
         alert("You may not be able to upload .ogg files using Safari. Either use an mp3 version of the file or use the Viewer on another browser.")
