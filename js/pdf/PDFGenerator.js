@@ -126,7 +126,7 @@ PDFGenerator.prototype._generate = function(options) {
                 x,
                 y,
                 QUADRANT_WIDTH,
-                QUADRANT_HEIGHT/5,
+                QUADRANT_HEIGHT/6,
                 {
                     sheet: sheet,
                     dotType: sheet.getDotType(this.dot)
@@ -134,9 +134,9 @@ PDFGenerator.prototype._generate = function(options) {
             );
             this.individualContinuityWidget.draw(
                 x,
-                y + QUADRANT_HEIGHT / 5,
-                QUADRANT_WIDTH / 2,
-                QUADRANT_HEIGHT * 2/5,
+                y + QUADRANT_HEIGHT/6,
+                QUADRANT_WIDTH/2,
+                QUADRANT_HEIGHT/3,
                 {
                     dot: dot,
                     duration: sheet.getDuration()
@@ -144,28 +144,18 @@ PDFGenerator.prototype._generate = function(options) {
             );
             this.movementDiagramWidget.draw(
                 x + QUADRANT_WIDTH/2 + 1,
-                y + QUADRANT_HEIGHT/5,
+                y + QUADRANT_HEIGHT/6,
                 QUADRANT_WIDTH/2,
-                QUADRANT_HEIGHT * 2/5,
+                QUADRANT_HEIGHT/3,
                 {
                     movements: movements[pageNum * 4 + i]
                 }
             );
-            this.birdsEyeWidget.draw(
-                x,
-                y + QUADRANT_HEIGHT * 3/5,
-                QUADRANT_WIDTH/2,
-                QUADRANT_HEIGHT * 2/5,
-                {
-                    sheet: sheet,
-                    dot: dot
-                }
-            );
             this.surroundingDotsWidget.draw(
-                x + QUADRANT_WIDTH/2 + 1,
-                y + QUADRANT_HEIGHT * 3/5,
-                QUADRANT_WIDTH/2,
-                QUADRANT_HEIGHT * 2/5,
+                x,
+                y + QUADRANT_HEIGHT/2,
+                QUADRANT_WIDTH,
+                QUADRANT_HEIGHT/2,
                 {
                     sheet: sheet,
                     dot: dot
