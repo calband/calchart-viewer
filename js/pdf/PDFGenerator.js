@@ -153,9 +153,9 @@ PDFGenerator.prototype._generate = function(options) {
             );
             this.surroundingDotsWidget.draw(
                 x,
-                y + QUADRANT_HEIGHT/2,
+                y + QUADRANT_HEIGHT/2 + 2,
                 QUADRANT_WIDTH,
-                QUADRANT_HEIGHT/2,
+                QUADRANT_HEIGHT/2 - 2,
                 {
                     sheet: sheet,
                     dot: dot

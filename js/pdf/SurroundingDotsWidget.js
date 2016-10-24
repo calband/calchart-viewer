@@ -6,6 +6,9 @@ var JSUtils = require("../viewer/utils/JSUtils");
 var PDFUtils = require("./PDFUtils");
 var PDFWidget = require("./PDFWidget");
 
+// font size is smaller for dot labels
+FONT_SIZE = 7;
+
 /**
  * Represents the widget for the surrounding dots
  *
@@ -32,15 +35,14 @@ JSUtils.extends(SurroundingDotsWidget, PDFWidget);
 SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     var _this = this;
 
-    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
-    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
-    var boxSize = height - 2 * (textHeight + 2);
+    var textWidth = PDFUtils.getTextWidth("S", FONT_SIZE);
+    var textHeight = PDFUtils.getTextHeight(FONT_SIZE);
 
     var box = {
         x: x,
         y: y,
-        width: boxSize,
-        height: boxSize
+        width: width - 2 * (textWidth + 2),
+        height: height - 2 * (textHeight + 2),
     };
 
     // center box
@@ -60,9 +62,10 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
     var sheet = options["sheet"];
     var start = options["dot"].getAnimationState(0);
     var orientationFactor = this.westUp ? 1 : -1;
-    var scale = box.height / 11.5; // radius of 4 steps + 1.75 steps of padding
+    var scale = box.height / 19.5; // radius of 8 steps + 1.75 steps of padding
 
-    // yardlines
+    // YARDLINES
+
     this.pdf.setDrawColor(150);
     this.pdf.setLineWidth(.1);
     // # of steps north of the yardline the dot is at
@@ -78,13 +81,15 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
         this.pdf.vLine(yardlineX, box.y, box.height);
     }
 
+    // DOTS
+
     var allDots = sheet.getDots();
     var surroundingDots = [];
     allDots.forEach(function(dot) {
         var position = dot.getAnimationState(0);
         var deltaX = orientationFactor * (position.x - start.x);
         var deltaY = orientationFactor * (position.y - start.y);
-        if (Math.abs(deltaX) <= 4 && Math.abs(deltaY) <= 4) {
+        if (Math.abs(deltaX) <= 14 && Math.abs(deltaY) <= 8) {
             var label = dot.getLabel();
             surroundingDots.push({
                 deltaX: deltaX,
@@ -95,11 +100,17 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
         }
     });
 
-    var labelSize = box.height * 7/29;
-    var dotRadius = box.height * .04;
-    this.pdf.setFontSize(labelSize);
+    var dotRadius = 1;
+    this.pdf.setFontSize(FONT_SIZE);
     for (var i = 0; i < surroundingDots.length; i++) {
         var dot = surroundingDots[i];
+
+        if (dot.deltaX === 0 && dot.deltaY === 0) {
+            this.pdf.setFontStyle("bold");
+        } else {
+            this.pdf.setFontStyle("normal");
+        }
+
         var x = dot.deltaX * scale + origin.x;
         var y = dot.deltaY * scale + origin.y;
         this.pdf.drawDot(dot.type, x, y, dotRadius);
