@@ -147,6 +147,7 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
     var spotRadius = box.height / 15;
     var orientationFactor = (this.westUp) ? 1 : -1;
 
+    this.pdf.setLineWidth(0.5);
     this.pdf.circle(currX, currY, spotRadius);
     this._drawPosition(
         box,
@@ -155,7 +156,7 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
         Math.abs(left - viewport.startX) < Math.abs(left - right) / 2
     );
 
-    this.pdf.setLineWidth(0.5);
+    this.pdf.setLineWidth(0.75);
     movements.forEach(function(movement) {
         var deltaX = orientationFactor * movement.deltaX * scale;
         var deltaY = orientationFactor * movement.deltaY * scale;
@@ -164,7 +165,7 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
         currY += deltaY;
     });
 
-    this.pdf.setLineWidth(0.1);
+    this.pdf.setLineWidth(0.5);
     this.pdf.line(
         currX - spotRadius, currY - spotRadius,
         currX + spotRadius, currY + spotRadius
@@ -304,6 +305,7 @@ MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, botto
 MovementDiagramWidget.prototype._drawPosition = function(box, y, offset, closeToLeft) {
     var lineY = box.y + offset;
     var text = PDFUtils.getYCoordinateText(y);
+    this.pdf.setLineWidth(0.1);
     this.pdf.hLine(box.x, lineY, box.width);
     this.pdf.setFontSize(8);
     if (closeToLeft) {
