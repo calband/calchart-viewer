@@ -127,6 +127,20 @@ PDFWidget.prototype._drawYardlines = function(box, viewport, scale) {
         yardline = Math.floor(left/8) * 5;
     }
 
+    // EAST-WEST LINES
+
+    var top = viewport.westUp ? viewport.west : viewport.east;
+    var topY = viewport.westUp ? Math.ceil(top/4) : Math.floor(top/4);
+    var deltaY = Math.abs(topY * 4 - top) * scale;
+    this.pdf.setDrawColor(200);
+    while (deltaY < box.height) {
+        var lineY = box.y + deltaY;
+        this.pdf.hLine(box.x, lineY, box.width);
+        deltaY += scale * 4;
+    }
+
+    // YARDLINES
+
     // position of first yardline from edge of viewport
     var deltaX = Math.abs(yardline * 8/5 - left) * scale;
     var hashLength = 3;
@@ -200,6 +214,7 @@ PDFWidget.prototype._drawYardlines = function(box, viewport, scale) {
             break;
         }
     }
+
     this.pdf.resetFormat();
 };
 
