@@ -58,22 +58,22 @@ body {
                 padding-right: 15px;
             }
         }
-        .js-dot-labels {
-            width: 200px;
-            & + .chosen-container {
-                .chosen-choices {
-                    height: 65px !important;
-                    background-image: none;
-                }
-                .search-field {
-                    margin: 3px 0;
-                    padding: 2px;
-                }
+        &.choose-dots {
+            span {
+                margin-left: 5px;
+                font-size: 0.8em;
+                font-weight: normal;
             }
-        }
-        .choose-all-dots {
-            font-weight: normal;
-            float: right;
+            textarea {
+                width: 75%;
+                height: 65px;
+                resize: none;
+                vertical-align: middle;
+            }
+            div {
+                width: 100px;
+                text-align: center;
+            }
         }
     }
 }

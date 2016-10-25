@@ -27,16 +27,6 @@ function refreshPage() {
 };
 
 /**
- * Add a dot label to the dot label select box
- */
-function addDotLabel(i, dot) {
-    $("<option>")
-        .text(dot)
-        .attr("value", dot)
-        .appendTo(".js-dot-labels");
-};
-
-/**
  * If it takes too long, remove the IFrame and prompt user to download
  */
 function removeIFrame() {
@@ -85,31 +75,28 @@ $(document).ready(function() {
         options[$(this).attr("name")] = $(this).val();
         refreshPage();
     });
-    $.each(options.dots, addDotLabel)
-    $(".js-dot-labels")
-        .val(options.dots)
-        .chosen({
-            placeholder_text_multiple: "Type in a dot",
-        })
-        .change(function() {
-            options.dots = $(this).val() || [];
-            refreshPage();
-        });
-    // add link to select all dots; adding here because dots not all populated
-    // until this point
-    $("<a>")
-        .addClass("choose-all-dots")
-        .text("Select all")
-        .attr("href", "#")
-        .click(function() {
-            options.dots = $(".js-dot-labels option")
-                .map(function() {
-                    return $(this).attr("value");
-                })
-                .get();
-            refreshPage();
-        })
-        .appendTo(".choose-dots h3");
+
+    // choose dots
+    $(".js-choose-dots").click(function() {
+        var dots = $(".dot-labels").val();
+        if (dots.length === 0) {
+            return;
+        }
+        dots = dots.split("\n");
+
+        // validate dots
+        var labels = $(".dot-labels").data("labels");
+        for (var i = 0; i < dots.length; i++) {
+            var dot = dots[i];
+            if (labels.indexOf(dot) === -1) {
+                alert("Dot " + dot + " does not exist!");
+                return;
+            }
+        }
+
+        options.dots = dots;
+        refreshPage();
+    });
 
     // add link for back-link
     var backDot = options.dots[0] || "";
@@ -136,12 +123,8 @@ $(document).ready(function() {
             $(".js-pdf-loading .progress-bar").css("width", "50%");
             var show = ShowUtils.fromJSONString(data);
 
-            // update dot labels
-            $(".js-dot-labels").empty();
-            $.each(show.getDotLabels(), addDotLabel);
-            $(".js-dot-labels")
-                .val(options.dots)
-                .trigger("chosen:updated");
+            $(".dot-labels").data("labels", show.getDotLabels());
+            $(".js-choose-dots").prop("disabled", false);
 
             if (options.dots.length === 0) {
                 showError("No dot selected.");
