@@ -203,8 +203,6 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
 MovementDiagramWidget.prototype._drawPosition = function(box, y, offset, closeToLeft) {
     var lineY = box.y + offset;
     var text = PDFUtils.getYCoordinateText(y);
-    this.pdf.setLineWidth(0.1);
-    this.pdf.hLine(box.x, lineY, box.width);
     this.pdf.setFontSize(8);
     if (closeToLeft) {
         this.pdf.text(
