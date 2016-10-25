@@ -76,7 +76,7 @@ SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
         south: start.x - box.width/2 / scale,
         westUp: this.westUp,
     };
-    this._drawYardlines(box, viewport, scale);
+    this._drawYardlines(box, viewport, scale, true);
 
     // DOTS
     this.pdf.setFontSize(FONT_SIZE);
