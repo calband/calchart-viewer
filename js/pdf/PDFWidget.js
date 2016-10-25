@@ -105,9 +105,8 @@ PDFWidget.prototype._drawBox = function(x, y, width, height, westUp, minimal) {
  *      - {float} west, steps from the west sideline to the edge of the view
  *      - {boolean} westUp, true if the box is oriented with the west sideline on top
  * @param {float} scale, the multiplier to convert from steps to pdf units
- * @param {boolean} ewLines, true to add the ewLines, false otherwise
  */
-PDFWidget.prototype._drawYardlines = function(box, viewport, scale, ewLines) {
+PDFWidget.prototype._drawYardlines = function(box, viewport, scale) {
     var yardlineSize = box.height * 12/47.1; // at the usual height, yardline text should be 12
     this.pdf.setFontSize(yardlineSize);
 
@@ -129,16 +128,15 @@ PDFWidget.prototype._drawYardlines = function(box, viewport, scale, ewLines) {
     }
 
     // EAST-WEST LINES
-    if (ewLines) {
-        var top = viewport.westUp ? viewport.west : viewport.east;
-        var topY = viewport.westUp ? Math.ceil(top/4) : Math.floor(top/4);
-        var deltaY = Math.abs(topY * 4 - top) * scale;
-        this.pdf.setDrawColor(200);
-        while (deltaY < box.height) {
-            var lineY = box.y + deltaY;
-            this.pdf.hLine(box.x, lineY, box.width);
-            deltaY += scale * 4;
-        }
+
+    var top = viewport.westUp ? viewport.west : viewport.east;
+    var topY = viewport.westUp ? Math.ceil(top/4) : Math.floor(top/4);
+    var deltaY = Math.abs(topY * 4 - top) * scale;
+    this.pdf.setDrawColor(200);
+    while (deltaY < box.height) {
+        var lineY = box.y + deltaY;
+        this.pdf.hLine(box.x, lineY, box.width);
+        deltaY += scale * 4;
     }
 
     // YARDLINES
