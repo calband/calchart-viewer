@@ -39,9 +39,9 @@ MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
 
     var box = {
         x: x,
-        y: y,
+        y: options.minimal ? y + textHeight : y,
         width: width - 2 * (textWidth + 2),
-        height: height - 2 * textHeight
+        height: height - 2 * textHeight,
     };
 
     box.x += width/2 - box.width/2;

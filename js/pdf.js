@@ -4,7 +4,7 @@ var JSUtils = require("./viewer/utils/JSUtils");
 
 var options = JSUtils.getAllURLParams();
 options.dots = options.dots ? options.dots.split(",") : [];
-var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];
+var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order"];
 
 /**
  * Shows an error text

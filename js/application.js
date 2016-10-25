@@ -96,7 +96,7 @@ $(document).ready(function () {
     $(".js-generate-continuity").click(function () {
         var show = $(".js-select-show").val();
         var dot = $(".js-dot-labels").val();
-        var defaults = "&md-orientation=east&bev-orientation=east&sd-orientation=east&layout-order=ltr&endsheet-widget=md";
+        var defaults = "&md-orientation=east&bev-orientation=east&sd-orientation=east&layout-order=ltr";
         window.location.href = "pdf.html?show=" + show + "&dots=" + dot + defaults;
     });
     
