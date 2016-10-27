@@ -110,39 +110,58 @@ PDFWidget.prototype._drawYardlines = function(box, viewport, scale) {
     var yardlineSize = box.height * 12/47.1; // at the usual height, yardline text should be 12
     this.pdf.setFontSize(yardlineSize);
 
-    var westHash, eastHash, westHashY, eastHashY, left, yardline;
+    // get the y-coordinates of the hashes and yardlines
+    var eastHash = viewport.west < 52 && viewport.east > 52;
+    var westHash = viewport.west < 32 && viewport.east > 32;
+    var eastHashY, westHashY, yardline;
     if (viewport.westUp) {
-        westHash = viewport.west < 32 && viewport.east > 32;
-        eastHash = viewport.west < 52 && viewport.east > 52;
-        westHashY = box.y + (32 - viewport.west) * scale;
         eastHashY = box.y + (52 - viewport.west) * scale;
-        left = viewport.south;
-        yardline = Math.ceil(left/8) * 5;
+        westHashY = box.y + (32 - viewport.west) * scale;
+        yardline = Math.ceil(viewport.south/8) * 5;
+        viewport.left = viewport.south;
     } else {
-        eastHash = viewport.east > 52 && viewport.west < 52;
-        westHash = viewport.east > 32 && viewport.west < 32;
         eastHashY = box.y + (viewport.east - 52) * scale;
         westHashY = box.y + (viewport.east - 32) * scale;
-        left = viewport.north;
-        yardline = Math.floor(left/8) * 5;
+        yardline = Math.floor(viewport.north/8) * 5;
+        viewport.left = viewport.north;
     }
 
     // EAST-WEST LINES
 
     var top = viewport.westUp ? viewport.west : viewport.east;
     var topY = viewport.westUp ? Math.ceil(top/4) : Math.floor(top/4);
-    var deltaY = Math.abs(topY * 4 - top) * scale;
-    this.pdf.setDrawColor(200);
-    while (deltaY < box.height) {
-        var lineY = box.y + deltaY;
-        this.pdf.hLine(box.x, lineY, box.width);
-        deltaY += scale * 4;
+    var orientationFactor = viewport.westUp ? -1 : 1;
+    var deltaY = Math.abs(topY * 4 - top);
+    var deltaNorth = scale * Math.max(0, viewport.north - 160);
+    var deltaSouth = scale * Math.min(0, viewport.south);
+    var deltaLeft = viewport.westUp ? deltaSouth : deltaNorth;
+    var deltaRight = viewport.westUp ? deltaNorth : deltaSouth;
+    for (; scale * deltaY < box.height; deltaY += 4) {
+        var stepsY = top - orientationFactor * deltaY;
+        // don't make lines past sidelines
+        if (stepsY < 0 || stepsY > 84) {
+            continue;
+        }
+
+        // darken sidelines
+        if (stepsY % 84 === 0) {
+            this.pdf.setDrawColor(0);
+        } else {
+            this.pdf.setDrawColor(200);
+        }
+
+        // stop lines at endzones
+        this.pdf.hLine(
+            box.x,
+            box.y + deltaY * scale + deltaLeft,
+            box.width + orientationFactor * (deltaRight - deltaLeft)
+        );
     }
 
     // YARDLINES
 
     // position of first yardline from edge of viewport
-    var deltaX = Math.abs(yardline * 8/5 - left) * scale;
+    var deltaX = Math.abs(yardline * 8/5 - viewport.left) * scale;
     var hashLength = 3;
     var isSplitting = false;
 
@@ -152,6 +171,21 @@ PDFWidget.prototype._drawYardlines = function(box, viewport, scale) {
         isSplitting = true;
     }
 
+    // helper function to draw yardlines that may end at a sideline
+    var _this = this;
+    var deltaEast = scale * Math.max(0, viewport.east - 84);
+    var deltaWest = scale * Math.min(0, viewport.west);
+    var deltaTop = viewport.westUp ? deltaWest : deltaEast;
+    var deltaBottom = viewport.westUp ? deltaEast : deltaWest;
+    var orientationFactor = viewport.westUp ? -1 : 1;
+    var drawYardline = function(yardlineX) {
+        _this.pdf.vLine(
+            yardlineX,
+            box.y + deltaTop,
+            box.height + orientationFactor * (deltaBottom - deltaTop)
+        )
+    };
+
     // draw yardlines
     this.pdf.setTextColor(150);
     for (; deltaX < box.width; deltaX += scale * 4, isSplitting = !isSplitting) {
@@ -160,11 +194,12 @@ PDFWidget.prototype._drawYardlines = function(box, viewport, scale) {
         // drawing the yardline
         if (isSplitting) {
             this.pdf.setDrawColor(200);
-            this.pdf.vLine(yardlineX, box.y, box.height);
+            drawYardline(yardlineX);
             continue;
         }
+
         this.pdf.setDrawColor(0);
-        this.pdf.vLine(yardlineX, box.y, box.height);
+        drawYardline(yardlineX);
 
         // drawing hashes
         if (westHash) {
