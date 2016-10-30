@@ -55,7 +55,6 @@ var PDFGenerator = function(show, dots) {
  *      - Orientation for bird's eye view  (options["bev-orientation"] = "west"|"east")
  *      - Orientation for surrounding dots (options["sd-orientation"] = "west"|"east")
  *      - Layout order of stuntsheets      (options["layout-order"] = "ltr"|"ttb")
- *      - Accompanying widget in endsheet  (options["endsheet-widget"] = "md"|"bev"|"sd")
  *
  * @return {string} the PDF data
  */
@@ -126,7 +125,7 @@ PDFGenerator.prototype._generate = function(options) {
                 x,
                 y,
                 QUADRANT_WIDTH,
-                QUADRANT_HEIGHT/5,
+                QUADRANT_HEIGHT/6,
                 {
                     sheet: sheet,
                     dotType: sheet.getDotType(this.dot)
@@ -134,9 +133,9 @@ PDFGenerator.prototype._generate = function(options) {
             );
             this.individualContinuityWidget.draw(
                 x,
-                y + QUADRANT_HEIGHT / 5,
-                QUADRANT_WIDTH / 2,
-                QUADRANT_HEIGHT * 2/5,
+                y + QUADRANT_HEIGHT/6,
+                QUADRANT_WIDTH/2,
+                QUADRANT_HEIGHT/3,
                 {
                     dot: dot,
                     duration: sheet.getDuration()
@@ -144,28 +143,18 @@ PDFGenerator.prototype._generate = function(options) {
             );
             this.movementDiagramWidget.draw(
                 x + QUADRANT_WIDTH/2 + 1,
-                y + QUADRANT_HEIGHT/5,
+                y + QUADRANT_HEIGHT/6,
                 QUADRANT_WIDTH/2,
-                QUADRANT_HEIGHT * 2/5,
+                QUADRANT_HEIGHT/3,
                 {
                     movements: movements[pageNum * 4 + i]
                 }
             );
-            this.birdsEyeWidget.draw(
-                x,
-                y + QUADRANT_HEIGHT * 3/5,
-                QUADRANT_WIDTH/2,
-                QUADRANT_HEIGHT * 2/5,
-                {
-                    sheet: sheet,
-                    dot: dot
-                }
-            );
             this.surroundingDotsWidget.draw(
-                x + QUADRANT_WIDTH/2 + 1,
-                y + QUADRANT_HEIGHT * 3/5,
-                QUADRANT_WIDTH/2,
-                QUADRANT_HEIGHT * 2/5,
+                x,
+                y + QUADRANT_HEIGHT/2 + 2,
+                QUADRANT_WIDTH,
+                QUADRANT_HEIGHT/2 - 2,
                 {
                     sheet: sheet,
                     dot: dot
@@ -179,25 +168,8 @@ PDFGenerator.prototype._generate = function(options) {
             });
         }
     }
-    var endsheetWidget;
-    switch(options["endsheet-widget"]) {
-        case "md":
-            endsheetWidget = this.movementDiagramWidget;
-            break;
-        case "bev":
-            endsheetWidget = this.birdsEyeWidget;
-            break;
-        case "sd":
-            endsheetWidget = this.surroundingDotsWidget;
-            break;
-        default:
-            throw new Error(options["endsheet-widget"] + " is not a valid option for endsheet widget");
-    }
-    if (endsheetWidget instanceof MovementDiagramWidget) {
-        this._addEndSheet(endsheetWidget, {movements: movements});
-    } else {
-        this._addEndSheet(endsheetWidget);
-    }
+
+    this._addEndSheet(movements);
 };
 
 /**
@@ -244,10 +216,9 @@ PDFGenerator.prototype._getMovements = function() {
 /**
  * Draws the end sheet containing a compilation of all the continuities and movements diagrams
  * 
- * @param {PDFWidget} the widget to place next to the individual continuity
- * @param {object} options, contains options for the widgets, if necessary.
+ * @param {Array<Array<Object>>} the movements for the dot
  */
-PDFGenerator.prototype._addEndSheet = function(widget, options) {
+PDFGenerator.prototype._addEndSheet = function(movements) {
     this.pdf.addPage();
     this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
     var title = this.show.getTitle() + " - Dot " + this.dot;
@@ -302,20 +273,18 @@ PDFGenerator.prototype._addEndSheet = function(widget, options) {
                 duration: this.sheets[i].getDuration()
             }
         );
-        var widgetOptions = {
+        var options = {
             sheet: sheet,
             dot: dot,
-            minimal: true
+            minimal: true,
+            movements: movements[i],
         };
-        if (widget instanceof MovementDiagramWidget) {
-            widgetOptions["movements"] = options["movements"][i];
-        }
-        widget.draw(
+        this.movementDiagramWidget.draw(
             x + labelWidth + continuitySize + paddingX + SIDE_MARGIN,
             y + paddingY,
             widgetSize,
             height,
-            widgetOptions
+            options
         );
         y += height + 2 * paddingY;
     }
