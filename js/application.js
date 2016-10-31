@@ -129,9 +129,15 @@ $(document).ready(function () {
         alert("You may not be able to upload .ogg files using Safari. Either use an mp3 version of the file or use the Viewer on another browser.")
     }
 
-    applicationController.getShows().complete(function() {
-        // URL options
-        var options = JSUtils.getAllURLParams();
-        applicationController.autoloadShow(options.show, options.dot);
-    });
+    applicationController.getShows()
+        .complete(function() {
+            // URL options
+            var options = JSUtils.getAllURLParams();
+            applicationController.autoloadShow(options.show, options.dot);
+        })
+        .error(function(xhr) {
+            alert("Could not load shows from the server");
+            // just remove the loading page on error
+            $(".loading").remove();
+        });
 });

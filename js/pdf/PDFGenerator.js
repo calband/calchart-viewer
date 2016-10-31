@@ -59,12 +59,21 @@ var PDFGenerator = function(show, dots) {
  * @return {string} the PDF data
  */
 PDFGenerator.prototype.generate = function(options) {
+    // 4 stuntsheets per page + endsheet
+    var totalPages = Math.ceil(this.sheets.length / 4) + 1;
+
     for (var i = 0; i < this.dots.length; i++) {
         if (i !== 0) {
             this.pdf.addPage();
         }
         this.dot = this.dots[i];
         this._generate(options);
+
+        // if there's an odd number of pages and not on the last dot, add an extra
+        // page for printing double sided
+        if (totalPages % 2 === 1 && i < this.dots.length - 1) {
+            this.pdf.addPage();
+        }
     }
 
     this.data = this.pdf.output("datauristring");
