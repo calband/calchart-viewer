@@ -1,3 +1,7 @@
+@font-face {
+  font-family: "icomoon";
+  src: url("../../other/fonts/icomoon.ttf") format("truetype");
+}
 .clearfix {
   display: block;
   clear: both;
@@ -12,7 +16,7 @@
 }
 .header {
   margin-top: 20px;
-  border-bottom: 1px solid #fdb515;
+  border-bottom: 1px solid #FDB515;
   padding-bottom: 20px;
 }
 .header .header-image,
@@ -26,7 +30,7 @@
 }
 .header .header-title .title,
 .header .header-files .files-description {
-  border-bottom: 1px solid #fdb515;
+  border-bottom: 1px solid #FDB515;
   height: 40px;
   line-height: 40px;
 }
@@ -268,5 +272,5 @@
 .loading .wrapper .progress-bar {
   display: inline-block;
   height: 5px;
-  background: #fdb515;
+  background: #FDB515;
 }

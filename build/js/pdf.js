@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-/******/
+
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-/******/
+
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-/******/
+
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-/******/
+
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
+
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-/******/
+
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-/******/
-/******/
+
+
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-/******/
+
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-/******/
+
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-/******/
+
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -44,13 +44,13 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var PDFGenerator = __webpack_require__(1);
-	var ShowUtils = __webpack_require__(2);
-	var JSUtils = __webpack_require__(3);
+	var PDFGenerator = __webpack_require__(33);
+	var ShowUtils = __webpack_require__(3);
+	var JSUtils = __webpack_require__(9);
 
 	var options = JSUtils.getAllURLParams();
 	options.dots = options.dots ? options.dots.split(",") : [];
-	var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order", "endsheet-widget"];
+	var keys = ["md-orientation", "bev-orientation", "sd-orientation", "layout-order"];
 
 	/**
 	 * Shows an error text
@@ -70,16 +70,6 @@
 	        }
 	        return key + "=" + val;
 	    }).join("&");
-	};
-
-	/**
-	 * Add a dot label to the dot label select box
-	 */
-	function addDotLabel(i, dot) {
-	    $("<option>")
-	        .text(dot)
-	        .attr("value", dot)
-	        .appendTo(".js-dot-labels");
 	};
 
 	/**
@@ -131,31 +121,28 @@
 	        options[$(this).attr("name")] = $(this).val();
 	        refreshPage();
 	    });
-	    $.each(options.dots, addDotLabel)
-	    $(".js-dot-labels")
-	        .val(options.dots)
-	        .chosen({
-	            placeholder_text_multiple: "Type in a dot",
-	        })
-	        .change(function() {
-	            options.dots = $(this).val() || [];
-	            refreshPage();
-	        });
-	    // add link to select all dots; adding here because dots not all populated
-	    // until this point
-	    $("<a>")
-	        .addClass("choose-all-dots")
-	        .text("Select all")
-	        .attr("href", "#")
-	        .click(function() {
-	            options.dots = $(".js-dot-labels option")
-	                .map(function() {
-	                    return $(this).attr("value");
-	                })
-	                .get();
-	            refreshPage();
-	        })
-	        .appendTo(".choose-dots h3");
+
+	    // choose dots
+	    $(".js-choose-dots").click(function() {
+	        var dots = $(".dot-labels").val();
+	        if (dots.length === 0) {
+	            return;
+	        }
+	        dots = dots.split("\n");
+
+	        // validate dots
+	        var labels = $(".dot-labels").data("labels");
+	        for (var i = 0; i < dots.length; i++) {
+	            var dot = dots[i];
+	            if (labels.indexOf(dot) === -1) {
+	                alert("Dot " + dot + " does not exist!");
+	                return;
+	            }
+	        }
+
+	        options.dots = dots;
+	        refreshPage();
+	    });
 
 	    // add link for back-link
 	    var backDot = options.dots[0] || "";
@@ -182,12 +169,8 @@
 	            $(".js-pdf-loading .progress-bar").css("width", "50%");
 	            var show = ShowUtils.fromJSONString(data);
 
-	            // update dot labels
-	            $(".js-dot-labels").empty();
-	            $.each(show.getDotLabels(), addDotLabel);
-	            $(".js-dot-labels")
-	                .val(options.dots)
-	                .trigger("chosen:updated");
+	            $(".dot-labels").data("labels", show.getDotLabels());
+	            $(".js-choose-dots").prop("disabled", false);
 
 	            if (options.dots.length === 0) {
 	                showError("No dot selected.");
@@ -224,337 +207,9 @@
 
 
 /***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var PDFUtils = __webpack_require__(5);
-	var HeaderWidget = __webpack_require__(6);
-	var DotContinuityWidget = __webpack_require__(7);
-	var IndividualContinuityWidget = __webpack_require__(8);
-	var MovementDiagramWidget = __webpack_require__(9);
-	var BirdsEyeWidget = __webpack_require__(10);
-	var SurroundingDotsWidget = __webpack_require__(11);
-
-	/**
-	 * @constant WIDTH is the width of the PDF document, in millimeters
-	 * @constant HEIGHT is the height of the PDF document, in millimeters
-	 * @constant SIDE_MARGIN is the left/right margin of the PDF document, in millimeters
-	 * @constant QUADRANT contains (x,y) coordinates for the top left corner of each quadrant
-	 *      of the document. y coordinates offset by headers
-	 */
-	var WIDTH = 215.9;
-	var HEIGHT = 279.4;
-	var SIDE_MARGIN = 10;
-
-	var QUADRANT = [
-	    {x: SIDE_MARGIN, y: 24},                     // top left
-	    {x: WIDTH/2 + SIDE_MARGIN, y: 24},           // top right
-	    {x: SIDE_MARGIN, y: HEIGHT/2 + 16},          // bottom left
-	    {x: WIDTH/2 + SIDE_MARGIN, y: HEIGHT/2 + 16} // bottom right
-	];
-	var QUADRANT_HEIGHT = HEIGHT/2 - 22;
-	var QUADRANT_WIDTH = WIDTH/2 - SIDE_MARGIN * 2;
-
-	/**
-	 * This PDFGenerator class will be able to generate the PDF representation of the given
-	 * show, for the given dot.
-	 *
-	 * @param {Show} show
-	 * @param {Array<String>} dots is the list of dot labels to include in the PDF
-	 */
-	var PDFGenerator = function(show, dots) {
-	    this.pdf = jsPDF("portrait", "mm", "letter");
-	    this.show = show;
-	    this.dots = dots;
-	    this.sheets = show.getSheets();
-	    this.data = null;
-	    // tracking for progress bar
-	    this.current = 0;
-	    this.total = this.dots.length * this.sheets.length; // increment per dot per stuntsheet
-	};
-
-	/**
-	 * generate a PDF for specified dots, containing its movements, positions, and continuities
-	 * relevant to it.
-	 *
-	 * The function will display the pdf in the webpage's preview pane
-	 *
-	 * @param {Object} options, customizable options for the pdf. Current options include:
-	 *      - Orientation for movement diagram (options["md-orientation"] = "west"|"east")
-	 *      - Orientation for bird's eye view  (options["bev-orientation"] = "west"|"east")
-	 *      - Orientation for surrounding dots (options["sd-orientation"] = "west"|"east")
-	 *      - Layout order of stuntsheets      (options["layout-order"] = "ltr"|"ttb")
-	 *      - Accompanying widget in endsheet  (options["endsheet-widget"] = "md"|"bev"|"sd")
-	 *
-	 * @return {string} the PDF data
-	 */
-	PDFGenerator.prototype.generate = function(options) {
-	    for (var i = 0; i < this.dots.length; i++) {
-	        if (i !== 0) {
-	            this.pdf.addPage();
-	        }
-	        this.dot = this.dots[i];
-	        this._generate(options);
-	    }
-
-	    this.data = this.pdf.output("datauristring");
-	};
-
-	/**
-	 * Generate a PDF for one dot, given by this.dot
-	 */
-	PDFGenerator.prototype._generate = function(options) {
-	    // Widgets
-	    this.headerWidget = new HeaderWidget(this.pdf, {
-	        dotLabel: this.dot,
-	        title: this.show.getTitle(),
-	        totalSheets: this.sheets.length
-	    });
-	    this.dotContinuityWidget = new DotContinuityWidget(this.pdf);
-	    this.individualContinuityWidget = new IndividualContinuityWidget(this.pdf);
-	    this.movementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
-	    this.birdsEyeWidget = new BirdsEyeWidget(this.pdf, options["bev-orientation"]);
-	    this.surroundingDotsWidget = new SurroundingDotsWidget(this.pdf, options["sd-orientation"]);
-
-	    var movements = this._getMovements();
-	    for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
-	        if (pageNum != 0) {
-	            this.pdf.addPage();
-	        }
-
-	        var pageSheets = []
-	        for (var i = 0; i < 4; i++) {
-	            var sheet = pageNum * 4 + i;
-	            if (sheet == this.sheets.length) {
-	                break;
-	            }
-	            pageSheets.push(this.sheets[sheet]);
-	        }
-
-	        this.headerWidget.draw({
-	            pageNum: pageNum + 1,
-	            isLeftToRight: options["layout-order"] === "ltr"
-	        });
-	        // drawing lines between quadrants
-	        this.pdf.setDrawColor(150);
-	        this.pdf.vLine(WIDTH/2, 24, HEIGHT - 24);
-	        this.pdf.hLine(0, HEIGHT/2 + 2.5, WIDTH);
-	        this.pdf.setDrawColor(0);
-
-	        var quadrantOrder = [0, 1, 2, 3]; // top left, top right, bottom left, bottom right
-	        if (options["layout-order"] === "ttb") {
-	            quadrantOrder = [0, 2, 1, 3];
-	        }
-
-	        for (var i = 0; i < pageSheets.length; i++) {
-	            var x = QUADRANT[quadrantOrder[i]].x;
-	            var y = QUADRANT[quadrantOrder[i]].y;
-	            var sheet = pageSheets[i];
-	            var dot = sheet.getDotByLabel(this.dot);
-	            this.dotContinuityWidget.draw(
-	                x,
-	                y,
-	                QUADRANT_WIDTH,
-	                QUADRANT_HEIGHT/5,
-	                {
-	                    sheet: sheet,
-	                    dotType: sheet.getDotType(this.dot)
-	                }
-	            );
-	            this.individualContinuityWidget.draw(
-	                x,
-	                y + QUADRANT_HEIGHT / 5,
-	                QUADRANT_WIDTH / 2,
-	                QUADRANT_HEIGHT * 2/5,
-	                {
-	                    dot: dot,
-	                    duration: sheet.getDuration()
-	                }
-	            );
-	            this.movementDiagramWidget.draw(
-	                x + QUADRANT_WIDTH/2 + 1,
-	                y + QUADRANT_HEIGHT/5,
-	                QUADRANT_WIDTH/2,
-	                QUADRANT_HEIGHT * 2/5,
-	                {
-	                    movements: movements[pageNum * 4 + i]
-	                }
-	            );
-	            this.birdsEyeWidget.draw(
-	                x,
-	                y + QUADRANT_HEIGHT * 3/5,
-	                QUADRANT_WIDTH/2,
-	                QUADRANT_HEIGHT * 2/5,
-	                {
-	                    sheet: sheet,
-	                    dot: dot
-	                }
-	            );
-	            this.surroundingDotsWidget.draw(
-	                x + QUADRANT_WIDTH/2 + 1,
-	                y + QUADRANT_HEIGHT * 3/5,
-	                QUADRANT_WIDTH/2,
-	                QUADRANT_HEIGHT * 2/5,
-	                {
-	                    sheet: sheet,
-	                    dot: dot
-	                }
-	            );
-	            // increment progress bar
-	            this.current++;
-	            var percentage = this.current / this.total;
-	            $(".js-pdf-loading .progress-bar").css({
-	                width: (50 + percentage * 50) + "%", // 50% from loading server
-	            });
-	        }
-	    }
-	    var endsheetWidget;
-	    switch(options["endsheet-widget"]) {
-	        case "md":
-	            endsheetWidget = this.movementDiagramWidget;
-	            break;
-	        case "bev":
-	            endsheetWidget = this.birdsEyeWidget;
-	            break;
-	        case "sd":
-	            endsheetWidget = this.surroundingDotsWidget;
-	            break;
-	        default:
-	            throw new Error(options["endsheet-widget"] + " is not a valid option for endsheet widget");
-	    }
-	    if (endsheetWidget instanceof MovementDiagramWidget) {
-	        this._addEndSheet(endsheetWidget, {movements: movements});
-	    } else {
-	        this._addEndSheet(endsheetWidget);
-	    }
-	};
-
-	/**
-	 * Returns a list of movements for each stuntsheet, which are changes in position with
-	 * respect to the previous position
-	 * @return {Array<Array<Object>>} where each element is a list of movements for each
-	 *   stuntsheet. The Object contains:
-	 *      - {Coordinate} startPosition
-	 *      - {int} deltaX
-	 *      - {int} deltaY
-	 */
-	PDFGenerator.prototype._getMovements = function() {
-	    var moves = [];
-	    var dotLabel = this.dot;
-	    this.sheets.forEach(function(sheet) {
-	        var lines = [];
-	        var movements = sheet.getDotByLabel(dotLabel).getMovementCommands();
-	        var startPosition = movements[0].getStartPosition();
-	        movements.forEach(function(movement) {
-	            var endPosition = movement.getEndPosition();
-	            if (movement.getMiddlePoints === undefined) {
-	                lines.push({
-	                    startPosition: startPosition,
-	                    deltaX: endPosition.x - startPosition.x,
-	                    deltaY: endPosition.y - startPosition.y
-	                });
-	            } else { // movement is a MovementCommandArc
-	                // each item is an Array of (deltaX, deltaY) pairs
-	                movement.getMiddlePoints().forEach(function(move) {
-	                    lines.push({
-	                        startPosition: startPosition,
-	                        deltaX: move[0],
-	                        deltaY: move[1]
-	                    });
-	                });
-	            }
-	            startPosition = endPosition;
-	        });
-	        moves.push(lines);
-	    });
-	    return moves;
-	};
-
-	/**
-	 * Draws the end sheet containing a compilation of all the continuities and movements diagrams
-	 * 
-	 * @param {PDFWidget} the widget to place next to the individual continuity
-	 * @param {object} options, contains options for the widgets, if necessary.
-	 */
-	PDFGenerator.prototype._addEndSheet = function(widget, options) {
-	    this.pdf.addPage();
-	    this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
-	    var title = this.show.getTitle() + " - Dot " + this.dot;
-	    this.pdf.setFontSize(15);
-	    this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
-	    var paddingX = 2;
-	    var paddingY = .5;
-	    var textSize = 10;
-	    var textHeight = PDFUtils.getTextHeight(textSize);
-	    var labelSize = 20;
-	    var labelWidth = PDFUtils.getTextWidth("00", labelSize) + paddingX * 2;
-	    var labelHeight = PDFUtils.getTextHeight(labelSize);
-	    var widgetSize = 30;
-	    var continuitySize = WIDTH/2 - widgetSize - labelWidth - paddingX * 3 - SIDE_MARGIN;
-	    var x = 0;
-	    var y = 10;
-	    for (var i = 0; i < this.sheets.length; i++) {
-	        var sheet = this.sheets[i];
-	        var dot = sheet.getDotByLabel(this.dot);
-
-	        var height = widgetSize - 5;
-	        var continuityHeight = (dot.getMovementCommands().length + 1) * (textHeight + 1) + 2*paddingY;
-	        if (continuityHeight > height) {
-	            height = continuityHeight;
-	        }
-
-	        if (y + height > HEIGHT - 5) {
-	            if (x == 0) {
-	                x = WIDTH/2 + paddingX - SIDE_MARGIN;
-	            } else {
-	                this.pdf.addPage();
-	                this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
-	                this.pdf.setFontSize(15);
-	                this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
-	                x = 0;
-	            }
-	            y = 10;
-	        }
-	        this.pdf.setFontSize(labelSize);
-	        this.pdf.text(
-	            String(i + 1),
-	            x + paddingX + SIDE_MARGIN,
-	            y + paddingY + labelHeight
-	        );
-	        this.individualContinuityWidget.draw(
-	            x + labelWidth + paddingX + SIDE_MARGIN,
-	            y + paddingY,
-	            continuitySize,
-	            height,
-	            {
-	                dot: dot,
-	                duration: this.sheets[i].getDuration()
-	            }
-	        );
-	        var widgetOptions = {
-	            sheet: sheet,
-	            dot: dot,
-	            minimal: true
-	        };
-	        if (widget instanceof MovementDiagramWidget) {
-	            widgetOptions["movements"] = options["movements"][i];
-	        }
-	        widget.draw(
-	            x + labelWidth + continuitySize + paddingX + SIDE_MARGIN,
-	            y + paddingY,
-	            widgetSize,
-	            height,
-	            widgetOptions
-	        );
-	        y += height + 2 * paddingY;
-	    }
-	};
-
-	module.exports = PDFGenerator;
-
-
-/***/ },
-/* 2 */
+/* 1 */,
+/* 2 */,
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -562,8 +217,8 @@
 	 *   used to create and manage Show objects.
 	 */
 
-	 var ViewerFileLoadSelector = __webpack_require__(16);
-	 var Version = __webpack_require__(12);
+	 var ViewerFileLoadSelector = __webpack_require__(4);
+	 var Version = __webpack_require__(7);
 	 
 	 /**
 	  * The collection of all functions related to creating and
@@ -601,1312 +256,7 @@
 	module.exports = ShowUtils;
 
 /***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines miscellaneous utility functions.
-	 */
-
-	/**
-	 * A collection of javascript utility functions.
-	 */
-	var JSUtils = {};
-	 
-	/**
-	 * Causes a child class to inherit from a parent class.
-	 *
-	 * @param {function} ChildClass The class that will inherit
-	 *   from another.
-	 * @param {function} ParentClass The class to inherit from.
-	 */
-	JSUtils.extends = function (ChildClass, ParentClass) {
-	    var Inheritor = function () {}; // dummy constructor
-	    Inheritor.prototype = ParentClass.prototype;
-	    ChildClass.prototype = new Inheritor();
-	};
-
-	/**
-	 * Returns the value of the given name in the URL query string
-	 *
-	 * getQueryValue("hello") on http://foo.bar?hello=world should return "world"
-	 *
-	 * @param {String} name
-	 * @returns {String|null} the value of the name or null if name not in URL query string
-	 */
-	JSUtils.getURLValue = function(name) {
-	    var vals = this.getAllURLParams();
-	    if (vals[name] !== undefined) {
-	        return vals[name];
-	    } else {
-	        return null;
-	    }
-	};
-
-	/**
-	 * Returns all name-value pairs in the URL query string
-	 *
-	 * @returns {object} a dictionary mapping name to value
-	 */
-	JSUtils.getAllURLParams = function() {
-	    var vals = {};
-	    var query = window.location.search.substr(1);
-	    var vars = query.split("&");
-	    for (var i = 0; i < vars.length; i++) {
-	        var pair = vars[i].split("=");
-	        var name = decodeURIComponent(pair[0]);
-	        var value = decodeURIComponent(pair[1]);
-	        vals[name] = value;
-	    }
-	    return vals;
-	};
-
-	module.exports = JSUtils;
-
-/***/ },
-/* 4 */,
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines functions that will be useful for generating the PDF
-	 */
-
-	/**
-	 * The collection of all the utility functions defined in this file
-	 * @type {object}
-	 */
-	PDFUtils = {};
-
-	PDFUtils.DUMMY_PDF = jsPDF("portrait", "mm", "letter");
-
-	PDFUtils.SCALE_FACTOR = PDFUtils.DUMMY_PDF.internal.scaleFactor;
-
-	PDFUtils.DEFAULT_FONT_SIZE = 12;
-
-	/**
-	 * Returns the width of a String in millimeters
-	 * @param {String} text
-	 * @param {int} size, font size the text will be in
-	 */
-	PDFUtils.getTextWidth = function(text, size) {
-	    return this.DUMMY_PDF.getStringUnitWidth(text) * size/this.SCALE_FACTOR
-	};
-
-	/**
-	 * Returns the height of text in the current fontsize in millimeters
-	 * @param {int} size, font size the text will be in
-	 */
-	PDFUtils.getTextHeight = function(size) {
-	    return size/this.SCALE_FACTOR;
-	};
-
-	/**
-	 * Returns the text that will be shown for the given x-coordinate in
-	 * the form of "4N N40" to mean "4 steps North of the North-40"
-	 *
-	 * @param {int} x, the x-coordinate
-	 * @return {String} the display text for the x-coordinate
-	 */
-	PDFUtils.getXCoordinateText = function(x) {
-	    var steps = x % 8;
-	    var yardline = Math.floor(x / 8) * 5;
-
-	    if (steps > 4) { // closer to North-side yardline
-	        yardline += 5;
-	    }
-
-	    if (yardline < 50) {
-	        yardline = "S" + yardline;
-	    } else if (yardline == 50) {
-	        yardline = "50";
-	    } else {
-	        yardline = "N" + (100 - yardline);
-	    }
-
-	    if (steps > 4) {
-	        steps = 8 - steps;
-	        steps = Math.round(steps * 10) / 10;
-	        return steps + "S " + yardline;
-	    } else if (steps == 0) {
-	        return yardline;
-	    } else {
-	        steps = Math.round(steps * 10) / 10;
-	        return steps + "N " + yardline;
-	    }
-	};
-
-	/**
-	 * Returns the text that will be shown for the given y-coordinate in
-	 * the form of "8E EH" to mean "8 steps East of the East Hash"
-	 *
-	 * @param {int} y, the y-coordinate
-	 * @return {String} the display text for the y-coordinate
-	 */
-	PDFUtils.getYCoordinateText = function(y) {
-	    function round(val) {
-	        return Math.round(val * 10) / 10;
-	    };
-
-	    // West Sideline
-	    if (y == 0) {
-	        return "WS";
-	    }
-	    // Near West Sideline
-	    if (y <= 16) {
-	        return round(y) + " WS";
-	    }
-	    // West of West Hash
-	    if (y < 32) {
-	        return round(32 - y) + "W WH";
-	    }
-	    // West Hash
-	    if (y == 32) {
-	        return "WH";
-	    }
-	    // East of West Hash
-	    if (y <= 40) {
-	        return round(y - 32) + "E WH";
-	    }
-	    // West of East Hash
-	    if (y < 52) {
-	        return round(52 - y) + "W EH";
-	    }
-	    // East Hash
-	    if (y == 52) {
-	        return "EH";
-	    }
-	    // East of East Hash
-	    if (y <= 68) {
-	        return round(y - 52) + "E EH";
-	    }
-	    // Near East Sideline
-	    if (y < 84) {
-	        return round(84 - y) + " ES";
-	    }
-	    // East Sideline
-	    return "ES";
-	};
-
-	/**
-	 * Various jsPDF plugins that can be called by the jsPDF object itself
-	 */
-	(function (jsPDFAPI) {
-	    "use strict";
-
-	    /**
-	     * This jsPDF plugin draws a dot for the given dot type at the given coordinates
-	     * @param {String} dotType
-	     * @param {float} x
-	     * @param {float} y
-	     * @param {float} radius
-	     */
-	    jsPDFAPI.drawDot = function(dotType, x, y, radius) {
-	        this.setLineWidth(.1);
-	        if (dotType.indexOf("open") != -1) {
-	            this.setFillColor(255);
-	            this.circle(x, y, radius, "FD");
-	        } else {
-	            this.setFillColor(0);
-	            this.circle(x, y, radius, "FD");
-	        }
-
-	        radius += .1; // line radius sticks out of the circle
-	        if (dotType.indexOf("backslash") != -1 || dotType.indexOf("x") != -1) {
-	            this.line(
-	                x - radius, y - radius,
-	                x + radius, y + radius
-	            );
-	        }
-
-	        if (dotType.indexOf("forwardslash") != -1 || dotType.indexOf("x") != -1) {
-	            this.line(
-	                x - radius, y + radius,
-	                x + radius, y - radius
-	            );
-	        }
-	        this.setLineWidth(.3);
-	        this.setFillColor(0);
-	        return this;
-	    };
-
-	    /**
-	     * This jsPDF plugin resets PDF drawing options to default values, such as black
-	     * stroke, white fill, black text, etc.
-	     */
-	    jsPDFAPI.resetFormat = function() {
-	        this.setFontSize(PDFUtils.DEFAULT_FONT_SIZE);
-	        this.setTextColor(0);
-	        this.setDrawColor(0);
-	        this.setFillColor(255);
-	        this.setLineWidth(.3);
-	        return this;
-	    };
-
-	    /**
-	     * This jsPDF plugin draws a horizontal line from the given (x,y) coordinate to
-	     * the coordinate (x + width, y)
-	     *
-	     * @param {float} x
-	     * @param {float} y
-	     * @param {float} width
-	     */
-	    jsPDFAPI.hLine = function(x, y, width) {
-	        this.line(x, y, x + width, y);
-	    };
-
-	    /**
-	     * This jsPDF plugin draws a vertical line from the given (x,y) coordinate to
-	     * the coordinate (x, y + height)
-	     *
-	     * @param {float} x
-	     * @param {float} y
-	     * @param {float} height
-	     */
-	    jsPDFAPI.vLine = function(x, y, height) {
-	        this.line(x, y, x, y + height);
-	    };
-	})(jsPDF.API);
-
-	module.exports = PDFUtils;
-
-/***/ },
-/* 6 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the widget for generating the page's headers
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var PDFUtils = __webpack_require__(5);
-	var PDFWidget = __webpack_require__(19);
-
-	/**
-	 * @constant WIDTH is the width of the PDF document, in millimeters
-	 * @constant HEIGHT is the height of the PDF document, in millimeters
-	 * @constant SIDE_MARGIN is the left/right margin of the PDF document, in millimeters
-	 */
-	var WIDTH = 215.9;
-	var HEIGHT = 279.4;
-	var SIDE_MARGIN = 10;
-
-	/**
-	 * Represents the widget for a page's headers
-	 *
-	 * This widget will include the stuntsheet number, the dot number, the show title, and
-	 * the page number
-	 *
-	 * @param {jsPDF} pdf, the jsPDF object to be written to
-	 * @param {Object} options,
-	 *      - {String} dotLabel, the selected dot
-	 *      - {String} title, the title of the show
-	 *      - {int} totalSheets, the total number of sheets
-	 */
-	var HeaderWidget = function(pdf, options) {
-	    this.dotLabel = "Dot " + options["dotLabel"];
-	    this.title = options["title"];
-	    this.totalSheets = options["totalSheets"];
-	    this.totalPages = Math.ceil(this.totalSheets / 4);
-	    PDFWidget.apply(this, [pdf]);
-	};
-
-	JSUtils.extends(HeaderWidget, PDFWidget);
-
-	/**
-	 * Draws the Header Widget with the given options:
-	 *      - {int} pageNum, the current 1-indexed page number
-	 *      - {boolean} isLeftToRight, true if stuntsheets go from left to right, false otherwise
-	 */
-	HeaderWidget.prototype.draw = function(options) {
-	    var _this = this;
-	    var pageNum = options["pageNum"];
-	    var isLeftToRight = options["isLeftToRight"];
-
-	    var header = {
-	        x: WIDTH * 1/4,
-	        y: 5,
-	        width: WIDTH * 1/2,
-	        height: 17, // PDFUtils.getTextHeight(16) * 3
-	        paddingX: 3,
-	        paddingY: 1,
-	        size: 16
-	    };
-
-	    var pageInfo = {
-	        size: 12,
-	        draw: function(x, y) {
-	            _this.pdf.text("Page ", x, y);
-	            x += 10.9; // PDFUtils.getTextWidth("Page ", this.size)
-
-	            _this.pdf.text(String(pageNum), x, y - 1);
-	            x += PDFUtils.getTextWidth(String(pageNum), this.size);
-
-	            _this.pdf.text("/", x, y);
-	            x += 1.2; //PDFUtils.getTextWidth("/", this.size)
-
-	            _this.pdf.text(String(_this.totalPages), x, y + 1);
-	        }
-	    };
-
-	    var sheetInfo = {
-	        marginX: SIDE_MARGIN,
-	        marginY: 3,
-	        size: 28,
-	        sheet: (pageNum - 1) * 4 + 1,
-
-	        getTop: function() {
-	            return this.marginY + this.height;
-	        },
-
-	        getBottom: function() {
-	            return this.getTop() + HEIGHT/2;
-	        },
-
-	        getLeft: function() {
-	            return this.marginX;
-	        },
-
-	        getRight: function() {
-	            return WIDTH - PDFUtils.getTextWidth("SS " + this.sheet, this.size) - sheetInfo.marginX;
-	        },
-
-	        hasNext: function() {
-	            return ++this.sheet <= _this.totalSheets;
-	        },
-
-	        draw: function(x, y) {
-	            _this.pdf.text("SS " + this.sheet, x, y);
-	        }
-	    };
-
-	    /* Title and Page information */
-	    this.pdf.rect(header.x, header.y, header.width, header.height);
-
-	    /* Title */
-	    this.pdf.setFontSize(header.size);
-	    this.pdf.text(
-	        this.title,
-	        WIDTH/2 - PDFUtils.getTextWidth(this.title, header.size)/2,
-	        header.y + header.paddingY + PDFUtils.getTextHeight(header.size)
-	    );
-
-	    /* Dot */
-	    this.pdf.setFontSize(header.size - 3);
-	    this.pdf.text(
-	        this.dotLabel,
-	        WIDTH/2 - PDFUtils.getTextWidth(this.dotLabel, header.size)/2,
-	        header.y + header.paddingY + PDFUtils.getTextHeight(header.size) * 2
-	    );
-
-	    /* Page Info */
-	    this.pdf.setFontSize(pageInfo.size);
-	    var x = header.x + header.paddingX;
-	    var y = header.y + header.height/2 + PDFUtils.getTextHeight(pageInfo.size)/2;
-	    pageInfo.draw(x, y);
-
-	    x = WIDTH * 3/4 - header.paddingX - PDFUtils.getTextWidth("Page 0/0", pageInfo.size);
-	    pageInfo.draw(x, y);
-
-	    /* Stuntsheet */
-	    sheetInfo.height = PDFUtils.getTextHeight(sheetInfo.size);
-	    sheetInfo.width = PDFUtils.getTextWidth("SS 00", sheetInfo.size) + sheetInfo.marginX;
-	    this.pdf.setFontSize(sheetInfo.size);
-
-	    sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
-
-	    if (sheetInfo.hasNext()) {
-	        if (isLeftToRight) {
-	            sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
-	        } else {
-	            sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
-	        }
-	    }
-
-	    if (sheetInfo.hasNext()) {
-	        if (isLeftToRight) {
-	            sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
-	        } else {
-	            sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
-	        }
-	    }
-
-	    if (sheetInfo.hasNext()) {
-	        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getBottom());
-	    }
-	};
-
-	module.exports = HeaderWidget;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the widget for generating a dot type's continuity
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var PDFUtils = __webpack_require__(5);
-	var PDFWidget = __webpack_require__(19);
-
-	/**
-	 * Represents the widget for a given dot type's continuity
-	 *
-	 * This widget will include an image of the dot type and the overall dot type continuity
-	 *
-	 * @param {jsPDF} pdf, the jsPDF object to be written to
-	 */
-	var DotContinuityWidget = function(pdf) {
-	    PDFWidget.apply(this, [pdf]);
-	};
-
-	JSUtils.extends(DotContinuityWidget, PDFWidget);
-
-	/**
-	 * Draws the Dot Continuity Widget with the given options:
-	 *      - {Sheet} sheet, the current sheet
-	 *      - {String} dotType, the type of dot to draw
-	 */
-	DotContinuityWidget.prototype.draw = function(x, y, width, height, options) {
-	    var _this = this;
-
-	    var box = {
-	        paddingX: 2,
-	        paddingY: 1
-	    };
-	    var text = {
-	        x: x + box.paddingX,
-	        y: y + box.paddingY,
-	        size: 10
-	    };
-	    var dotType = options["dotType"];
-	    var maxWidth = width - box.paddingX * 2 - 6;
-	    var maxHeight = height - box.paddingY * 2 - 3;
-	    var continuities = options["sheet"].getContinuityTexts(dotType);
-
-	    this.pdf.rect(x, y, width, height - 1.5);
-
-	    // fail-safe for sheets without Continuity Texts
-	    if (typeof continuities === "undefined") {
-	        return;
-	    }
-
-	    continuities = continuities.map(function(continuity) {
-	        while (PDFUtils.getTextWidth(continuity, text.size) > maxWidth) {
-	            text.size--;
-	        }
-	        return continuity;
-	    });
-
-	    while (continuities.length * PDFUtils.getTextHeight(text.size) > maxHeight) {
-	        text.size--;
-	    }
-
-	    this.pdf.drawDot(
-	        dotType,
-	        text.x + 1.5,
-	        text.y + 2,
-	        1.5
-	    );
-	    text.x += 4;
-	    this.pdf.setFontSize(10);
-	    this.pdf.text(
-	        ":",
-	        text.x,
-	        text.y + PDFUtils.getTextHeight(10)
-	    );
-	    this.pdf.setFontSize(text.size);
-	    text.x += 2;
-	    text.y += PDFUtils.getTextHeight(text.size);
-	    this.pdf.text(
-	        continuities,
-	        text.x,
-	        text.y
-	    );
-	    this.pdf.resetFormat();
-	};
-
-	module.exports = DotContinuityWidget;
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the widget for generating a dot's individual continuity
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var PDFUtils = __webpack_require__(5);
-	var PDFWidget = __webpack_require__(19);
-
-	/**
-	 * Represents the widget for a given dot's individual continuity
-	 *
-	 * This widget will include each movement for the dot and the duration of the stuntsheet
-	 *
-	 * @param {jsPDF} pdf, the jsPDF object to be written to
-	 */
-	var IndividualContinuityWidget = function(pdf) {
-	    PDFWidget.apply(this, [pdf]);
-	};
-
-	JSUtils.extends(IndividualContinuityWidget, PDFWidget);
-
-	/**
-	 * Draws the Individual Continuity Widget with the given options:
-	 *      - {Dot} dot, the selected dot
-	 *      - {int} duration, the total beats of all the continuities
-	 */
-	IndividualContinuityWidget.prototype.draw = function(x, y, width, height, options) {
-	    var continuities = this._getContinuityTexts(options["dot"]);
-
-	    var box = {
-	        paddingX: 2,
-	        paddingY: 1,
-	        size: 10
-	    };
-	    var textHeight = PDFUtils.getTextHeight(box.size);
-	    var textY = y + box.paddingY;
-	    var textX = x + box.paddingX;
-	    var maxWidth = 0; // keeps track of longest continuity length
-	    var deltaY = 0; // keeps track of total height of all continuities
-
-	    this.pdf.rect(x, y, width, height);
-	    this.pdf.setFontSize(box.size);
-
-	    for (var i = 0; i < continuities.length; i++) {
-	        var continuity = continuities[i];
-	        var length = PDFUtils.getTextWidth(continuity, box.size);
-	        if (length > maxWidth) {
-	            maxWidth = length;
-	        }
-	        deltaY += textHeight + .7;
-	        if (deltaY > height - textHeight - box.paddingY) {
-	            if (maxWidth < width/2 && textX < width/2) {
-	                textX += width/2;
-	                deltaY = textHeight + .7;
-	            } else {
-	                this.pdf.text("...", textX, textY + deltaY - textHeight/2);
-	                break;
-	            }
-	        }
-
-	        this.pdf.text(
-	            continuity,
-	            textX,
-	            textY + deltaY
-	        );
-	    }
-
-	    var totalLabel = options["duration"] + " beats total";
-	    this.pdf.text(
-	        totalLabel,
-	        x + width/2 - PDFUtils.getTextWidth(totalLabel, box.size)/2 - 3,
-	        y + height - box.paddingY
-	    );
-	    this.pdf.resetFormat();
-	};
-
-	/*
-	 * Returns the selected dot's individual continuity texts
-	 *
-	 * @param {Dot} dot, the selected dot
-	 * @return {Array<String>} an Array of continuity texts for each sheet
-	 */
-	IndividualContinuityWidget.prototype._getContinuityTexts = function(dot) {
-	    var continuities = [];
-	    dot.getMovementCommands().forEach(function(movement) {
-	        var text = movement.getContinuityText();
-	        if (text !== "") {
-	            continuities.push(text);
-	        }
-	    });
-	    return continuities;
-	};
-
-	module.exports = IndividualContinuityWidget;
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the widget for generating a dot's movement diagram
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var PDFUtils = __webpack_require__(5);
-	var PDFWidget = __webpack_require__(19);
-
-	/**
-	 * Represents the widget for a given dot's movement diagram
-	 *
-	 * This widget will include lines that show the movement of the dot, with
-	 * a circle at the start and a cross at the end.
-	 *
-	 * @param {jsPDF} pdf, the jsPDF object to be written to
-	 * @param {String} orientation, the direction on the top of the box
-	 */
-	var MovementDiagramWidget = function(pdf, orientation) {
-	    this.westUp = orientation == "west";
-	    PDFWidget.apply(this, [pdf]);
-	};
-
-	JSUtils.extends(MovementDiagramWidget, PDFWidget);
-
-	/**
-	 * Draws the Movement Diagram Widget with the given options:
-	 *      - {Array<Object>} movements, a list of every movement as an object containing:
-	 *          + startPosition
-	 *          + deltaX
-	 *          + deltaY
-	 *      - {boolean} minimal, true if drawing as little of the widget as possible, false otherwise
-	 */
-	MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
-	    var _this = this;
-	    var movements = options["movements"];
-
-	    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
-	    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
-
-	    var box = {
-	        x: x,
-	        y: y,
-	        width: width - 2 * (textWidth + 2),
-	        height: height - 2 * textHeight
-	    };
-
-	    box.x += width/2 - box.width/2;
-	    box.y += height/2 - box.height/2;
-
-	    if (options["minimal"]) {
-	        box.y -= textHeight;
-	    }
-
-	    this._drawBox(
-	        box.x,
-	        box.y,
-	        box.width,
-	        box.height,
-	        this.westUp,
-	        options["minimal"]
-	    );
-
-	    var start = movements[0].startPosition;
-
-	    // calculates scale of viewport
-	    var viewport = {
-	        startX: start.x,
-	        startY: start.y,
-	        minX: 0, // minX <= 0, maximum movement South
-	        minY: 0, // minY <= 0, maximum movement West
-	        maxX: 0, // maxX >= 0, maximum movement North
-	        maxY: 0, // maxY >= 0, maximum movement East
-	        deltaX: 0, // overall change in NS
-	        deltaY: 0, // overall change in EW
-	        width: 20, // in steps
-	        height: box.height/box.width * 20, // in steps, keeping height/width ratio
-	        update: function(x, y) {
-	            this.deltaX += x;
-	            this.deltaY += y;
-	            if (this.deltaX < this.minX) {
-	                this.minX = this.deltaX;
-	            } else if (this.deltaX > this.maxX) {
-	                this.maxX = this.deltaX;
-	            }
-
-	            if (this.deltaY < this.minY) {
-	                this.minY = this.deltaY;
-	            } else if (this.deltaY > this.maxY) {
-	                this.maxY = this.deltaY;
-	            }
-	        },
-	        getOverallX: function() {
-	            return this.maxX - this.minX;
-	        },
-	        getOverallY: function() {
-	            return this.maxY - this.minY;
-	        },
-	        scale: function() {
-	            var deltaX = this.getOverallX();
-	            var deltaY = this.getOverallY();
-	            if (deltaX > this.width - 4) {
-	                this.width = deltaX + 4;
-	                this.height = box.height/box.width * this.width;
-	            }
-	            if (deltaY > this.height - 4) {
-	                this.height = deltaY + 4;
-	                this.width = box.width/box.height * this.height;
-	            }
-	        }
-	    };
-
-	    movements.forEach(function(move) {
-	        viewport.update(move.deltaX, move.deltaY);
-	    });
-	    viewport.scale();
-
-	    var scale = box.width / viewport.width;
-
-	    // steps from sideline until start of viewport
-	    var south = viewport.startX + viewport.maxX - viewport.getOverallX()/2 - viewport.width/2;
-	    var west = viewport.startY + viewport.maxY - viewport.getOverallY()/2 - viewport.height/2;
-	    var north = south + viewport.width;
-	    var east = west + viewport.height;
-
-	    // renaming variables in terms of box for ease of abstraction
-	    var top, bottom, left, right;
-	    // first yardline in viewport
-	    var yardline;
-	    if (_this.westUp) {
-	        top = west;
-	        bottom = east;
-	        left = south;
-	        right = north;
-	        yardline = Math.ceil(left/8) * 5;
-	    } else {
-	        top = east;
-	        bottom = west;
-	        left = north;
-	        right = south;
-	        yardline = Math.floor(left/8) * 5;
-	    }
-
-	    this._drawYardlines(box, top, right, bottom, left, yardline, scale);
-
-	    var currX = box.x + Math.abs(left - viewport.startX) * scale;
-	    var currY = box.y + Math.abs(top - viewport.startY) * scale;
-	    var spotRadius = box.height / 15;
-	    var orientationFactor = (this.westUp) ? 1 : -1;
-
-	    this.pdf.circle(currX, currY, spotRadius);
-	    this._drawPosition(
-	        box,
-	        viewport.startY,
-	        currY - box.y,
-	        Math.abs(left - viewport.startX) < Math.abs(left - right) / 2
-	    );
-
-	    this.pdf.setLineWidth(0.5);
-	    movements.forEach(function(movement) {
-	        var deltaX = orientationFactor * movement.deltaX * scale;
-	        var deltaY = orientationFactor * movement.deltaY * scale;
-	        _this.pdf.line(currX, currY, currX + deltaX, currY + deltaY);
-	        currX += deltaX;
-	        currY += deltaY;
-	    });
-
-	    this.pdf.setLineWidth(0.1);
-	    this.pdf.line(
-	        currX - spotRadius, currY - spotRadius,
-	        currX + spotRadius, currY + spotRadius
-	    );
-	    this.pdf.line(
-	        currX + spotRadius, currY - spotRadius,
-	        currX - spotRadius, currY + spotRadius
-	    );
-	    if (viewport.deltaY != 0) {
-	        this._drawPosition(
-	            box,
-	            viewport.startY + viewport.deltaY,
-	            currY - box.y,
-	            Math.abs(left - viewport.startX - viewport.deltaX) < Math.abs(left - right) / 2
-	        );
-	    }
-	    this.pdf.resetFormat();
-	};
-
-	/**
-	 * Draws the yardlines for this widget with the given parameters
-	 *
-	 * @param {object} box, holds the various properties of the enclosing box
-	 * @param {float} top, steps from the corresponding sideline to the edge of the view
-	 * @param {float} right, steps from the corresponding sideline to the edge of the view
-	 * @param {float} bottom, steps from the corresponding sideline to the edge of the view
-	 * @param {float} left, steps from the corresponding sideline to the edge of the view
-	 * @param {int} yardline, the first yardline in view, from 0 to 100
-	 * @param {float} scale, the multiplier to convert from steps to pdf units
-	 */
-	MovementDiagramWidget.prototype._drawYardlines = function(box, top, right, bottom, left, yardline, scale) {
-	    var x = box.x;
-	    var y = box.y;
-	    var width = box.width;
-	    var height = box.height;
-
-	    var yardlineSize = height * 12/47.1; // at the usual height, yardline text should be 12
-	    this.pdf.setFontSize(yardlineSize);
-
-	    var westHash, eastHash, westHashY, eastHashY;
-	    if (this.westUp) {
-	        westHash = top < 32 && bottom > 32;
-	        eastHash = top < 52 && bottom > 52;
-	        westHashY = y + (32 - top) * scale;
-	        eastHashY = y + (52 - top) * scale;
-	    } else {
-	        eastHash = top > 52 && bottom < 52;
-	        westHash = top > 32 && bottom < 32;
-	        eastHashY = y + (top - 52) * scale;
-	        westHashY = y + (top - 32) * scale;
-	    }
-
-	    // position of first yardline from edge of viewport
-	    var deltaX = Math.abs(yardline * 8/5 - left) * scale;
-	    var hashLength = 3;
-	    var isSplitting = false;
-
-	    // 4-step line before first line
-	    if (deltaX > scale * 4) {
-	        deltaX -= scale * 4;
-	        isSplitting = true;
-	    }
-
-	    // draw yardlines
-	    this.pdf.setTextColor(150);
-	    for (; deltaX < width; deltaX += scale * 4, isSplitting = !isSplitting) {
-	        var yardlineX = x + deltaX;
-
-	        // drawing the yardline
-	        if (isSplitting) {
-	            this.pdf.setDrawColor(200);
-	            this.pdf.vLine(yardlineX, y, height);
-	            continue;
-	        }
-	        this.pdf.setDrawColor(0);
-	        this.pdf.vLine(yardlineX, y, height);
-
-	        // drawing hashes
-	        if (westHash) {
-	            this.pdf.hLine(
-	                yardlineX - hashLength/2,
-	                westHashY,
-	                hashLength
-	            );
-	        }
-	        if (eastHash) {
-	            this.pdf.hLine(
-	                yardlineX - hashLength/2,
-	                eastHashY,
-	                hashLength
-	            );
-	        }
-
-	        // writing yardline numbers
-	        var yardlineText = "";
-	        if (yardline < 50) {
-	            yardlineText = String(yardline);
-	        } else {
-	            yardlineText = String(100 - yardline);
-	        }
-	        if (yardlineText.length === 1) {
-	            yardlineText = "0" + yardlineText;
-	        }
-	        var halfTextWidth = PDFUtils.getTextWidth(yardlineText, yardlineSize)/2;
-	        if (deltaX > halfTextWidth) { // include first character if room
-	            this.pdf.text(
-	                yardlineText[0],
-	                yardlineX - halfTextWidth - .5,
-	                y + height - 2
-	            );
-	        }
-	        if (deltaX < width - halfTextWidth) { // include second character if room
-	            this.pdf.text(
-	                yardlineText[1],
-	                yardlineX + .5,
-	                y + height - 2
-	            );
-	        }
-
-	        // go to next yardline
-	        yardline += this.westUp ? 5 : -5;
-	        if (yardline < 0 || yardline > 100) {
-	            break;
-	        }
-	    }
-	    this.pdf.resetFormat();
-	};
-
-	/**
-	 * Draws the lines for the y-coordinate of the given position
-	 *
-	 * @param {object} box, holds the various properties of the enclosing box
-	 * @param {int} y, the y-coordinate of the dot's position in steps from west sideline
-	 * @param {float} offset, distance from top of box to dot position
-	 * @param {boolean} closeToLeft, true if dot is close to the left side of the box, false otherwise
-	 */
-	MovementDiagramWidget.prototype._drawPosition = function(box, y, offset, closeToLeft) {
-	    var lineY = box.y + offset;
-	    var text = PDFUtils.getYCoordinateText(y);
-	    this.pdf.hLine(box.x, lineY, box.width);
-	    this.pdf.setFontSize(8);
-	    if (closeToLeft) {
-	        this.pdf.text(
-	            text,
-	            box.x + box.width - PDFUtils.getTextWidth(text, 8) - .5,
-	            lineY - .5
-	        );
-	    } else {
-	        this.pdf.text(
-	            text,
-	            box.x + .5,
-	            lineY - .5
-	        );
-	    }
-	    this.pdf.resetFormat();
-	};
-
-	module.exports = MovementDiagramWidget;
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the widget for generating the bird's eye view widget
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var PDFUtils = __webpack_require__(5);
-	var PDFWidget = __webpack_require__(19);
-
-	/**
-	 * Represents the widget for the bird's eye view
-	 *
-	 * This widget will include the overall formation with grayed out dots, with
-	 * the selected dot being darkened, and coordinates for the selected dot. (See
-	 * the PDFUtils file for the format of the coordinates)
-	 *
-	 * @param {jsPDF} pdf, the jsPDF object to be written to
-	 * @param {String} orientation, the direction on the top of the box
-	 */
-	var BirdsEyeWidget = function(pdf, orientation) {
-	    this.westUp = (orientation === "west") ? true : false;
-	    PDFWidget.apply(this, [pdf]);
-	};
-
-	JSUtils.extends(BirdsEyeWidget, PDFWidget);
-
-	/**
-	 * Draws the Bird's Eye Widget with the given options:
-	 *      - {Sheet} sheet, the current sheet
-	 *      - {Dot} dot, the selected dot
-	 *      - {boolean} minimal, true if drawing as little of the widget as possible, false otherwise
-	 */
-	BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
-	    var _this = this;
-
-	    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
-	    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
-	    var boxWidth = width - 2 * (textWidth + 1.5);
-
-	    var box = {
-	        x: x,
-	        y: y,
-	        width: boxWidth,
-	        height: boxWidth * 84/160 // maintain aspect ratio of field
-	    };
-
-	    // center box
-	    box.x += width/2 - box.width/2;
-	    box.y += height/2 - box.height/2;
-
-	    this._drawBox(box.x, box.y, box.width, box.height, this.westUp, options["minimal"]);
-
-	    var dots = options["sheet"].getDots();
-	    var selectedDot = options["dot"];
-	    var scale = box.width / 160; // units per step
-
-	    // drawing hashes
-	    this.pdf.setLineWidth(.2);
-	    var numDashes = 21;
-	    var dashLength = box.width / numDashes;
-	    var topHash = box.y + 32 * scale;
-	    var bottomHash = box.y + 52 * scale;
-	    this.pdf.setDrawColor(150);
-	    for (var i = 0; i < numDashes; i += 2) {
-	        var x = box.x + i * dashLength;
-	        this.pdf.hLine(x, topHash, dashLength);
-	        this.pdf.hLine(x, bottomHash, dashLength);
-	    }
-
-	    // drawing all the dots
-	    this.pdf.setFillColor(210);
-	    dots.forEach(function(dot) {
-	        if (dot === selectedDot) {
-	            return;
-	        }
-	        var position = dot.getAnimationState(0);
-	        if (!_this.westUp) {
-	            position.x = 160 - position.x;
-	            position.y = 84 - position.y;
-	        }
-	        _this.pdf.circle(
-	            box.x + position.x * scale,
-	            box.y + position.y * scale,
-	            .5,
-	            "F"
-	        );
-	    });
-
-	    // drawing selected dot
-	    var position = selectedDot.getAnimationState(0);
-	    var coordinates = {
-	        textSize: 8,
-	        textX: PDFUtils.getXCoordinateText(position.x),
-	        textY: PDFUtils.getYCoordinateText(position.y)
-	    };
-
-	    if (!this.westUp) {
-	        position.x = 160 - position.x;
-	        position.y = 84 - position.y;
-	    }
-	    var x = position.x * scale;
-	    var y = position.y * scale;
-
-	    coordinates.x = box.x + x - PDFUtils.getTextWidth(coordinates.textX, coordinates.textSize)/2;
-	    coordinates.y = box.y + y + PDFUtils.getTextHeight(coordinates.textSize)/4;
-
-	    this.pdf.setFillColor(0);
-	    this.pdf.setDrawColor(180);
-	    this.pdf.setFontSize(coordinates.textSize);
-
-	    this.pdf.vLine(box.x + x, box.y, box.height);
-	    this.pdf.hLine(box.x, box.y + y, box.width);
-
-	    // Put vertical coordinate text on opposite side of the field
-	    if (position.x > 80) {
-	        this.pdf.text(
-	            coordinates.textY,
-	            box.x + 1,
-	            coordinates.y
-	        );
-	    } else {
-	        this.pdf.text(
-	            coordinates.textY,
-	            box.x + box.width - PDFUtils.getTextWidth(coordinates.textY, coordinates.textSize) - 1,
-	            coordinates.y
-	        );
-	    }
-
-	    // Put horizontal coordinate text on opposite side of the field
-	    if (position.y > 42) {
-	        this.pdf.text(
-	            coordinates.textX,
-	            coordinates.x,
-	            box.y + PDFUtils.getTextHeight(coordinates.textSize)
-	        );
-	    } else {
-	        this.pdf.text(
-	            coordinates.textX,
-	            coordinates.x,
-	            box.y + box.height - 1
-	        );
-	    }
-	    this.pdf.circle(box.x + x, box.y + y, .5, "F");
-	    this.pdf.resetFormat();
-	};
-
-	module.exports = BirdsEyeWidget;
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the widget for generating the surrounding dots widget
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var PDFUtils = __webpack_require__(5);
-	var PDFWidget = __webpack_require__(19);
-
-	/**
-	 * Represents the widget for the surrounding dots
-	 *
-	 * This widget will include a close up of the surrounding area of a 4-step radius,
-	 * with dots and dot labels marking any dots nearby the selected dot, which is
-	 * in the middle of the widget.
-	 *
-	 * @param {jsPDF} pdf, the jsPDF object to be written to
-	 * @param {String} orientation, the direction on the top of the box
-	 */
-	var SurroundingDotsWidget = function(pdf, orientation) {
-	    this.westUp = (orientation === "west") ? true : false;
-	    PDFWidget.apply(this, [pdf]);
-	};
-
-	JSUtils.extends(SurroundingDotsWidget, PDFWidget);
-
-	/**
-	 * Draws the Surrounding Dots Widget with the given options:
-	 *      - {Sheet} sheet, the current sheet
-	 *      - {Dot} dot, the selected dot
-	 *      - {boolean} minimal, true if drawing as little of the widget as possible, false otherwise
-	 */
-	SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
-	    var _this = this;
-
-	    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
-	    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
-	    var boxSize = height - 2 * (textHeight + 2);
-
-	    var box = {
-	        x: x,
-	        y: y,
-	        width: boxSize,
-	        height: boxSize
-	    };
-
-	    // center box
-	    box.x += width/2 - box.width/2;
-	    box.y += height/2 - box.height/2;
-
-	    if (options["minimal"]) {
-	        box.y -= textHeight;
-	    }
-
-	    this._drawBox(box.x, box.y, box.width, box.height, this.westUp, options["minimal"]);
-
-	    var origin = {
-	        x: box.x + box.width/2,
-	        y: box.y + box.height/2
-	    };
-	    var sheet = options["sheet"];
-	    var start = options["dot"].getAnimationState(0);
-	    var orientationFactor = this.westUp ? 1 : -1;
-	    var scale = box.height / 11.5; // radius of 4 steps + 1.75 steps of padding
-
-	    // yardlines
-	    this.pdf.setDrawColor(150);
-	    this.pdf.setLineWidth(.1);
-	    // # of steps north of the yardline the dot is at
-	    var yardlineDelta = start.x % 8;
-	    if (yardlineDelta > 4) {
-	        yardlineDelta = 4 - yardlineDelta;
-	    }
-	    var yardlineX = origin.x - yardlineDelta * scale * orientationFactor;
-	    this.pdf.vLine(yardlineX, box.y, box.height);
-	    // the only time 2 yardlines will be drawn is if the dot is splitting
-	    if (Math.abs(yardlineDelta) === 4) {
-	        yardlineX = origin.x + yardlineDelta * scale * orientationFactor;
-	        this.pdf.vLine(yardlineX, box.y, box.height);
-	    }
-
-	    var allDots = sheet.getDots();
-	    var surroundingDots = [];
-	    allDots.forEach(function(dot) {
-	        var position = dot.getAnimationState(0);
-	        var deltaX = orientationFactor * (position.x - start.x);
-	        var deltaY = orientationFactor * (position.y - start.y);
-	        if (Math.abs(deltaX) <= 4 && Math.abs(deltaY) <= 4) {
-	            var label = dot.getLabel();
-	            surroundingDots.push({
-	                deltaX: deltaX,
-	                deltaY: deltaY,
-	                label: label,
-	                type: sheet.getDotType(label)
-	            });
-	        }
-	    });
-
-	    var labelSize = box.height * 7/29;
-	    var dotRadius = box.height * .04;
-	    this.pdf.setFontSize(labelSize);
-	    for (var i = 0; i < surroundingDots.length; i++) {
-	        var dot = surroundingDots[i];
-	        var x = dot.deltaX * scale + origin.x;
-	        var y = dot.deltaY * scale + origin.y;
-	        this.pdf.drawDot(dot.type, x, y, dotRadius);
-	        this.pdf.text(dot.label, x - dotRadius * 2, y - dotRadius * 1.5);
-	    }
-	    this.pdf.resetFormat();
-	};
-
-	module.exports = SurroundingDotsWidget;
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Version class.
-	 */
-
-	/**
-	 * Version objects represent a version of a file
-	 * or application in the following format:
-	 * [major].[minor].[revision].
-	 *
-	 * @param {int} major The major version.
-	 * @param {int} minor The minor version.
-	 * @param {int} revision The revision number.
-	 */
-	var Version = function(major, minor, revision) {
-	    this._major = major;
-	    this._minor = minor;
-	    this._revision = revision;
-	};
-
-	/**
-	 * Builds a string representation of the Version.
-	 * String representations take the format:
-	 * [major].[minor].[revision].
-	 *
-	 * @return {string} A string representation of this
-	 *   version.
-	 */
-	Version.prototype.stringify = function() {
-	    return this._major + "." + this._minor + "." + this._revision;
-	};
-
-	/**
-	 * Compares this Version to another, and indicates which
-	 * version is an earlier one.
-	 *
-	 * @param {Version} otherVersion The version to compare
-	 *   this one against.
-	 * @return {int} A negative value if this version is
-	 *   an earlier one than the other; a positive value
-	 *   if this version is later than the other one;
-	 *   zero if the versions are identical.
-	 */
-	Version.prototype.compareTo = function(otherVersion) {
-	    var delta = this._major - otherVersion._major;
-	    if (delta != 0) {
-	        return delta;
-	    }
-	    delta = this._minor - otherVersion._minor;
-	    if (delta != 0) {
-	        return delta;
-	    }
-	    delta = this._revision - otherVersion._revision;
-	    return delta;
-	};
-
-	/**
-	 * Builds a Version object from a string.
-	 * These strings should be in the format:
-	 * [major].[minor].[revision].
-	 *
-	 * @param {string} stringVersion A string representation
-	 *   of a Version.
-	 * @return {Version} A Version which matches the
-	 *   provided string.
-	 */
-	Version.parse = function(stringVersion) {
-	    var versionPieces = stringVersion.split(".");
-	    return new Version(parseInt(versionPieces[0]), parseInt(versionPieces[1]), parseInt(versionPieces[2]));
-	};
-
-	module.exports = Version;
-
-/***/ },
-/* 13 */,
-/* 14 */,
-/* 15 */,
-/* 16 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -1924,19 +274,19 @@
 	 *   
 	 */
 
-	var FileLoadSelector = __webpack_require__(21);
-	var InvalidFileTypeError = __webpack_require__(22);
-	var JSUtils = __webpack_require__(3);
-	var Version = __webpack_require__(12);
-	var Dot = __webpack_require__(23);
-	var Sheet = __webpack_require__(24);
-	var Show = __webpack_require__(25);
-	var MovementCommandStand = __webpack_require__(26);
-	var MovementCommandMarkTime = __webpack_require__(27);
-	var MovementCommandArc = __webpack_require__(28);
-	var MovementCommandMove = __webpack_require__(29);
-	var MovementCommandGoto = __webpack_require__(30);
-	var MovementCommandEven = __webpack_require__(31);
+	var FileLoadSelector = __webpack_require__(5);
+	var InvalidFileTypeError = __webpack_require__(8);
+	var JSUtils = __webpack_require__(9);
+	var Version = __webpack_require__(7);
+	var Dot = __webpack_require__(10);
+	var Sheet = __webpack_require__(11);
+	var Show = __webpack_require__(12);
+	var MovementCommandStand = __webpack_require__(13);
+	var MovementCommandMarkTime = __webpack_require__(17);
+	var MovementCommandArc = __webpack_require__(18);
+	var MovementCommandMove = __webpack_require__(20);
+	var MovementCommandGoto = __webpack_require__(21);
+	var MovementCommandEven = __webpack_require__(22);
 	 
 	/**
 	 * Every version of the Viewer File needs to be loaded in a different way -
@@ -2225,112 +575,7 @@
 	module.exports = ViewerFileLoadSelector;
 
 /***/ },
-/* 17 */,
-/* 18 */,
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines a base class for the PDFGenerator Widget classes
-	 */
-
-	 var PDFUtils = __webpack_require__(5);
-
-	/**
-	 * PDFWidget class
-	 *
-	 * Represents one of the widgets available on the PDFGenerator. Each widget draws
-	 * a different component of the PDF, which shows detailed information about a
-	 * given marcher on a given stuntsheet. This is an abstract class; do not make
-	 * an instance of this class directly.
-	 *
-	 * @param {jsPDF} pdf, the jsPDF object to be written to
-	 */
-	var PDFWidget = function(pdf) {
-	    this.pdf = pdf;
-	};
-
-	/**
-	 * Draws this widget onto the pdf, with whatever options passed into it as key-value
-	 * pairs. For example, the options passed into the individual continuity widget might be:
-	 *     {
-	 *          continuities: [<String>, <String>],
-	 *          duration: 32,
-	 *          ...
-	 *     }
-	 *
-	 * @param {float} x, the x-coordinate of the position of this widget
-	 * @param {float} y, the y-coordinate of the position of this widget
-	 * @param {float} width, the width of this widget
-	 * @param {float} height, the height of this widget
-	 * @param {Object} options, the options necessary to draw a given widget as key-value pairs
-	 */
-	PDFWidget.prototype.draw = function(x, y, width, height, options) {
-	    console.log("draw called");
-	};
-
-	/**
-	 * A helper method for widgets that utilize a box that draws field-related
-	 * information such as movements, formations, or nearby dots. Draws the confining
-	 * box and the EWNS directions.
-	 *
-	 * @param {float} x, the x-coordinate of the top-left corner of the box
-	 * @param {float} y, the y-coordinate of the top-left corner of the box
-	 * @param {float} width, the width of the box
-	 * @param {float} height, the height of the box
-	 * @param {boolean} westUp, true if West on top of the box, false otherwise
-	 * @param {boolean} minimal, true to draw as little of the box as possible, false otherwise
-	 */
-	PDFWidget.prototype._drawBox = function(x, y, width, height, westUp, minimal) {
-	    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
-	    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
-
-	    // labels for sides of box
-	    var top, bottom, left, right;
-	    if (westUp) {
-	        top = "W";
-	        bottom = "E";
-	        left = "S";
-	        right = "N";
-	    } else {
-	        top = "E";
-	        bottom = "W";
-	        left = "N";
-	        right = "S";
-	    }
-
-	    this.pdf.setFontSize(PDFUtils.DEFAULT_FONT_SIZE);
-	    if (!minimal) {
-	        this.pdf.text(
-	            top,
-	            x + width/2 - textWidth/2 - .5,
-	            y - 2
-	        );
-	        this.pdf.text(
-	            bottom,
-	            x + width/2 - textWidth/2 - .5,
-	            y + height + textHeight
-	        );
-	    }
-	    this.pdf.text(
-	        left,
-	        x - textWidth - 1,
-	        y + height/2 + textHeight/2
-	    );
-	    this.pdf.text(
-	        right,
-	        x + width + 1,
-	        y + height/2 + textHeight/2
-	    );
-	    this.pdf.rect(x, y, width, height);
-	    this.pdf.resetFormat();
-	};
-
-	module.exports = PDFWidget;
-
-/***/ },
-/* 20 */,
-/* 21 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -2370,8 +615,8 @@
 	 *         calling loadSelector.registerLoader(...)
 	 */
 
-	var ArrayUtils = __webpack_require__(34);
-	var Version = __webpack_require__(12);
+	var ArrayUtils = __webpack_require__(6);
+	var Version = __webpack_require__(7);
 	 
 	/**
 	 * Every version of a file needs to be loaded in a different way -
@@ -2449,739 +694,8 @@
 	module.exports = FileLoadSelector;
 
 /***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * An Exception thrown by the FileLoadSelectors if the loaded file is of the wrong
-	 * file type.
-	 *
-	 * @param {String} message The message to accompany the error.
-	 */
-	var InvalidFileTypeError = function(message) {
-	    this.message = message;
-	    this.name = "InvalidFileTypeError";
-	};
-
-	module.exports = InvalidFileTypeError;
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Dot class.
-	 */
-
-	/**
-	 * Dot objects represent marchers. They execute a sequence
-	 * of MovementCommands, which define their position and orientation
-	 * on any given beat. Every Stuntsheet has its own set of Dot objects,
-	 * so a marcher will be represented by more than one of them throughout
-	 * a show. Specifically, every marcher is associated with AT MOST one
-	 * Dot object per Stuntsheet (some Stuntsheets may not include certain
-	 * marchers).
-	 *
-	 * @param {string} label The dot's label. This is also the label of
-	 *   the marcher associated with this dot.
-	 * @param {Array<MovementCommand>} movementCommands All of the MovementCommand
-	 *   objects that this Dot will execute. The commands must be sorted in the
-	 *   order in which they will be executed.
-	 */
-	var Dot = function(label, movementCommands) {
-	    this._label = label;
-	    this._movements = movementCommands;
-	};
-
-	/**
-	 * Returns the label for this dot.
-	 *
-	 * @return {string} The dot's label.
-	 */
-	Dot.prototype.getLabel = function() {
-	    return this._label;
-	};
-
-	/**
-	 * Returns this dot's movement commands.
-	 *
-	 * @return {Array<MovementCommand>} The dot's movements.
-	 */
-	Dot.prototype.getMovementCommands = function() {
-	    return this._movements;
-	};
-
-	/**
-	 * Returns an AnimationState object that describes the Dot's
-	 * position, orientation, etc. at a specific moment in the show.
-	 *
-	 * @param {int} beatNum The Dot's AnimationState will be
-	 *   relevant to the beat indicated by this value. The beat
-	 *   is relative to the start of the stuntsheet.
-	 * @return {AnimationState} An AnimationState that
-	 *   describes the Dot at a moment of the show,. If the Dot
-	 *   has no movement at the specified beat, returns undefined.
-	 */
-	Dot.prototype.getAnimationState = function(beatNum) {
-	    for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
-	        if (beatNum < this._movements[commandIndex].getBeatDuration()) {
-	            return this._movements[commandIndex].getAnimationState(beatNum);
-	        }
-	        beatNum -= this._movements[commandIndex].getBeatDuration();
-	    }
-	};
-
-	module.exports = Dot;
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Sheet class.
-	 */
-
-	/**
-	 * Sheets represent stuntsheets in a show. Each has a collection of
-	 * all of the Dots involved in its formations, and those Dots,
-	 * in turn, know their positions and orientations for all beats during
-	 * the Sheet's duration.
-	 *
-	 * @param {string} label The label/name for the sheet.
-	 * @param {string} fieldType A string that indicates the type of field that this sheet
-	 *   is performed on.
-	 * @param {Array<string>} dotTypes An array of all dot types used in this sheet.
-	 * @param {object} dotTypeAssignments An object that maps each dot label to the dot type
-	 *   associated with that dot.
-	 * @param {object} continuityTexts An object that maps each dot type to an array
-	 *   containing all of the continuity instructions associated with that dot type.
-	 * @param {int} duration The duration of the sheet, in beats.
-	 * @param {Array<Dot>} dots An array of all dots involved in this sheet's
-	 *   movements. Note that all of these dots already have their
-	 *   MovementCommands before the Sheet is constructed.
-	 * @param {Array<string>} dotLabels an array, in sync with dots, which specifies the
-	 *   dot labels of the dots
-	 */
-	var Sheet = function(sheetLabel, fieldType, dotTypes, dotTypeAssignments, continuityTexts, duration, dots, dotLabels) {
-	    this._sheetLabel = sheetLabel;
-	    this._fieldType = fieldType;
-	    this._dotTypes = dotTypes;
-	    this._dotTypeAssignments = dotTypeAssignments;
-	    this._continuityTexts = continuityTexts;
-	    this._duration = duration;
-	    this._dots = dots;
-	    this._dotLabels = dotLabels;
-	};
-
-	/**
-	 * Returns the sheet's label.
-	 *
-	 * @return {string} The sheet's label.
-	 */
-	Sheet.prototype.getSheetLabel = function() {
-	    return this._sheetLabel;
-	};
-
-	/**
-	 * Returns the type of field that this sheet is performed on.
-	 *
-	 * @return {string} A string that indicates what kind of field
-	 *   the sheet is performed on.
-	 */
-	Sheet.prototype.getFieldType = function() {
-	    return this._fieldType;
-	};
-
-	/**
-	 * Returns an array of all dot types involved with this
-	 * sheet.
-	 *
-	 * @return {Array<string>} An array of all dot types involved in
-	 *   this sheet. Dot types are given as strings.
-	 */
-	Sheet.prototype.getAllDotTypes = function() {
-	    return this._dotTypes;
-	};
-
-	/**
-	 * Returns the dot type associated with a particular
-	 * dot.
-	 *
-	 * @param {string} dotLabel The label of the dot whose
-	 *   dot type will be returned.
-	 * @return {string} The dot label of the specified dot.
-	 */
-	Sheet.prototype.getDotType = function(dotLabel) {
-	    return this._dotTypeAssignments[dotLabel];
-	};
-
-	/**
-	 * Returns an array containing the continuities associated
-	 * with a particular dot type. Each continuity is a human-readable
-	 * instruction as would appear on a printed version of a stuntsheet.
-	 *
-	 * @param {string} dotType The dot type to retrieve continuities for.
-	 * @return {Array<string>} An array containing all continuities associated
-	 *   with the specified dot type. Each continuity is a human-readable
-	 *   text instruction.
-	 */
-	Sheet.prototype.getContinuityTexts = function(dotType) {
-	    return this._continuityTexts[dotType];
-	};
-
-	/**
-	 * Returns an array of all dots involved in this sheet's movements.
-	 *
-	 * @return {Array<Dot>} An array of all dots involved in this sheet's
-	 *   movements.
-	 */
-	Sheet.prototype.getDots = function() {
-	    return this._dots;
-	};
-
-	/**
-	 * Get a dot in this sheet by its dot label.
-	 * @param  {string} dotLabel the dots label, e.g. "A1" or "15"
-	 * @return {Dot|null} the dot, or null if a dot with the given label does not
-	 *   exist in the sheet
-	 */
-	Sheet.prototype.getDotByLabel = function (dotLabel) {
-	    var index = this._dotLabels.indexOf(dotLabel);
-	    if (index === -1) {
-	        return null;
-	    }
-	    return this._dots[index];
-	};
-
-	/**
-	 * Returns the duration of this sheet, in beats.
-	 *
-	 * @return {int} The duration of this sheet, in beats.
-	 */
-	Sheet.prototype.getDuration = function() {
-	    return this._duration;
-	};
-
-	module.exports = Sheet;
-
-/***/ },
-/* 25 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the Show class.
-	 */
-	 
-	/**
-	 * Represents an entire fieldshow.
-	 *
-	 * @param {string} title The title of the show.
-	 * @param {string} year The year that the show was performed.
-	 * @param {string} description The show description.
-	 * @param {Array<string>} dotLabels An array containing the
-	 *   labels of each dot in the show.
-	 * @param {Array<Sheet>=} sheets The sheets in the show. This
-	 *   parameter is optional - sheets can be appended after
-	 *   the show is constructed by using the appendSheet(...)
-	 *   method.
-	 */
-	var Show = function(title, year, description, dotLabels, sheets) {
-	    this._title = title;
-	    this._year = year;
-	    this._description = description;
-	    this._dotLabels = dotLabels;
-	    if (sheets === undefined) {
-	        this._sheets = [];
-	    } else {
-	        this._sheets = sheets;
-	    }
-	};
-
-	/**
-	 * Returns the title of the show.
-	 *
-	 * @return {string} The title of the show.
-	 */
-	Show.prototype.getTitle = function() {
-	    return this._title;
-	};
-
-	/**
-	 * Returns the year during which the show was performed.
-	 *
-	 * @return {string} The year during which the show was
-	 *   performed.
-	 */
-	Show.prototype.getYear = function() {
-	    return this._year;
-	};
-
-	/**
-	 * Returns the show description.
-	 *
-	 * @return {string} The show description.
-	 */
-	Show.prototype.getDescription = function() {
-	    return this._description;
-	};
-
-	/**
-	 * Returns an array containing the labels for
-	 * all dots in the show.
-	 *
-	 * @return {Array<string>} An array of all dot labels.
-	 */
-	Show.prototype.getDotLabels = function() {
-	    return this._dotLabels;
-	};
-
-	/**
-	 * Returns an array of all sheets in the show.
-	 *
-	 * @return {Array<Sheet>} An array of all sheets in the show.
-	 */
-	Show.prototype.getSheets = function() {
-	    return this._sheets;
-	};
-
-	/**
-	 * Returns a particular sheet from the show.
-	 *
-	 * @param {int} index The index of the sheet to retrieve.
-	 *   This can be any integer in the range [0, num_sheets).
-	 *   Notice that the upper bound of the range is exclusive.
-	 *   To find the Nth sheet in a show, you need to request
-	 *   the sheet with an index of N-1 (e.g. to retrive the 5th
-	 *   sheet, you would call getSheet(4)).
-	 * @return {Sheet} The stuntsheet with the specified index.
-	 */
-	Show.prototype.getSheet = function(index) {
-	    return this._sheets[index];
-	};
-
-	/**
-	 * Returns the number of sheets in the show.
-	 *
-	 * @return {int} The number of sheets in the show.
-	 */
-	Show.prototype.getNumSheets = function() {
-	    return this._sheets.length;
-	};
-
-	/**
-	 * Adds a sheet to the back of the show.
-	 *
-	 * @param {Sheet} sheet The sheet to add to the
-	 *   show.
-	 */
-	Show.prototype.appendSheet = function(sheet) {
-	    this._sheets.push(sheet);
-	};
-
-	module.exports = Show;
-
-/***/ },
-/* 26 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandStand class.
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var MovementCommand = __webpack_require__(35);
-	var AnimationState = __webpack_require__(36);
-	 
-	/**
-	 * A MovementCommand representing a period of standing.
-	 * @param {float} x The x coordinate to stand at.
-	 * @param {float} y The y coordinate to stand at.
-	 * @param {float} orientation The angle at which the marcher will
-	 *   face while standing. This is measured in degrees relative
-	 *   to Grapher standard position (@see MathUtils.js for a definition
-	 *   of "grapher standard position).
-	 * @param {int} beats The duration of the movement, in beats.
-	 */
-	var MovementCommandStand = function(x, y, orientation, beats) {
-	    this._orientation = orientation;
-	    MovementCommand.apply(this, [x, y, x, y, beats]);
-	};
-
-	JSUtils.extends(MovementCommandStand, MovementCommand);
-
-	MovementCommandStand.prototype.getAnimationState = function(beatNum) {
-	    return new AnimationState(this._startX, this._startY, this._orientation);
-	};
-
-	/**
-	 * Returns the continuity text for this movement
-	 * @return {String} the continuity text in the form of "Close 16E"
-	 */
-	MovementCommandStand.prototype.getContinuityText = function() {
-	    return "Close " + this._numBeats + this.getOrientation();
-	};
-
-	module.exports = MovementCommandStand;
-
-/***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandMarkTime class.
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var MovementCommand = __webpack_require__(35);
-	var AnimationState = __webpack_require__(36);
-
-	/**
-	 * A MovementCommand that represents a period of mark time.
-	 *
-	 * @param {float} x The x position where the mark time takes place.
-	 * @param {float} y The y position where the mark time takes place.
-	 * @param {float} orientation The direction toward which the marcher
-	 *   faces while marking time. This is measured in degrees,
-	 *   relative to Grapher standard position (@see MathUtils.js
-	 *   for a definition of "Grapher standard position").
-	 * @param {int} beats The duration of the movement, in beats.
-	 */
-	var MovementCommandMarkTime = function(x, y, orientation, beats) {
-	    this._orientation = orientation;
-	    MovementCommand.apply(this, [x, y, x, y, beats]);
-	};
-
-	JSUtils.extends(MovementCommandMarkTime, MovementCommand);
-
-	MovementCommandMarkTime.prototype.getAnimationState = function(beatNum) {
-	    return new AnimationState(this._startX, this._startY, this._orientation);
-	};
-
-	/**
-	 * Returns the continuity text for this movement
-	 * @return {String} the continuity text in the form "MT 16 E"
-	 */
-	MovementCommandMarkTime.prototype.getContinuityText = function() {
-	    return (this._numBeats == 0) ? "" : "MT " + this._numBeats + " " + this.getOrientation();
-	};
-
-	module.exports = MovementCommandMarkTime;
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandArc class.
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var MathUtils = __webpack_require__(37);
-	var MovementCommand = __webpack_require__(35);
-	var AnimationState = __webpack_require__(36);
-	 
-	/**
-	 * A MovementCommandArc object represents a movement along the
-	 * perimeter of a circular arc.
-	 *
-	 * @param {float} startX The x coordinate of the movement's start position.
-	 * @param {float} startY The y coordinate of the movement's start position.
-	 * @param {float} centerX The x coordinate of the arc center.
-	 * @param {float} centerY The y coordinate of the arc center.
-	 * @param {float angleTorotate The amount to rotate about the center, in
-	 *   degrees. Positive values indicate a rotation in the clockwise
-	 *   direction, negative values indicate a rotation in the
-	 *   counterclockwise direction.
-	 * @param {float} facingOffset The difference between the direction
-	 *   in which a marcher is travelling and the direction in
-	 *   which a marcher is facing. This angle is measured in degrees,
-	 *   where positive angles indicate a clockwise offset, and
-	 *   negative angles indicate a counterclockwise one.
-	 * @param {int} beats The duration of the movement, in beats.
-	 * @param {int} beatsPerStep The duration of each step, in beats.
-	 */
-	var MovementCommandArc = function(startX, startY, centerX, centerY, angleToRotate, facingOffset, beats, beatsPerStep) {
-	    this._beatsPerStep = beatsPerStep;
-	    this._centerX = centerX;
-	    this._centerY = centerY;
-	    this._radius = MathUtils.calcDistance(startX, startY, this._centerX, this._centerY);
-	    this._startAngle = MathUtils.calcAngleAbout(startX, startY, centerX, centerY);
-	    if (isNaN(this._startAngle)) {
-	        this._startAngle = 0;
-	    }
-	    this._stepAngleDelta = MathUtils.toRadians(angleToRotate) / Math.floor(beats / this._beatsPerStep);
-	    this._movementIsCW = this._stepAngleDelta >= 0;
-	    this._orientationOffset = MathUtils.toRadians(facingOffset);
-	    var finalAnimState = this.getAnimationState(beats);
-	    MovementCommand.apply(this, [startX, startY, finalAnimState.x, finalAnimState.y, beats]);
-	};
-
-	JSUtils.extends(MovementCommandArc, MovementCommand);
-
-	MovementCommandArc.prototype.getAnimationState = function(beatNum) {
-	    var numSteps = Math.floor(beatNum / this._beatsPerStep);
-	    var finalAngle = this._startAngle + (this._stepAngleDelta * numSteps);
-	    var finalX = this._radius * MathUtils.calcRotatedXPos(finalAngle) + this._centerX;
-	    var finalY = this._radius * MathUtils.calcRotatedYPos(finalAngle) + this._centerY;
-	    var finalOrientation = MathUtils.quarterTurn(finalAngle, this._movementIsCW) + this._orientationOffset;
-	    return new AnimationState(finalX, finalY, MathUtils.toDegrees(finalOrientation));
-	};
-
-	/**
-	 * Returns a list of (deltaX, deltaY) pairs that lie along the arc
-	 *
-	 * @return {Array<Array<int>>} an array of (deltaX, deltaY) pairs
-	 */
-	MovementCommandArc.prototype.getMiddlePoints = function() {
-	    var totalAngle = this._startAngle;
-	    var prevX = this._startX;
-	    var prevY = this._startY;
-	    var points = [];
-	    for (var i = 0; i < this._numBeats / this._beatsPerStep; i++) {
-	        totalAngle += this._stepAngleDelta;
-	        var x = this._radius * MathUtils.calcRotatedXPos(totalAngle) + this._centerX;
-	        var y = this._radius * MathUtils.calcRotatedYPos(totalAngle) + this._centerY;
-	        points.push([x - prevX, y - prevY]);
-	        prevX = x;
-	        prevY = y;
-	    }
-	    return points;
-	};
-
-	/**
-	 * Returns the continuity text for this movement
-	 * @return {String} the continuity text in the form of "GT CW 90 deg. (16 steps)"
-	 */
-	MovementCommandArc.prototype.getContinuityText = function() {
-	    var steps = this._numBeats / this._beatsPerStep;
-	    var orientation = (this._movementIsCW) ? "CW" : "CCW";
-	    var angle = Math.abs(Math.floor(MathUtils.toDegrees(this._numBeats * this._stepAngleDelta)));
-	    return "GT " + orientation + " " + angle + " deg. (" + steps + " steps)";
-	};
-
-	module.exports = MovementCommandArc;
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandMove class.
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var MathUtils = __webpack_require__(37);
-	var MovementCommand = __webpack_require__(35);
-	var AnimationState = __webpack_require__(36);
-	 
-	/**
-	 * A MovementCommand which represents a constant movement in a
-	 * particular direction.
-	 *
-	 * @param {float} startX The x component of the movement's start position.
-	 * @param {float} startY The y component of the movement's start position.
-	 * @param {float} stepSize the size of each step, relative to standard
-	 *   stepsize (standard stepsize is 8 steps per 5 yards).
-	 * @param {float} movementDirection The direction toward which the marcher
-	 *   will move. This is measured in degrees relative to Grapher standard
-	 *   position (@see MathUtils.js for a definition of "Grapher standard
-	 *   position").
-	 * @param {float} faceOrientation the direction toward which the marcher
-	 *   will face while executing the movement. This is measured in degrees,
-	 *   relative to Grapher standard position.
-	 * @param {int} beats The duration of the movement, in beats.
-	 * @param {int} beatsPerStep the number of beats per each step of the movement.
-	 */ 
-	var MovementCommandMove = function(startX, startY, stepSize, movementDirection, faceOrientation, beats, beatsPerStep) {
-	    movementDirection = MathUtils.toRadians(movementDirection);
-	    this._deltaXPerStep = MathUtils.calcRotatedXPos(movementDirection) * stepSize;
-	    this._deltaYPerStep = MathUtils.calcRotatedYPos(movementDirection) * stepSize;
-	    this._orientation = faceOrientation;
-	    this._beatsPerStep = beatsPerStep;
-	    numSteps = Math.floor(beats / this._beatsPerStep);
-	    MovementCommand.apply(this, [startX, startY, startX + (this._deltaXPerStep * numSteps), startY + (this._deltaYPerStep * numSteps), beats]);
-	};
-
-	JSUtils.extends(MovementCommandMove, MovementCommand);
-
-	MovementCommandMove.prototype.getAnimationState = function(beatNum) {
-	    numSteps = Math.floor(beatNum / this._beatsPerStep);
-	    return new AnimationState(this._startX + (this._deltaXPerStep * numSteps), this._startY + (this._deltaYPerStep * numSteps), this._orientation);
-	};
-
-	/**
-	 * Returns the continuity text for this movement
-	 * @return {String} the continuity text in the form "Move 4 E"
-	 */
-	MovementCommandMove.prototype.getContinuityText = function() {
-	    var deltaX = this._endX - this._startX;
-	    var deltaY = this._endY - this._startY;
-	    var dirX = (deltaX < 0) ? "S" : "N";
-	    var dirY = (deltaY < 0) ? "W" : "E";
-	    // This movement can only move in one direction
-	    if (deltaX == 0) {
-	        return "Move " + Math.abs(deltaY) + " " + dirY;
-	    } else {
-	        return "Move " + Math.abs(deltaX) + " " + dirX;
-	    }
-	};
-
-	module.exports = MovementCommandMove;
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandGoto class.
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var MovementCommand = __webpack_require__(35);
-	var AnimationState = __webpack_require__(36);
-	 
-	/**
-	 * A MovementCommand that represents a "Goto" movement:
-	 * dots executing this movement simply jump to the movement's final
-	 * position and orientation at every beat of the movement.
-	 *
-	 * @param {float} startX The x component of the movement's start position.
-	 * @param {float} startY The y component of the movement's start position.
-	 * @param {float} endX The x component of the movement's end position.
-	 * @param {float} endY The y component of the movement's end position.
-	 * @param {float} orientation The direction in which the marcher will face
-	 *   while executing the movement. The direction is measured in degrees relative
-	 *   to Grapher standard position (@see MathUtils.js for the definition of
-	 *   "Grapher standard position").
-	 * @param {int} beats The duration of the movement, in beats.
-	 */
-	var MovementCommandGoto = function(startX, startY, endX, endY, orientation, beats) {
-	    this._orientation = orientation;
-	    MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
-	};
-
-	JSUtils.extends(MovementCommandGoto, MovementCommand);
-
-	MovementCommandGoto.prototype.getAnimationState = function(beatNum) {
-	    return new AnimationState(this._endX, this._endY, this._orientation);
-	};
-
-	/**
-	 * Returns the continuity text for this movement
-	 * @return {String} the continuity text in the form of "See Continuity (16 beats)"
-	 */
-	MovementCommandGoto.prototype.getContinuityText = function() {
-	    return "See Continuity (" + this._numBeats + " beats)";
-	};
-
-	module.exports = MovementCommandGoto;
-
-/***/ },
-/* 31 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @fileOverview Defines the MovementCommandEven class.
-	 */
-
-	var JSUtils = __webpack_require__(3);
-	var MovementCommand = __webpack_require__(35);
-	var AnimationState = __webpack_require__(36);
-	 
-	 
-	/**
-	 * A MovementCommand that defines an even-step transition between
-	 * two points.
-	 *
-	 * @param {float} startX The x component of the movement's start position.
-	 * @param {float} startY The y component of the movement's start position.
-	 * @param {float} endX The x component of the movement's end position.
-	 * @param {float} endY The y component of the movement's end position.
-	 * @param {float} orientation The angle toward which the marcher is facing while
-	 *   executing the movement. The angle is measured in degrees relative to
-	 *   Grapher standard position. (@see MathUtils.js for definition of
-	 *   "Grapher standard position")
-	 * @param {int} beats The duration of the movement, in beats.
-	 * @param {int} beatsPerStep The number of beats per each step.
-	 */
-	var MovementCommandEven = function(startX, startY, endX, endY, orientation, beats, beatsPerStep) {
-	    this._orientation = orientation;
-	    this._beatsPerStep = beatsPerStep;
-	    var numSteps = Math.floor(beats / this._beatsPerStep);
-	    this._deltaXPerStep = (endX - startX) / numSteps;
-	    this._deltaYPerStep = (endY - startY) / numSteps;
-
-	    MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
-	};
-
-	JSUtils.extends(MovementCommandEven, MovementCommand);
-
-	MovementCommandEven.prototype.getAnimationState = function(beatNum) {
-	    var stepNum = Math.floor(beatNum / this._beatsPerStep);
-	    return new AnimationState(this._startX + (this._deltaXPerStep * stepNum), this._startY + (this._deltaYPerStep * stepNum), this._orientation);
-	};
-
-	/**
-	 * Returns the number of beats in this movement
-	 * @return {int}
-	 */
-	MovementCommandEven.prototype.getBeatsPerStep = function() {
-	    return this._beatsPerStep;
-	}
-
-	/**
-	 * Returns the continuity text for this movement
-	 * @return {String} the continuity text in the form "Even 8 E, 4 S" or "Move 8 E" if
-	 * in one direction
-	 */
-	MovementCommandEven.prototype.getContinuityText = function() {
-	    var deltaX = this._endX - this._startX;
-	    var deltaY = this._endY - this._startY;
-	    var dirX = (deltaX < 0) ? "S" : "N";
-	    var dirY = (deltaY < 0) ? "W" : "E";
-	    var steps = this._numBeats / this._beatsPerStep;
-	    deltaX = Math.abs(deltaX);
-	    deltaY = Math.abs(deltaY);
-
-	    // Check if movement only in one direction and same number of steps as change in position
-	    if (deltaX == 0 && deltaY == steps) {
-	        return "Move " + steps + " " + dirY;
-	    } else if (deltaY == 0 && deltaX == steps) {
-	        return "Move " + steps + " " + dirX;
-	    } else if (deltaY == deltaX && deltaX == steps) { // Diagonal
-	        return "Move " + steps + " " + dirX + dirY;
-	    }
-
-	    var text = "Even ";
-	    // If movement is a fraction of steps, simply say "NE" or "S"
-	    if (deltaX % 1 != 0 || deltaY % 1 != 0) {
-	        text += (deltaX != 0) ? dirX : "";
-	        text += (deltaY != 0) ? dirY : "";
-	    } else {
-	        // End result will be concat. of directions, e.g. "Even 8E, 4S"
-	        var moveTexts = [];
-	        if (deltaY != 0) {
-	            moveTexts.push(Math.abs(deltaY) + " " + dirY);
-	        }
-	        if (deltaX != 0) {
-	            moveTexts.push(Math.abs(deltaX) + " " + dirX);
-	        }
-	        text += moveTexts.join(", ");
-	    }
-	    // Error checking for an even move without movement in any direction
-	    if (text === "Even ") {
-	        text += "0";
-	    }
-	    return text + " (" + steps + " steps)";
-	};
-
-	module.exports = MovementCommandEven;
-
-/***/ },
-/* 32 */,
-/* 33 */,
-/* 34 */
-/***/ function(module, exports, __webpack_require__) {
+/* 6 */
+/***/ function(module, exports) {
 
 	/**
 	 * @fileOverview Defines various utility functions that can be used
@@ -3397,14 +911,528 @@
 	module.exports = ArrayUtils;
 
 /***/ },
-/* 35 */
+/* 7 */
+/***/ function(module, exports) {
+
+	/**
+	 * @fileOverview Defines the Version class.
+	 */
+
+	/**
+	 * Version objects represent a version of a file
+	 * or application in the following format:
+	 * [major].[minor].[revision].
+	 *
+	 * @param {int} major The major version.
+	 * @param {int} minor The minor version.
+	 * @param {int} revision The revision number.
+	 */
+	var Version = function(major, minor, revision) {
+	    this._major = major;
+	    this._minor = minor;
+	    this._revision = revision;
+	};
+
+	/**
+	 * Builds a string representation of the Version.
+	 * String representations take the format:
+	 * [major].[minor].[revision].
+	 *
+	 * @return {string} A string representation of this
+	 *   version.
+	 */
+	Version.prototype.stringify = function() {
+	    return this._major + "." + this._minor + "." + this._revision;
+	};
+
+	/**
+	 * Compares this Version to another, and indicates which
+	 * version is an earlier one.
+	 *
+	 * @param {Version} otherVersion The version to compare
+	 *   this one against.
+	 * @return {int} A negative value if this version is
+	 *   an earlier one than the other; a positive value
+	 *   if this version is later than the other one;
+	 *   zero if the versions are identical.
+	 */
+	Version.prototype.compareTo = function(otherVersion) {
+	    var delta = this._major - otherVersion._major;
+	    if (delta != 0) {
+	        return delta;
+	    }
+	    delta = this._minor - otherVersion._minor;
+	    if (delta != 0) {
+	        return delta;
+	    }
+	    delta = this._revision - otherVersion._revision;
+	    return delta;
+	};
+
+	/**
+	 * Builds a Version object from a string.
+	 * These strings should be in the format:
+	 * [major].[minor].[revision].
+	 *
+	 * @param {string} stringVersion A string representation
+	 *   of a Version.
+	 * @return {Version} A Version which matches the
+	 *   provided string.
+	 */
+	Version.parse = function(stringVersion) {
+	    var versionPieces = stringVersion.split(".");
+	    return new Version(parseInt(versionPieces[0]), parseInt(versionPieces[1]), parseInt(versionPieces[2]));
+	};
+
+	module.exports = Version;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	/**
+	 * An Exception thrown by the FileLoadSelectors if the loaded file is of the wrong
+	 * file type.
+	 *
+	 * @param {String} message The message to accompany the error.
+	 */
+	var InvalidFileTypeError = function(message) {
+	    this.message = message;
+	    this.name = "InvalidFileTypeError";
+	};
+
+	module.exports = InvalidFileTypeError;
+
+/***/ },
+/* 9 */
+/***/ function(module, exports) {
+
+	/**
+	 * @fileOverview Defines miscellaneous utility functions.
+	 */
+
+	/**
+	 * A collection of javascript utility functions.
+	 */
+	var JSUtils = {};
+	 
+	/**
+	 * Causes a child class to inherit from a parent class.
+	 *
+	 * @param {function} ChildClass The class that will inherit
+	 *   from another.
+	 * @param {function} ParentClass The class to inherit from.
+	 */
+	JSUtils.extends = function (ChildClass, ParentClass) {
+	    var Inheritor = function () {}; // dummy constructor
+	    Inheritor.prototype = ParentClass.prototype;
+	    ChildClass.prototype = new Inheritor();
+	};
+
+	/**
+	 * Returns the value of the given name in the URL query string
+	 *
+	 * getQueryValue("hello") on http://foo.bar?hello=world should return "world"
+	 *
+	 * @param {String} name
+	 * @returns {String|null} the value of the name or null if name not in URL query string
+	 */
+	JSUtils.getURLValue = function(name) {
+	    var vals = this.getAllURLParams();
+	    if (vals[name] !== undefined) {
+	        return vals[name];
+	    } else {
+	        return null;
+	    }
+	};
+
+	/**
+	 * Returns all name-value pairs in the URL query string
+	 *
+	 * @returns {object} a dictionary mapping name to value
+	 */
+	JSUtils.getAllURLParams = function() {
+	    var vals = {};
+	    var query = window.location.search.substr(1);
+	    var vars = query.split("&");
+	    for (var i = 0; i < vars.length; i++) {
+	        var pair = vars[i].split("=");
+	        var name = decodeURIComponent(pair[0]);
+	        var value = decodeURIComponent(pair[1]);
+	        vals[name] = value;
+	    }
+	    return vals;
+	};
+
+	module.exports = JSUtils;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	/**
+	 * @fileOverview Defines the Dot class.
+	 */
+
+	/**
+	 * Dot objects represent marchers. They execute a sequence
+	 * of MovementCommands, which define their position and orientation
+	 * on any given beat. Every Stuntsheet has its own set of Dot objects,
+	 * so a marcher will be represented by more than one of them throughout
+	 * a show. Specifically, every marcher is associated with AT MOST one
+	 * Dot object per Stuntsheet (some Stuntsheets may not include certain
+	 * marchers).
+	 *
+	 * @param {string} label The dot's label. This is also the label of
+	 *   the marcher associated with this dot.
+	 * @param {Array<MovementCommand>} movementCommands All of the MovementCommand
+	 *   objects that this Dot will execute. The commands must be sorted in the
+	 *   order in which they will be executed.
+	 */
+	var Dot = function(label, movementCommands) {
+	    this._label = label;
+	    this._movements = movementCommands;
+	};
+
+	/**
+	 * Returns the label for this dot.
+	 *
+	 * @return {string} The dot's label.
+	 */
+	Dot.prototype.getLabel = function() {
+	    return this._label;
+	};
+
+	/**
+	 * Returns this dot's movement commands.
+	 *
+	 * @return {Array<MovementCommand>} The dot's movements.
+	 */
+	Dot.prototype.getMovementCommands = function() {
+	    return this._movements;
+	};
+
+	/**
+	 * Returns an AnimationState object that describes the Dot's
+	 * position, orientation, etc. at a specific moment in the show.
+	 *
+	 * @param {int} beatNum The Dot's AnimationState will be
+	 *   relevant to the beat indicated by this value. The beat
+	 *   is relative to the start of the stuntsheet.
+	 * @return {AnimationState} An AnimationState that
+	 *   describes the Dot at a moment of the show,. If the Dot
+	 *   has no movement at the specified beat, returns undefined.
+	 */
+	Dot.prototype.getAnimationState = function(beatNum) {
+	    for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
+	        if (beatNum < this._movements[commandIndex].getBeatDuration()) {
+	            return this._movements[commandIndex].getAnimationState(beatNum);
+	        }
+	        beatNum -= this._movements[commandIndex].getBeatDuration();
+	    }
+	};
+
+	module.exports = Dot;
+
+/***/ },
+/* 11 */
+/***/ function(module, exports) {
+
+	/**
+	 * @fileOverview Defines the Sheet class.
+	 */
+
+	/**
+	 * Sheets represent stuntsheets in a show. Each has a collection of
+	 * all of the Dots involved in its formations, and those Dots,
+	 * in turn, know their positions and orientations for all beats during
+	 * the Sheet's duration.
+	 *
+	 * @param {string} label The label/name for the sheet.
+	 * @param {string} fieldType A string that indicates the type of field that this sheet
+	 *   is performed on.
+	 * @param {Array<string>} dotTypes An array of all dot types used in this sheet.
+	 * @param {object} dotTypeAssignments An object that maps each dot label to the dot type
+	 *   associated with that dot.
+	 * @param {object} continuityTexts An object that maps each dot type to an array
+	 *   containing all of the continuity instructions associated with that dot type.
+	 * @param {int} duration The duration of the sheet, in beats.
+	 * @param {Array<Dot>} dots An array of all dots involved in this sheet's
+	 *   movements. Note that all of these dots already have their
+	 *   MovementCommands before the Sheet is constructed.
+	 * @param {Array<string>} dotLabels an array, in sync with dots, which specifies the
+	 *   dot labels of the dots
+	 */
+	var Sheet = function(sheetLabel, fieldType, dotTypes, dotTypeAssignments, continuityTexts, duration, dots, dotLabels) {
+	    this._sheetLabel = sheetLabel;
+	    this._fieldType = fieldType;
+	    this._dotTypes = dotTypes;
+	    this._dotTypeAssignments = dotTypeAssignments;
+	    this._continuityTexts = continuityTexts;
+	    this._duration = duration;
+	    this._dots = dots;
+	    this._dotLabels = dotLabels;
+	};
+
+	/**
+	 * Returns the sheet's label.
+	 *
+	 * @return {string} The sheet's label.
+	 */
+	Sheet.prototype.getSheetLabel = function() {
+	    return this._sheetLabel;
+	};
+
+	/**
+	 * Returns the type of field that this sheet is performed on.
+	 *
+	 * @return {string} A string that indicates what kind of field
+	 *   the sheet is performed on.
+	 */
+	Sheet.prototype.getFieldType = function() {
+	    return this._fieldType;
+	};
+
+	/**
+	 * Returns an array of all dot types involved with this
+	 * sheet.
+	 *
+	 * @return {Array<string>} An array of all dot types involved in
+	 *   this sheet. Dot types are given as strings.
+	 */
+	Sheet.prototype.getAllDotTypes = function() {
+	    return this._dotTypes;
+	};
+
+	/**
+	 * Returns the dot type associated with a particular
+	 * dot.
+	 *
+	 * @param {string} dotLabel The label of the dot whose
+	 *   dot type will be returned.
+	 * @return {string} The dot label of the specified dot.
+	 */
+	Sheet.prototype.getDotType = function(dotLabel) {
+	    return this._dotTypeAssignments[dotLabel];
+	};
+
+	/**
+	 * Returns an array containing the continuities associated
+	 * with a particular dot type. Each continuity is a human-readable
+	 * instruction as would appear on a printed version of a stuntsheet.
+	 *
+	 * @param {string} dotType The dot type to retrieve continuities for.
+	 * @return {Array<string>} An array containing all continuities associated
+	 *   with the specified dot type. Each continuity is a human-readable
+	 *   text instruction.
+	 */
+	Sheet.prototype.getContinuityTexts = function(dotType) {
+	    return this._continuityTexts[dotType];
+	};
+
+	/**
+	 * Returns an array of all dots involved in this sheet's movements.
+	 *
+	 * @return {Array<Dot>} An array of all dots involved in this sheet's
+	 *   movements.
+	 */
+	Sheet.prototype.getDots = function() {
+	    return this._dots;
+	};
+
+	/**
+	 * Get a dot in this sheet by its dot label.
+	 * @param  {string} dotLabel the dots label, e.g. "A1" or "15"
+	 * @return {Dot|null} the dot, or null if a dot with the given label does not
+	 *   exist in the sheet
+	 */
+	Sheet.prototype.getDotByLabel = function (dotLabel) {
+	    var index = this._dotLabels.indexOf(dotLabel);
+	    if (index === -1) {
+	        return null;
+	    }
+	    return this._dots[index];
+	};
+
+	/**
+	 * Returns the duration of this sheet, in beats.
+	 *
+	 * @return {int} The duration of this sheet, in beats.
+	 */
+	Sheet.prototype.getDuration = function() {
+	    return this._duration;
+	};
+
+	module.exports = Sheet;
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	/**
+	 * @fileOverview Defines the Show class.
+	 */
+	 
+	/**
+	 * Represents an entire fieldshow.
+	 *
+	 * @param {string} title The title of the show.
+	 * @param {string} year The year that the show was performed.
+	 * @param {string} description The show description.
+	 * @param {Array<string>} dotLabels An array containing the
+	 *   labels of each dot in the show.
+	 * @param {Array<Sheet>=} sheets The sheets in the show. This
+	 *   parameter is optional - sheets can be appended after
+	 *   the show is constructed by using the appendSheet(...)
+	 *   method.
+	 */
+	var Show = function(title, year, description, dotLabels, sheets) {
+	    this._title = title;
+	    this._year = year;
+	    this._description = description;
+	    this._dotLabels = dotLabels;
+	    if (sheets === undefined) {
+	        this._sheets = [];
+	    } else {
+	        this._sheets = sheets;
+	    }
+	};
+
+	/**
+	 * Returns the title of the show.
+	 *
+	 * @return {string} The title of the show.
+	 */
+	Show.prototype.getTitle = function() {
+	    return this._title;
+	};
+
+	/**
+	 * Returns the year during which the show was performed.
+	 *
+	 * @return {string} The year during which the show was
+	 *   performed.
+	 */
+	Show.prototype.getYear = function() {
+	    return this._year;
+	};
+
+	/**
+	 * Returns the show description.
+	 *
+	 * @return {string} The show description.
+	 */
+	Show.prototype.getDescription = function() {
+	    return this._description;
+	};
+
+	/**
+	 * Returns an array containing the labels for
+	 * all dots in the show.
+	 *
+	 * @return {Array<string>} An array of all dot labels.
+	 */
+	Show.prototype.getDotLabels = function() {
+	    return this._dotLabels;
+	};
+
+	/**
+	 * Returns an array of all sheets in the show.
+	 *
+	 * @return {Array<Sheet>} An array of all sheets in the show.
+	 */
+	Show.prototype.getSheets = function() {
+	    return this._sheets;
+	};
+
+	/**
+	 * Returns a particular sheet from the show.
+	 *
+	 * @param {int} index The index of the sheet to retrieve.
+	 *   This can be any integer in the range [0, num_sheets).
+	 *   Notice that the upper bound of the range is exclusive.
+	 *   To find the Nth sheet in a show, you need to request
+	 *   the sheet with an index of N-1 (e.g. to retrive the 5th
+	 *   sheet, you would call getSheet(4)).
+	 * @return {Sheet} The stuntsheet with the specified index.
+	 */
+	Show.prototype.getSheet = function(index) {
+	    return this._sheets[index];
+	};
+
+	/**
+	 * Returns the number of sheets in the show.
+	 *
+	 * @return {int} The number of sheets in the show.
+	 */
+	Show.prototype.getNumSheets = function() {
+	    return this._sheets.length;
+	};
+
+	/**
+	 * Adds a sheet to the back of the show.
+	 *
+	 * @param {Sheet} sheet The sheet to add to the
+	 *   show.
+	 */
+	Show.prototype.appendSheet = function(sheet) {
+	    this._sheets.push(sheet);
+	};
+
+	module.exports = Show;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandStand class.
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var MovementCommand = __webpack_require__(14);
+	var AnimationState = __webpack_require__(16);
+	 
+	/**
+	 * A MovementCommand representing a period of standing.
+	 * @param {float} x The x coordinate to stand at.
+	 * @param {float} y The y coordinate to stand at.
+	 * @param {float} orientation The angle at which the marcher will
+	 *   face while standing. This is measured in degrees relative
+	 *   to Grapher standard position (@see MathUtils.js for a definition
+	 *   of "grapher standard position).
+	 * @param {int} beats The duration of the movement, in beats.
+	 */
+	var MovementCommandStand = function(x, y, orientation, beats) {
+	    this._orientation = orientation;
+	    MovementCommand.apply(this, [x, y, x, y, beats]);
+	};
+
+	JSUtils.extends(MovementCommandStand, MovementCommand);
+
+	MovementCommandStand.prototype.getAnimationState = function(beatNum) {
+	    return new AnimationState(this._startX, this._startY, this._orientation);
+	};
+
+	/**
+	 * Returns the continuity text for this movement
+	 * @return {String} the continuity text in the form of "Close 16E"
+	 */
+	MovementCommandStand.prototype.getContinuityText = function() {
+	    return "Close " + this._numBeats + this.getOrientation();
+	};
+
+	module.exports = MovementCommandStand;
+
+/***/ },
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileOverview Defines the MovementCommand class.
 	 */
 
-	var Coordinate = __webpack_require__(40);
+	var Coordinate = __webpack_require__(15);
 
 	/**
 	 * MovementCommand class
@@ -3534,8 +1562,30 @@
 	module.exports = MovementCommand;
 
 /***/ },
-/* 36 */
-/***/ function(module, exports, __webpack_require__) {
+/* 15 */
+/***/ function(module, exports) {
+
+	/**
+	 * @fileOverview Defines the Coordinate struct.
+	 */
+
+	/**
+	 * A Coordinate struct marks a two-dimensional position:
+	 * {x: __,y: __}.
+	 *
+	 * @param {float} x The x component of the coordinate.
+	 * @param {float} y The y component of the coordinate.
+	 */
+	var Coordinate = function(x, y) {
+	    this.x = x;
+	    this.y = y;
+	};
+
+	module.exports = Coordinate;
+
+/***/ },
+/* 16 */
+/***/ function(module, exports) {
 
 	/**
 	 * @fileOverview Defines the AnimationState struct.
@@ -3546,8 +1596,8 @@
 	 * in the show. It contains all information required to properly draw
 	 * the dot in the grapher.
 	 *
-	 * @param {float} posX The x position of the dot.
-	 * @param {float} posY The y position of the dot.
+	 * @param {float} posX The x position of the dot. (0 = south endzone)
+	 * @param {float} posY The y position of the dot. (0 = west sideline)
 	 * @param {float} facingAngle The angle at which the dot is oriented.
 	 */
 	var AnimationState = function(posX, posY, facingAngle) {
@@ -3559,8 +1609,146 @@
 	module.exports = AnimationState;
 
 /***/ },
-/* 37 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandMarkTime class.
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var MovementCommand = __webpack_require__(14);
+	var AnimationState = __webpack_require__(16);
+
+	/**
+	 * A MovementCommand that represents a period of mark time.
+	 *
+	 * @param {float} x The x position where the mark time takes place.
+	 * @param {float} y The y position where the mark time takes place.
+	 * @param {float} orientation The direction toward which the marcher
+	 *   faces while marking time. This is measured in degrees,
+	 *   relative to Grapher standard position (@see MathUtils.js
+	 *   for a definition of "Grapher standard position").
+	 * @param {int} beats The duration of the movement, in beats.
+	 */
+	var MovementCommandMarkTime = function(x, y, orientation, beats) {
+	    this._orientation = orientation;
+	    MovementCommand.apply(this, [x, y, x, y, beats]);
+	};
+
+	JSUtils.extends(MovementCommandMarkTime, MovementCommand);
+
+	MovementCommandMarkTime.prototype.getAnimationState = function(beatNum) {
+	    return new AnimationState(this._startX, this._startY, this._orientation);
+	};
+
+	/**
+	 * Returns the continuity text for this movement
+	 * @return {String} the continuity text in the form "MT 16 E"
+	 */
+	MovementCommandMarkTime.prototype.getContinuityText = function() {
+	    return (this._numBeats == 0) ? "" : "MT " + this._numBeats + " " + this.getOrientation();
+	};
+
+	module.exports = MovementCommandMarkTime;
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandArc class.
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var MathUtils = __webpack_require__(19);
+	var MovementCommand = __webpack_require__(14);
+	var AnimationState = __webpack_require__(16);
+	 
+	/**
+	 * A MovementCommandArc object represents a movement along the
+	 * perimeter of a circular arc.
+	 *
+	 * @param {float} startX The x coordinate of the movement's start position.
+	 * @param {float} startY The y coordinate of the movement's start position.
+	 * @param {float} centerX The x coordinate of the arc center.
+	 * @param {float} centerY The y coordinate of the arc center.
+	 * @param {float angleTorotate The amount to rotate about the center, in
+	 *   degrees. Positive values indicate a rotation in the clockwise
+	 *   direction, negative values indicate a rotation in the
+	 *   counterclockwise direction.
+	 * @param {float} facingOffset The difference between the direction
+	 *   in which a marcher is travelling and the direction in
+	 *   which a marcher is facing. This angle is measured in degrees,
+	 *   where positive angles indicate a clockwise offset, and
+	 *   negative angles indicate a counterclockwise one.
+	 * @param {int} beats The duration of the movement, in beats.
+	 * @param {int} beatsPerStep The duration of each step, in beats.
+	 */
+	var MovementCommandArc = function(startX, startY, centerX, centerY, angleToRotate, facingOffset, beats, beatsPerStep) {
+	    this._beatsPerStep = beatsPerStep;
+	    this._centerX = centerX;
+	    this._centerY = centerY;
+	    this._radius = MathUtils.calcDistance(startX, startY, this._centerX, this._centerY);
+	    this._startAngle = MathUtils.calcAngleAbout(startX, startY, centerX, centerY);
+	    if (isNaN(this._startAngle)) {
+	        this._startAngle = 0;
+	    }
+	    this._stepAngleDelta = MathUtils.toRadians(angleToRotate) / Math.floor(beats / this._beatsPerStep);
+	    this._movementIsCW = this._stepAngleDelta >= 0;
+	    this._orientationOffset = MathUtils.toRadians(facingOffset);
+	    var finalAnimState = this.getAnimationState(beats);
+	    MovementCommand.apply(this, [startX, startY, finalAnimState.x, finalAnimState.y, beats]);
+	};
+
+	JSUtils.extends(MovementCommandArc, MovementCommand);
+
+	MovementCommandArc.prototype.getAnimationState = function(beatNum) {
+	    var numSteps = Math.floor(beatNum / this._beatsPerStep);
+	    var finalAngle = this._startAngle + (this._stepAngleDelta * numSteps);
+	    var finalX = this._radius * MathUtils.calcRotatedXPos(finalAngle) + this._centerX;
+	    var finalY = this._radius * MathUtils.calcRotatedYPos(finalAngle) + this._centerY;
+	    var finalOrientation = MathUtils.quarterTurn(finalAngle, this._movementIsCW) + this._orientationOffset;
+	    return new AnimationState(finalX, finalY, MathUtils.toDegrees(finalOrientation));
+	};
+
+	/**
+	 * Returns a list of (deltaX, deltaY) pairs that lie along the arc
+	 *
+	 * @return {Array<Array<int>>} an array of (deltaX, deltaY) pairs
+	 */
+	MovementCommandArc.prototype.getMiddlePoints = function() {
+	    var totalAngle = this._startAngle;
+	    var prevX = this._startX;
+	    var prevY = this._startY;
+	    var points = [];
+	    for (var i = 0; i < this._numBeats / this._beatsPerStep; i++) {
+	        totalAngle += this._stepAngleDelta;
+	        var x = this._radius * MathUtils.calcRotatedXPos(totalAngle) + this._centerX;
+	        var y = this._radius * MathUtils.calcRotatedYPos(totalAngle) + this._centerY;
+	        points.push([x - prevX, y - prevY]);
+	        prevX = x;
+	        prevY = y;
+	    }
+	    return points;
+	};
+
+	/**
+	 * Returns the continuity text for this movement
+	 * @return {String} the continuity text in the form of "GT CW 90 deg. (16 steps)"
+	 */
+	MovementCommandArc.prototype.getContinuityText = function() {
+	    var steps = this._numBeats / this._beatsPerStep;
+	    var orientation = (this._movementIsCW) ? "CW" : "CCW";
+	    var angle = Math.abs(Math.floor(MathUtils.toDegrees(this._numBeats * this._stepAngleDelta)));
+	    return "GT " + orientation + " " + angle + " deg. (" + steps + " steps)";
+	};
+
+	module.exports = MovementCommandArc;
+
+/***/ },
+/* 19 */
+/***/ function(module, exports) {
 
 	/**
 	 * @fileOverview Defines various functions and constants that are
@@ -3797,28 +1985,1855 @@
 
 
 /***/ },
-/* 38 */,
-/* 39 */,
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandMove class.
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var MathUtils = __webpack_require__(19);
+	var MovementCommand = __webpack_require__(14);
+	var AnimationState = __webpack_require__(16);
+	 
+	/**
+	 * A MovementCommand which represents a constant movement in a
+	 * particular direction.
+	 *
+	 * @param {float} startX The x component of the movement's start position.
+	 * @param {float} startY The y component of the movement's start position.
+	 * @param {float} stepSize the size of each step, relative to standard
+	 *   stepsize (standard stepsize is 8 steps per 5 yards).
+	 * @param {float} movementDirection The direction toward which the marcher
+	 *   will move. This is measured in degrees relative to Grapher standard
+	 *   position (@see MathUtils.js for a definition of "Grapher standard
+	 *   position").
+	 * @param {float} faceOrientation the direction toward which the marcher
+	 *   will face while executing the movement. This is measured in degrees,
+	 *   relative to Grapher standard position.
+	 * @param {int} beats The duration of the movement, in beats.
+	 * @param {int} beatsPerStep the number of beats per each step of the movement.
+	 */ 
+	var MovementCommandMove = function(startX, startY, stepSize, movementDirection, faceOrientation, beats, beatsPerStep) {
+	    movementDirection = MathUtils.toRadians(movementDirection);
+	    this._deltaXPerStep = MathUtils.calcRotatedXPos(movementDirection) * stepSize;
+	    this._deltaYPerStep = MathUtils.calcRotatedYPos(movementDirection) * stepSize;
+	    this._orientation = faceOrientation;
+	    this._beatsPerStep = beatsPerStep;
+	    numSteps = Math.floor(beats / this._beatsPerStep);
+	    MovementCommand.apply(this, [startX, startY, startX + (this._deltaXPerStep * numSteps), startY + (this._deltaYPerStep * numSteps), beats]);
+	};
+
+	JSUtils.extends(MovementCommandMove, MovementCommand);
+
+	MovementCommandMove.prototype.getAnimationState = function(beatNum) {
+	    numSteps = Math.floor(beatNum / this._beatsPerStep);
+	    return new AnimationState(this._startX + (this._deltaXPerStep * numSteps), this._startY + (this._deltaYPerStep * numSteps), this._orientation);
+	};
+
+	/**
+	 * Returns the continuity text for this movement
+	 * @return {String} the continuity text in the form "Move 4 E"
+	 */
+	MovementCommandMove.prototype.getContinuityText = function() {
+	    var deltaX = this._endX - this._startX;
+	    var deltaY = this._endY - this._startY;
+	    var dirX = (deltaX < 0) ? "S" : "N";
+	    var dirY = (deltaY < 0) ? "W" : "E";
+	    // This movement can only move in one direction
+	    if (deltaX == 0) {
+	        return "Move " + Math.abs(deltaY) + " " + dirY;
+	    } else {
+	        return "Move " + Math.abs(deltaX) + " " + dirX;
+	    }
+	};
+
+	module.exports = MovementCommandMove;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandGoto class.
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var MovementCommand = __webpack_require__(14);
+	var AnimationState = __webpack_require__(16);
+	 
+	/**
+	 * A MovementCommand that represents a "Goto" movement:
+	 * dots executing this movement simply jump to the movement's final
+	 * position and orientation at every beat of the movement.
+	 *
+	 * @param {float} startX The x component of the movement's start position.
+	 * @param {float} startY The y component of the movement's start position.
+	 * @param {float} endX The x component of the movement's end position.
+	 * @param {float} endY The y component of the movement's end position.
+	 * @param {float} orientation The direction in which the marcher will face
+	 *   while executing the movement. The direction is measured in degrees relative
+	 *   to Grapher standard position (@see MathUtils.js for the definition of
+	 *   "Grapher standard position").
+	 * @param {int} beats The duration of the movement, in beats.
+	 */
+	var MovementCommandGoto = function(startX, startY, endX, endY, orientation, beats) {
+	    this._orientation = orientation;
+	    MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
+	};
+
+	JSUtils.extends(MovementCommandGoto, MovementCommand);
+
+	MovementCommandGoto.prototype.getAnimationState = function(beatNum) {
+	    return new AnimationState(this._endX, this._endY, this._orientation);
+	};
+
+	/**
+	 * Returns the continuity text for this movement
+	 * @return {String} the continuity text in the form of "See Continuity (16 beats)"
+	 */
+	MovementCommandGoto.prototype.getContinuityText = function() {
+	    return "See Continuity (" + this._numBeats + " beats)";
+	};
+
+	module.exports = MovementCommandGoto;
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the MovementCommandEven class.
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var MovementCommand = __webpack_require__(14);
+	var AnimationState = __webpack_require__(16);
+	 
+	 
+	/**
+	 * A MovementCommand that defines an even-step transition between
+	 * two points.
+	 *
+	 * @param {float} startX The x component of the movement's start position.
+	 * @param {float} startY The y component of the movement's start position.
+	 * @param {float} endX The x component of the movement's end position.
+	 * @param {float} endY The y component of the movement's end position.
+	 * @param {float} orientation The angle toward which the marcher is facing while
+	 *   executing the movement. The angle is measured in degrees relative to
+	 *   Grapher standard position. (@see MathUtils.js for definition of
+	 *   "Grapher standard position")
+	 * @param {int} beats The duration of the movement, in beats.
+	 * @param {int} beatsPerStep The number of beats per each step.
+	 */
+	var MovementCommandEven = function(startX, startY, endX, endY, orientation, beats, beatsPerStep) {
+	    this._orientation = orientation;
+	    this._beatsPerStep = beatsPerStep;
+	    var numSteps = Math.floor(beats / this._beatsPerStep);
+	    this._deltaXPerStep = (endX - startX) / numSteps;
+	    this._deltaYPerStep = (endY - startY) / numSteps;
+
+	    MovementCommand.apply(this, [startX, startY, endX, endY, beats]);
+	};
+
+	JSUtils.extends(MovementCommandEven, MovementCommand);
+
+	MovementCommandEven.prototype.getAnimationState = function(beatNum) {
+	    var stepNum = Math.floor(beatNum / this._beatsPerStep);
+	    return new AnimationState(this._startX + (this._deltaXPerStep * stepNum), this._startY + (this._deltaYPerStep * stepNum), this._orientation);
+	};
+
+	/**
+	 * Returns the number of beats in this movement
+	 * @return {int}
+	 */
+	MovementCommandEven.prototype.getBeatsPerStep = function() {
+	    return this._beatsPerStep;
+	}
+
+	/**
+	 * Returns the continuity text for this movement
+	 * @return {String} the continuity text in the form "Even 8 E, 4 S" or "Move 8 E" if
+	 * in one direction
+	 */
+	MovementCommandEven.prototype.getContinuityText = function() {
+	    var deltaX = this._endX - this._startX;
+	    var deltaY = this._endY - this._startY;
+	    var dirX = (deltaX < 0) ? "S" : "N";
+	    var dirY = (deltaY < 0) ? "W" : "E";
+	    var steps = this._numBeats / this._beatsPerStep;
+	    deltaX = Math.abs(deltaX);
+	    deltaY = Math.abs(deltaY);
+
+	    // Check if movement only in one direction and same number of steps as change in position
+	    if (deltaX == 0 && deltaY == steps) {
+	        return "Move " + steps + " " + dirY;
+	    } else if (deltaY == 0 && deltaX == steps) {
+	        return "Move " + steps + " " + dirX;
+	    } else if (deltaY == deltaX && deltaX == steps) { // Diagonal
+	        return "Move " + steps + " " + dirX + dirY;
+	    }
+
+	    var text = "Even ";
+	    // If movement is a fraction of steps, simply say "NE" or "S"
+	    if (deltaX % 1 != 0 || deltaY % 1 != 0) {
+	        text += (deltaX != 0) ? dirX : "";
+	        text += (deltaY != 0) ? dirY : "";
+	    } else {
+	        // End result will be concat. of directions, e.g. "Even 8E, 4S"
+	        var moveTexts = [];
+	        if (deltaY != 0) {
+	            moveTexts.push(Math.abs(deltaY) + " " + dirY);
+	        }
+	        if (deltaX != 0) {
+	            moveTexts.push(Math.abs(deltaX) + " " + dirX);
+	        }
+	        text += moveTexts.join(", ");
+	    }
+	    // Error checking for an even move without movement in any direction
+	    if (text === "Even ") {
+	        text += "0";
+	    }
+	    return text + " (" + steps + " steps)";
+	};
+
+	module.exports = MovementCommandEven;
+
+/***/ },
+/* 23 */,
+/* 24 */,
+/* 25 */,
+/* 26 */,
+/* 27 */,
+/* 28 */,
+/* 29 */,
+/* 30 */,
+/* 31 */,
+/* 32 */,
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var PDFUtils = __webpack_require__(34);
+	var HeaderWidget = __webpack_require__(35);
+	var DotContinuityWidget = __webpack_require__(37);
+	var IndividualContinuityWidget = __webpack_require__(38);
+	var MovementDiagramWidget = __webpack_require__(39);
+	var BirdsEyeWidget = __webpack_require__(40);
+	var SurroundingDotsWidget = __webpack_require__(41);
+
+	/**
+	 * @constant WIDTH is the width of the PDF document, in millimeters
+	 * @constant HEIGHT is the height of the PDF document, in millimeters
+	 * @constant SIDE_MARGIN is the left/right margin of the PDF document, in millimeters
+	 * @constant QUADRANT contains (x,y) coordinates for the top left corner of each quadrant
+	 *      of the document. y coordinates offset by headers
+	 */
+	var WIDTH = 215.9;
+	var HEIGHT = 279.4;
+	var SIDE_MARGIN = 10;
+
+	var QUADRANT = [
+	    {x: SIDE_MARGIN, y: 24},                     // top left
+	    {x: WIDTH/2 + SIDE_MARGIN, y: 24},           // top right
+	    {x: SIDE_MARGIN, y: HEIGHT/2 + 16},          // bottom left
+	    {x: WIDTH/2 + SIDE_MARGIN, y: HEIGHT/2 + 16} // bottom right
+	];
+	var QUADRANT_HEIGHT = HEIGHT/2 - 22;
+	var QUADRANT_WIDTH = WIDTH/2 - SIDE_MARGIN * 2;
+
+	/**
+	 * This PDFGenerator class will be able to generate the PDF representation of the given
+	 * show, for the given dot.
+	 *
+	 * @param {Show} show
+	 * @param {Array<String>} dots is the list of dot labels to include in the PDF
+	 */
+	var PDFGenerator = function(show, dots) {
+	    this.pdf = jsPDF("portrait", "mm", "letter");
+	    this.show = show;
+	    this.dots = dots;
+	    this.sheets = show.getSheets();
+	    this.data = null;
+	    // tracking for progress bar
+	    this.current = 0;
+	    this.total = this.dots.length * this.sheets.length; // increment per dot per stuntsheet
+	};
+
+	/**
+	 * generate a PDF for specified dots, containing its movements, positions, and continuities
+	 * relevant to it.
+	 *
+	 * The function will display the pdf in the webpage's preview pane
+	 *
+	 * @param {Object} options, customizable options for the pdf. Current options include:
+	 *      - Orientation for movement diagram (options["md-orientation"] = "west"|"east")
+	 *      - Orientation for bird's eye view  (options["bev-orientation"] = "west"|"east")
+	 *      - Orientation for surrounding dots (options["sd-orientation"] = "west"|"east")
+	 *      - Layout order of stuntsheets      (options["layout-order"] = "ltr"|"ttb")
+	 *
+	 * @return {string} the PDF data
+	 */
+	PDFGenerator.prototype.generate = function(options) {
+	    // 4 stuntsheets per page + endsheet
+	    var totalPages = Math.ceil(this.sheets.length / 4) + 1;
+
+	    for (var i = 0; i < this.dots.length; i++) {
+	        if (i !== 0) {
+	            this.pdf.addPage();
+	        }
+	        this.dot = this.dots[i];
+	        this._generate(options);
+
+	        // if there's an odd number of pages and not on the last dot, add an extra
+	        // page for printing double sided
+	        if (totalPages % 2 === 1 && i < this.dots.length - 1) {
+	            this.pdf.addPage();
+	        }
+	    }
+
+	    this.data = this.pdf.output("datauristring");
+	};
+
+	/**
+	 * Generate a PDF for one dot, given by this.dot
+	 */
+	PDFGenerator.prototype._generate = function(options) {
+	    // Widgets
+	    this.headerWidget = new HeaderWidget(this.pdf, {
+	        dotLabel: this.dot,
+	        title: this.show.getTitle(),
+	        totalSheets: this.sheets.length
+	    });
+	    this.dotContinuityWidget = new DotContinuityWidget(this.pdf);
+	    this.individualContinuityWidget = new IndividualContinuityWidget(this.pdf);
+	    this.movementDiagramWidget = new MovementDiagramWidget(this.pdf, options["md-orientation"]);
+	    this.birdsEyeWidget = new BirdsEyeWidget(this.pdf, options["bev-orientation"]);
+	    this.surroundingDotsWidget = new SurroundingDotsWidget(this.pdf, options["sd-orientation"]);
+
+	    var movements = this._getMovements();
+	    for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
+	        if (pageNum != 0) {
+	            this.pdf.addPage();
+	        }
+
+	        var pageSheets = []
+	        for (var i = 0; i < 4; i++) {
+	            var sheet = pageNum * 4 + i;
+	            if (sheet == this.sheets.length) {
+	                break;
+	            }
+	            pageSheets.push(this.sheets[sheet]);
+	        }
+
+	        this.headerWidget.draw({
+	            pageNum: pageNum + 1,
+	            isLeftToRight: options["layout-order"] === "ltr"
+	        });
+	        // drawing lines between quadrants
+	        this.pdf.setDrawColor(150);
+	        this.pdf.vLine(WIDTH/2, 24, HEIGHT - 24);
+	        this.pdf.hLine(0, HEIGHT/2 + 2.5, WIDTH);
+	        this.pdf.setDrawColor(0);
+
+	        var quadrantOrder = [0, 1, 2, 3]; // top left, top right, bottom left, bottom right
+	        if (options["layout-order"] === "ttb") {
+	            quadrantOrder = [0, 2, 1, 3];
+	        }
+
+	        for (var i = 0; i < pageSheets.length; i++) {
+	            var x = QUADRANT[quadrantOrder[i]].x;
+	            var y = QUADRANT[quadrantOrder[i]].y;
+	            var sheet = pageSheets[i];
+	            var dot = sheet.getDotByLabel(this.dot);
+	            this.dotContinuityWidget.draw(
+	                x,
+	                y,
+	                QUADRANT_WIDTH,
+	                QUADRANT_HEIGHT/6,
+	                {
+	                    sheet: sheet,
+	                    dotType: sheet.getDotType(this.dot)
+	                }
+	            );
+	            this.individualContinuityWidget.draw(
+	                x,
+	                y + QUADRANT_HEIGHT/6,
+	                QUADRANT_WIDTH/2,
+	                QUADRANT_HEIGHT/3,
+	                {
+	                    dot: dot,
+	                    duration: sheet.getDuration()
+	                }
+	            );
+	            this.movementDiagramWidget.draw(
+	                x + QUADRANT_WIDTH/2 + 1,
+	                y + QUADRANT_HEIGHT/6,
+	                QUADRANT_WIDTH/2,
+	                QUADRANT_HEIGHT/3,
+	                {
+	                    movements: movements[pageNum * 4 + i]
+	                }
+	            );
+	            this.surroundingDotsWidget.draw(
+	                x,
+	                y + QUADRANT_HEIGHT/2 + 2,
+	                QUADRANT_WIDTH,
+	                QUADRANT_HEIGHT/2 - 2,
+	                {
+	                    sheet: sheet,
+	                    dot: dot
+	                }
+	            );
+	            // increment progress bar
+	            this.current++;
+	            var percentage = this.current / this.total;
+	            $(".js-pdf-loading .progress-bar").css({
+	                width: (50 + percentage * 50) + "%", // 50% from loading server
+	            });
+	        }
+	    }
+
+	    this._addEndSheet(movements);
+	};
+
+	/**
+	 * Returns a list of movements for each stuntsheet, which are changes in position with
+	 * respect to the previous position
+	 * @return {Array<Array<Object>>} where each element is a list of movements for each
+	 *   stuntsheet. The Object contains:
+	 *      - {Coordinate} startPosition
+	 *      - {int} deltaX
+	 *      - {int} deltaY
+	 */
+	PDFGenerator.prototype._getMovements = function() {
+	    var moves = [];
+	    var dotLabel = this.dot;
+	    this.sheets.forEach(function(sheet) {
+	        var lines = [];
+	        var movements = sheet.getDotByLabel(dotLabel).getMovementCommands();
+	        var startPosition = movements[0].getStartPosition();
+	        movements.forEach(function(movement) {
+	            var endPosition = movement.getEndPosition();
+	            if (movement.getMiddlePoints === undefined) {
+	                lines.push({
+	                    startPosition: startPosition,
+	                    deltaX: endPosition.x - startPosition.x,
+	                    deltaY: endPosition.y - startPosition.y
+	                });
+	            } else { // movement is a MovementCommandArc
+	                // each item is an Array of (deltaX, deltaY) pairs
+	                movement.getMiddlePoints().forEach(function(move) {
+	                    lines.push({
+	                        startPosition: startPosition,
+	                        deltaX: move[0],
+	                        deltaY: move[1]
+	                    });
+	                });
+	            }
+	            startPosition = endPosition;
+	        });
+	        moves.push(lines);
+	    });
+	    return moves;
+	};
+
+	/**
+	 * Draws the end sheet containing a compilation of all the continuities and movements diagrams
+	 * 
+	 * @param {Array<Array<Object>>} the movements for the dot
+	 */
+	PDFGenerator.prototype._addEndSheet = function(movements) {
+	    this.pdf.addPage();
+	    this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
+	    var title = this.show.getTitle() + " - Dot " + this.dot;
+	    this.pdf.setFontSize(15);
+	    this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
+	    var paddingX = 2;
+	    var paddingY = .5;
+	    var textSize = 10;
+	    var textHeight = PDFUtils.getTextHeight(textSize);
+	    var labelSize = 20;
+	    var labelWidth = PDFUtils.getTextWidth("00", labelSize) + paddingX * 2;
+	    var labelHeight = PDFUtils.getTextHeight(labelSize);
+	    var widgetSize = 30;
+	    var continuitySize = WIDTH/2 - widgetSize - labelWidth - paddingX * 3 - SIDE_MARGIN;
+	    var x = 0;
+	    var y = 10;
+	    for (var i = 0; i < this.sheets.length; i++) {
+	        var sheet = this.sheets[i];
+	        var dot = sheet.getDotByLabel(this.dot);
+
+	        var height = widgetSize - 5;
+	        var continuityHeight = (dot.getMovementCommands().length + 1) * (textHeight + 1) + 2*paddingY;
+	        if (continuityHeight > height) {
+	            height = continuityHeight;
+	        }
+
+	        if (y + height > HEIGHT - 5) {
+	            if (x == 0) {
+	                x = WIDTH/2 + paddingX - SIDE_MARGIN;
+	            } else {
+	                this.pdf.addPage();
+	                this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
+	                this.pdf.setFontSize(15);
+	                this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
+	                x = 0;
+	            }
+	            y = 10;
+	        }
+	        this.pdf.setFontSize(labelSize);
+	        this.pdf.text(
+	            String(i + 1),
+	            x + paddingX + SIDE_MARGIN,
+	            y + paddingY + labelHeight
+	        );
+	        this.individualContinuityWidget.draw(
+	            x + labelWidth + paddingX + SIDE_MARGIN,
+	            y + paddingY,
+	            continuitySize,
+	            height,
+	            {
+	                dot: dot,
+	                duration: this.sheets[i].getDuration()
+	            }
+	        );
+	        var options = {
+	            sheet: sheet,
+	            dot: dot,
+	            minimal: true,
+	            movements: movements[i],
+	        };
+	        this.movementDiagramWidget.draw(
+	            x + labelWidth + continuitySize + paddingX + SIDE_MARGIN,
+	            y + paddingY,
+	            widgetSize,
+	            height,
+	            options
+	        );
+	        y += height + 2 * paddingY;
+	    }
+	};
+
+	module.exports = PDFGenerator;
+
+
+/***/ },
+/* 34 */
+/***/ function(module, exports) {
+
+	/**
+	 * @fileOverview Defines functions that will be useful for generating the PDF
+	 */
+
+	/**
+	 * The collection of all the utility functions defined in this file
+	 * @type {object}
+	 */
+	PDFUtils = {};
+
+	PDFUtils.DUMMY_PDF = jsPDF("portrait", "mm", "letter");
+
+	PDFUtils.SCALE_FACTOR = PDFUtils.DUMMY_PDF.internal.scaleFactor;
+
+	PDFUtils.DEFAULT_FONT_SIZE = 12;
+
+	/**
+	 * Returns the width of a String in millimeters
+	 * @param {String} text
+	 * @param {int} size, font size the text will be in
+	 */
+	PDFUtils.getTextWidth = function(text, size) {
+	    return this.DUMMY_PDF.getStringUnitWidth(text) * size/this.SCALE_FACTOR
+	};
+
+	/**
+	 * Returns the height of text in the current fontsize in millimeters
+	 * @param {int} size, font size the text will be in
+	 */
+	PDFUtils.getTextHeight = function(size) {
+	    return size/this.SCALE_FACTOR;
+	};
+
+	/**
+	 * Returns the text that will be shown for the given x-coordinate in
+	 * the form of "4N N40" to mean "4 steps North of the North-40"
+	 *
+	 * @param {int} x, the x-coordinate
+	 * @return {String} the display text for the x-coordinate
+	 */
+	PDFUtils.getXCoordinateText = function(x) {
+	    var steps = x % 8;
+	    var yardline = Math.floor(x / 8) * 5;
+
+	    if (steps > 4) { // closer to North-side yardline
+	        yardline += 5;
+	    }
+
+	    if (yardline < 50) {
+	        yardline = "S" + yardline;
+	    } else if (yardline == 50) {
+	        yardline = "50";
+	    } else {
+	        yardline = "N" + (100 - yardline);
+	    }
+
+	    if (steps > 4) {
+	        steps = 8 - steps;
+	        steps = Math.round(steps * 10) / 10;
+	        return steps + "S " + yardline;
+	    } else if (steps == 0) {
+	        return yardline;
+	    } else {
+	        steps = Math.round(steps * 10) / 10;
+	        return steps + "N " + yardline;
+	    }
+	};
+
+	/**
+	 * Returns the text that will be shown for the given y-coordinate in
+	 * the form of "8E EH" to mean "8 steps East of the East Hash"
+	 *
+	 * @param {int} y, the y-coordinate
+	 * @return {String} the display text for the y-coordinate
+	 */
+	PDFUtils.getYCoordinateText = function(y) {
+	    function round(val) {
+	        return Math.round(val * 10) / 10;
+	    };
+
+	    // West Sideline
+	    if (y == 0) {
+	        return "WS";
+	    }
+	    // Near West Sideline
+	    if (y <= 16) {
+	        return round(y) + " WS";
+	    }
+	    // West of West Hash
+	    if (y < 32) {
+	        return round(32 - y) + "W WH";
+	    }
+	    // West Hash
+	    if (y == 32) {
+	        return "WH";
+	    }
+	    // East of West Hash
+	    if (y <= 40) {
+	        return round(y - 32) + "E WH";
+	    }
+	    // West of East Hash
+	    if (y < 52) {
+	        return round(52 - y) + "W EH";
+	    }
+	    // East Hash
+	    if (y == 52) {
+	        return "EH";
+	    }
+	    // East of East Hash
+	    if (y <= 68) {
+	        return round(y - 52) + "E EH";
+	    }
+	    // Near East Sideline
+	    if (y < 84) {
+	        return round(84 - y) + " ES";
+	    }
+	    // East Sideline
+	    return "ES";
+	};
+
+	/**
+	 * Various jsPDF plugins that can be called by the jsPDF object itself
+	 */
+	(function (jsPDFAPI) {
+	    "use strict";
+
+	    /**
+	     * This jsPDF plugin draws a dot for the given dot type at the given coordinates
+	     * @param {String} dotType
+	     * @param {float} x
+	     * @param {float} y
+	     * @param {float} radius
+	     */
+	    jsPDFAPI.drawDot = function(dotType, x, y, radius) {
+	        this.setLineWidth(.1);
+	        if (dotType.indexOf("open") != -1) {
+	            this.setFillColor(255);
+	            this.circle(x, y, radius, "FD");
+	        } else {
+	            this.setFillColor(0);
+	            this.circle(x, y, radius, "FD");
+	        }
+
+	        radius += .1; // line radius sticks out of the circle
+	        if (dotType.indexOf("backslash") != -1 || dotType.indexOf("x") != -1) {
+	            this.line(
+	                x - radius, y - radius,
+	                x + radius, y + radius
+	            );
+	        }
+
+	        if (dotType.indexOf("forwardslash") != -1 || dotType.indexOf("x") != -1) {
+	            this.line(
+	                x - radius, y + radius,
+	                x + radius, y - radius
+	            );
+	        }
+	        this.setLineWidth(.3);
+	        this.setFillColor(0);
+	        return this;
+	    };
+
+	    /**
+	     * This jsPDF plugin resets PDF drawing options to default values, such as black
+	     * stroke, white fill, black text, etc.
+	     */
+	    jsPDFAPI.resetFormat = function() {
+	        this.setFontSize(PDFUtils.DEFAULT_FONT_SIZE);
+	        this.setTextColor(0);
+	        this.setDrawColor(0);
+	        this.setFillColor(255);
+	        this.setLineWidth(.3);
+	        return this;
+	    };
+
+	    /**
+	     * This jsPDF plugin draws a horizontal line from the given (x,y) coordinate to
+	     * the coordinate (x + width, y)
+	     *
+	     * @param {float} x
+	     * @param {float} y
+	     * @param {float} width
+	     */
+	    jsPDFAPI.hLine = function(x, y, width) {
+	        this.line(x, y, x + width, y);
+	    };
+
+	    /**
+	     * This jsPDF plugin draws a vertical line from the given (x,y) coordinate to
+	     * the coordinate (x, y + height)
+	     *
+	     * @param {float} x
+	     * @param {float} y
+	     * @param {float} height
+	     */
+	    jsPDFAPI.vLine = function(x, y, height) {
+	        this.line(x, y, x, y + height);
+	    };
+	})(jsPDF.API);
+
+	module.exports = PDFUtils;
+
+/***/ },
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the widget for generating the page's headers
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var PDFUtils = __webpack_require__(34);
+	var PDFWidget = __webpack_require__(36);
+
+	/**
+	 * @constant WIDTH is the width of the PDF document, in millimeters
+	 * @constant HEIGHT is the height of the PDF document, in millimeters
+	 * @constant SIDE_MARGIN is the left/right margin of the PDF document, in millimeters
+	 */
+	var WIDTH = 215.9;
+	var HEIGHT = 279.4;
+	var SIDE_MARGIN = 10;
+
+	/**
+	 * Represents the widget for a page's headers
+	 *
+	 * This widget will include the stuntsheet number, the dot number, the show title, and
+	 * the page number
+	 *
+	 * @param {jsPDF} pdf, the jsPDF object to be written to
+	 * @param {Object} options,
+	 *      - {String} dotLabel, the selected dot
+	 *      - {String} title, the title of the show
+	 *      - {int} totalSheets, the total number of sheets
+	 */
+	var HeaderWidget = function(pdf, options) {
+	    this.dotLabel = "Dot " + options["dotLabel"];
+	    this.title = options["title"];
+	    this.totalSheets = options["totalSheets"];
+	    this.totalPages = Math.ceil(this.totalSheets / 4);
+	    PDFWidget.apply(this, [pdf]);
+	};
+
+	JSUtils.extends(HeaderWidget, PDFWidget);
+
+	/**
+	 * Draws the Header Widget with the given options:
+	 *      - {int} pageNum, the current 1-indexed page number
+	 *      - {boolean} isLeftToRight, true if stuntsheets go from left to right, false otherwise
+	 */
+	HeaderWidget.prototype.draw = function(options) {
+	    var _this = this;
+	    var pageNum = options["pageNum"];
+	    var isLeftToRight = options["isLeftToRight"];
+
+	    var header = {
+	        x: WIDTH * 1/4,
+	        y: 5,
+	        width: WIDTH * 1/2,
+	        height: 17, // PDFUtils.getTextHeight(16) * 3
+	        paddingX: 3,
+	        paddingY: 1,
+	        size: 16
+	    };
+
+	    var pageInfo = {
+	        size: 12,
+	        draw: function(x, y) {
+	            _this.pdf.text("Page ", x, y);
+	            x += 10.9; // PDFUtils.getTextWidth("Page ", this.size)
+
+	            _this.pdf.text(String(pageNum), x, y - 1);
+	            x += PDFUtils.getTextWidth(String(pageNum), this.size);
+
+	            _this.pdf.text("/", x, y);
+	            x += 1.2; //PDFUtils.getTextWidth("/", this.size)
+
+	            _this.pdf.text(String(_this.totalPages), x, y + 1);
+	        }
+	    };
+
+	    var sheetInfo = {
+	        marginX: SIDE_MARGIN,
+	        marginY: 3,
+	        size: 28,
+	        sheet: (pageNum - 1) * 4 + 1,
+
+	        getTop: function() {
+	            return this.marginY + this.height;
+	        },
+
+	        getBottom: function() {
+	            return this.getTop() + HEIGHT/2;
+	        },
+
+	        getLeft: function() {
+	            return this.marginX;
+	        },
+
+	        getRight: function() {
+	            return WIDTH - PDFUtils.getTextWidth("SS " + this.sheet, this.size) - sheetInfo.marginX;
+	        },
+
+	        hasNext: function() {
+	            return ++this.sheet <= _this.totalSheets;
+	        },
+
+	        draw: function(x, y) {
+	            _this.pdf.text("SS " + this.sheet, x, y);
+	        }
+	    };
+
+	    /* Title and Page information */
+	    this.pdf.rect(header.x, header.y, header.width, header.height);
+
+	    /* Title */
+	    this.pdf.setFontSize(header.size);
+	    this.pdf.text(
+	        this.title,
+	        WIDTH/2 - PDFUtils.getTextWidth(this.title, header.size)/2,
+	        header.y + header.paddingY + PDFUtils.getTextHeight(header.size)
+	    );
+
+	    /* Dot */
+	    this.pdf.setFontSize(header.size - 3);
+	    this.pdf.text(
+	        this.dotLabel,
+	        WIDTH/2 - PDFUtils.getTextWidth(this.dotLabel, header.size)/2,
+	        header.y + header.paddingY + PDFUtils.getTextHeight(header.size) * 2
+	    );
+
+	    /* Page Info */
+	    this.pdf.setFontSize(pageInfo.size);
+	    var x = header.x + header.paddingX;
+	    var y = header.y + header.height/2 + PDFUtils.getTextHeight(pageInfo.size)/2;
+	    pageInfo.draw(x, y);
+
+	    x = WIDTH * 3/4 - header.paddingX - PDFUtils.getTextWidth("Page 0/0", pageInfo.size);
+	    pageInfo.draw(x, y);
+
+	    /* Stuntsheet */
+	    sheetInfo.height = PDFUtils.getTextHeight(sheetInfo.size);
+	    sheetInfo.width = PDFUtils.getTextWidth("SS 00", sheetInfo.size) + sheetInfo.marginX;
+	    this.pdf.setFontSize(sheetInfo.size);
+
+	    sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getTop());
+
+	    if (sheetInfo.hasNext()) {
+	        if (isLeftToRight) {
+	            sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
+	        } else {
+	            sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
+	        }
+	    }
+
+	    if (sheetInfo.hasNext()) {
+	        if (isLeftToRight) {
+	            sheetInfo.draw(sheetInfo.getLeft(), sheetInfo.getBottom());
+	        } else {
+	            sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getTop());
+	        }
+	    }
+
+	    if (sheetInfo.hasNext()) {
+	        sheetInfo.draw(sheetInfo.getRight(), sheetInfo.getBottom());
+	    }
+	};
+
+	module.exports = HeaderWidget;
+
+/***/ },
+/* 36 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines a base class for the PDFGenerator Widget classes
+	 */
+
+	 var PDFUtils = __webpack_require__(34);
+
+	/**
+	 * PDFWidget class
+	 *
+	 * Represents one of the widgets available on the PDFGenerator. Each widget draws
+	 * a different component of the PDF, which shows detailed information about a
+	 * given marcher on a given stuntsheet. This is an abstract class; do not make
+	 * an instance of this class directly.
+	 *
+	 * @param {jsPDF} pdf, the jsPDF object to be written to
+	 */
+	var PDFWidget = function(pdf) {
+	    this.pdf = pdf;
+	};
+
+	/**
+	 * Draws this widget onto the pdf, with whatever options passed into it as key-value
+	 * pairs. For example, the options passed into the individual continuity widget might be:
+	 *     {
+	 *          continuities: [<String>, <String>],
+	 *          duration: 32,
+	 *          ...
+	 *     }
+	 *
+	 * @param {float} x, the x-coordinate of the position of this widget
+	 * @param {float} y, the y-coordinate of the position of this widget
+	 * @param {float} width, the width of this widget
+	 * @param {float} height, the height of this widget
+	 * @param {Object} options, the options necessary to draw a given widget as key-value pairs
+	 */
+	PDFWidget.prototype.draw = function(x, y, width, height, options) {
+	    console.log("draw called");
+	};
+
+	/**
+	 * A helper method for widgets that utilize a box that draws field-related
+	 * information such as movements, formations, or nearby dots. Draws the confining
+	 * box and the EWNS directions.
+	 *
+	 * @param {float} x, the x-coordinate of the top-left corner of the box
+	 * @param {float} y, the y-coordinate of the top-left corner of the box
+	 * @param {float} width, the width of the box
+	 * @param {float} height, the height of the box
+	 * @param {boolean} westUp, true if West on top of the box, false otherwise
+	 * @param {boolean} minimal, true to draw as little of the box as possible, false otherwise
+	 */
+	PDFWidget.prototype._drawBox = function(x, y, width, height, westUp, minimal) {
+	    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
+	    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
+
+	    // labels for sides of box
+	    var top, bottom, left, right;
+	    if (westUp) {
+	        top = "W";
+	        bottom = "E";
+	        left = "S";
+	        right = "N";
+	    } else {
+	        top = "E";
+	        bottom = "W";
+	        left = "N";
+	        right = "S";
+	    }
+
+	    this.pdf.setFontSize(PDFUtils.DEFAULT_FONT_SIZE);
+	    if (!minimal) {
+	        this.pdf.text(
+	            top,
+	            x + width/2 - textWidth/2 - .5,
+	            y - 2
+	        );
+	        this.pdf.text(
+	            bottom,
+	            x + width/2 - textWidth/2 - .5,
+	            y + height + textHeight
+	        );
+	    }
+	    this.pdf.text(
+	        left,
+	        x - textWidth - 1,
+	        y + height/2 + textHeight/2
+	    );
+	    this.pdf.text(
+	        right,
+	        x + width + 1,
+	        y + height/2 + textHeight/2
+	    );
+	    this.pdf.rect(x, y, width, height);
+	    this.pdf.resetFormat();
+	};
+
+	/**
+	 * A helper function for widgets that draws yardlines, hashes, and numbers.
+	 *
+	 * @param {object} box, holds the PDF properties of the enclosing box
+	 * @param {object} viewport, holds the marching properties of the enclosing box
+	 *      - {float} north, steps from the north sideline to the edge of the view
+	 *      - {float} south, steps from the south sideline to the edge of the view
+	 *      - {float} east, steps from the east sideline to the edge of the view
+	 *      - {float} west, steps from the west sideline to the edge of the view
+	 *      - {boolean} westUp, true if the box is oriented with the west sideline on top
+	 * @param {float} scale, the multiplier to convert from steps to pdf units
+	 */
+	PDFWidget.prototype._drawYardlines = function(box, viewport, scale) {
+	    var yardlineSize = box.height * 12/47.1; // at the usual height, yardline text should be 12
+	    this.pdf.setFontSize(yardlineSize);
+
+	    // get the y-coordinates of the hashes and yardlines
+	    var eastHash = viewport.west < 52 && viewport.east > 52;
+	    var westHash = viewport.west < 32 && viewport.east > 32;
+	    var eastHashY, westHashY, yardline;
+	    if (viewport.westUp) {
+	        eastHashY = box.y + (52 - viewport.west) * scale;
+	        westHashY = box.y + (32 - viewport.west) * scale;
+	        yardline = Math.ceil(viewport.south/8) * 5;
+	        viewport.left = viewport.south;
+	    } else {
+	        eastHashY = box.y + (viewport.east - 52) * scale;
+	        westHashY = box.y + (viewport.east - 32) * scale;
+	        yardline = Math.floor(viewport.north/8) * 5;
+	        viewport.left = viewport.north;
+	    }
+
+	    // EAST-WEST LINES
+
+	    var top = viewport.westUp ? viewport.west : viewport.east;
+	    var topY = viewport.westUp ? Math.ceil(top/4) : Math.floor(top/4);
+	    var orientationFactor = viewport.westUp ? -1 : 1;
+	    var deltaY = Math.abs(topY * 4 - top);
+	    var deltaNorth = scale * Math.max(0, viewport.north - 160);
+	    var deltaSouth = scale * Math.min(0, viewport.south);
+	    var deltaLeft = viewport.westUp ? deltaSouth : deltaNorth;
+	    var deltaRight = viewport.westUp ? deltaNorth : deltaSouth;
+	    for (; scale * deltaY < box.height; deltaY += 4) {
+	        var stepsY = top - orientationFactor * deltaY;
+	        // don't make lines past sidelines
+	        if (stepsY < 0 || stepsY > 84) {
+	            continue;
+	        }
+
+	        // darken sidelines
+	        if (stepsY % 84 === 0) {
+	            this.pdf.setDrawColor(0);
+	        } else {
+	            this.pdf.setDrawColor(200);
+	        }
+
+	        // stop lines at endzones
+	        this.pdf.hLine(
+	            box.x,
+	            box.y + deltaY * scale + deltaLeft,
+	            box.width + orientationFactor * (deltaRight - deltaLeft)
+	        );
+	    }
+
+	    // YARDLINES
+
+	    // position of first yardline from edge of viewport
+	    var deltaX = Math.abs(yardline * 8/5 - viewport.left) * scale;
+	    var hashLength = 3;
+	    var isSplitting = false;
+
+	    // 4-step line before first line
+	    if (deltaX > scale * 4) {
+	        deltaX -= scale * 4;
+	        isSplitting = true;
+	    }
+
+	    // helper function to draw yardlines that may end at a sideline
+	    var _this = this;
+	    var deltaEast = scale * Math.max(0, viewport.east - 84);
+	    var deltaWest = scale * Math.min(0, viewport.west);
+	    var deltaTop = viewport.westUp ? deltaWest : deltaEast;
+	    var deltaBottom = viewport.westUp ? deltaEast : deltaWest;
+	    var orientationFactor = viewport.westUp ? -1 : 1;
+	    var drawYardline = function(yardlineX) {
+	        _this.pdf.vLine(
+	            yardlineX,
+	            box.y + deltaTop,
+	            box.height + orientationFactor * (deltaBottom - deltaTop)
+	        )
+	    };
+
+	    // draw yardlines
+	    this.pdf.setTextColor(150);
+	    for (; deltaX < box.width; deltaX += scale * 4, isSplitting = !isSplitting) {
+	        var yardlineX = box.x + deltaX;
+
+	        // drawing the yardline
+	        if (isSplitting) {
+	            this.pdf.setDrawColor(200);
+	            drawYardline(yardlineX);
+	            continue;
+	        }
+
+	        this.pdf.setDrawColor(0);
+	        drawYardline(yardlineX);
+
+	        // drawing hashes
+	        if (westHash) {
+	            this.pdf.hLine(
+	                yardlineX - hashLength/2,
+	                westHashY,
+	                hashLength
+	            );
+	        }
+	        if (eastHash) {
+	            this.pdf.hLine(
+	                yardlineX - hashLength/2,
+	                eastHashY,
+	                hashLength
+	            );
+	        }
+
+	        // writing yardline numbers
+	        var yardlineText = "";
+	        if (yardline < 50) {
+	            yardlineText = String(yardline);
+	        } else {
+	            yardlineText = String(100 - yardline);
+	        }
+	        if (yardlineText.length === 1) {
+	            yardlineText = "0" + yardlineText;
+	        }
+	        var halfTextWidth = PDFUtils.getTextWidth(yardlineText, yardlineSize)/2;
+	        if (deltaX > halfTextWidth) { // include first character if room
+	            this.pdf.text(
+	                yardlineText[0],
+	                yardlineX - halfTextWidth - .5,
+	                box.y + box.height - 2
+	            );
+	        }
+	        if (deltaX < box.width - halfTextWidth) { // include second character if room
+	            this.pdf.text(
+	                yardlineText[1],
+	                yardlineX + .5,
+	                box.y + box.height - 2
+	            );
+	        }
+
+	        // go to next yardline
+	        yardline += viewport.westUp ? 5 : -5;
+	        if (yardline < 0 || yardline > 100) {
+	            break;
+	        }
+	    }
+
+	    this.pdf.resetFormat();
+	};
+
+	module.exports = PDFWidget;
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the widget for generating a dot type's continuity
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var PDFUtils = __webpack_require__(34);
+	var PDFWidget = __webpack_require__(36);
+
+	/**
+	 * Represents the widget for a given dot type's continuity
+	 *
+	 * This widget will include an image of the dot type and the overall dot type continuity
+	 *
+	 * @param {jsPDF} pdf, the jsPDF object to be written to
+	 */
+	var DotContinuityWidget = function(pdf) {
+	    PDFWidget.apply(this, [pdf]);
+	};
+
+	JSUtils.extends(DotContinuityWidget, PDFWidget);
+
+	/**
+	 * Draws the Dot Continuity Widget with the given options:
+	 *      - {Sheet} sheet, the current sheet
+	 *      - {String} dotType, the type of dot to draw
+	 */
+	DotContinuityWidget.prototype.draw = function(x, y, width, height, options) {
+	    var _this = this;
+
+	    var box = {
+	        paddingX: 2,
+	        paddingY: 1
+	    };
+	    var text = {
+	        x: x + box.paddingX,
+	        y: y + box.paddingY,
+	        size: 10
+	    };
+	    var dotType = options["dotType"];
+	    var maxWidth = width - box.paddingX * 2 - 6;
+	    var maxHeight = height - box.paddingY * 2 - 3;
+	    var continuities = options["sheet"].getContinuityTexts(dotType);
+
+	    this.pdf.rect(x, y, width, height - 1.5);
+
+	    // fail-safe for sheets without Continuity Texts
+	    if (typeof continuities === "undefined") {
+	        return;
+	    }
+
+	    continuities = continuities.map(function(continuity) {
+	        while (PDFUtils.getTextWidth(continuity, text.size) > maxWidth) {
+	            text.size--;
+	        }
+	        return continuity;
+	    });
+
+	    while (continuities.length * PDFUtils.getTextHeight(text.size) > maxHeight) {
+	        text.size--;
+	    }
+
+	    this.pdf.drawDot(
+	        dotType,
+	        text.x + 1.5,
+	        text.y + 2,
+	        1.5
+	    );
+	    text.x += 4;
+	    this.pdf.setFontSize(10);
+	    this.pdf.text(
+	        ":",
+	        text.x,
+	        text.y + PDFUtils.getTextHeight(10)
+	    );
+	    this.pdf.setFontSize(text.size);
+	    text.x += 2;
+	    text.y += PDFUtils.getTextHeight(text.size);
+	    this.pdf.text(
+	        continuities,
+	        text.x,
+	        text.y
+	    );
+	    this.pdf.resetFormat();
+	};
+
+	module.exports = DotContinuityWidget;
+
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the widget for generating a dot's individual continuity
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var PDFUtils = __webpack_require__(34);
+	var PDFWidget = __webpack_require__(36);
+
+	/**
+	 * Represents the widget for a given dot's individual continuity
+	 *
+	 * This widget will include each movement for the dot and the duration of the stuntsheet
+	 *
+	 * @param {jsPDF} pdf, the jsPDF object to be written to
+	 */
+	var IndividualContinuityWidget = function(pdf) {
+	    PDFWidget.apply(this, [pdf]);
+	};
+
+	JSUtils.extends(IndividualContinuityWidget, PDFWidget);
+
+	/**
+	 * Draws the Individual Continuity Widget with the given options:
+	 *      - {Dot} dot, the selected dot
+	 *      - {int} duration, the total beats of all the continuities
+	 */
+	IndividualContinuityWidget.prototype.draw = function(x, y, width, height, options) {
+	    var continuities = this._getContinuityTexts(options["dot"]);
+
+	    var box = {
+	        paddingX: 2,
+	        paddingY: 1,
+	        size: 10
+	    };
+	    var textHeight = PDFUtils.getTextHeight(box.size);
+	    var textY = y + box.paddingY;
+	    var textX = x + box.paddingX;
+	    var maxWidth = 0; // keeps track of longest continuity length
+	    var deltaY = 0; // keeps track of total height of all continuities
+
+	    this.pdf.rect(x, y, width, height);
+	    this.pdf.setFontSize(box.size);
+
+	    for (var i = 0; i < continuities.length; i++) {
+	        var continuity = continuities[i];
+	        var length = PDFUtils.getTextWidth(continuity, box.size);
+	        if (length > maxWidth) {
+	            maxWidth = length;
+	        }
+	        deltaY += textHeight + .7;
+	        if (deltaY > height - textHeight - box.paddingY) {
+	            if (maxWidth < width/2 && textX < width/2) {
+	                textX += width/2;
+	                deltaY = textHeight + .7;
+	            } else {
+	                this.pdf.text("...", textX, textY + deltaY - textHeight/2);
+	                break;
+	            }
+	        }
+
+	        this.pdf.text(
+	            continuity,
+	            textX,
+	            textY + deltaY
+	        );
+	    }
+
+	    var totalLabel = options["duration"] + " beats total";
+	    this.pdf.text(
+	        totalLabel,
+	        x + width/2 - PDFUtils.getTextWidth(totalLabel, box.size)/2 - 3,
+	        y + height - box.paddingY
+	    );
+	    this.pdf.resetFormat();
+	};
+
+	/*
+	 * Returns the selected dot's individual continuity texts
+	 *
+	 * @param {Dot} dot, the selected dot
+	 * @return {Array<String>} an Array of continuity texts for each sheet
+	 */
+	IndividualContinuityWidget.prototype._getContinuityTexts = function(dot) {
+	    var continuities = [];
+	    dot.getMovementCommands().forEach(function(movement) {
+	        var text = movement.getContinuityText();
+	        if (text !== "") {
+	            continuities.push(text);
+	        }
+	    });
+	    return continuities;
+	};
+
+	module.exports = IndividualContinuityWidget;
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the widget for generating a dot's movement diagram
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var PDFUtils = __webpack_require__(34);
+	var PDFWidget = __webpack_require__(36);
+
+	/**
+	 * Represents the widget for a given dot's movement diagram
+	 *
+	 * This widget will include lines that show the movement of the dot, with
+	 * a circle at the start and a cross at the end.
+	 *
+	 * @param {jsPDF} pdf, the jsPDF object to be written to
+	 * @param {String} orientation, the direction on the top of the box
+	 */
+	var MovementDiagramWidget = function(pdf, orientation) {
+	    this.westUp = orientation == "west";
+	    PDFWidget.apply(this, [pdf]);
+	};
+
+	JSUtils.extends(MovementDiagramWidget, PDFWidget);
+
+	/**
+	 * Draws the Movement Diagram Widget with the given options:
+	 *      - {Array<Object>} movements, a list of every movement as an object containing:
+	 *          + startPosition
+	 *          + deltaX
+	 *          + deltaY
+	 *      - {boolean} minimal, true if drawing as little of the widget as possible, false otherwise
+	 */
+	MovementDiagramWidget.prototype.draw = function(x, y, width, height, options) {
+	    var _this = this;
+	    var movements = options["movements"];
+
+	    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
+	    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
+
+	    var box = {
+	        x: x,
+	        y: options.minimal ? y + textHeight : y,
+	        width: width - 2 * (textWidth + 2),
+	        height: height - 2 * textHeight,
+	    };
+
+	    box.x += width/2 - box.width/2;
+	    box.y += height/2 - box.height/2;
+
+	    if (options["minimal"]) {
+	        box.y -= textHeight;
+	    }
+
+	    this._drawBox(
+	        box.x,
+	        box.y,
+	        box.width,
+	        box.height,
+	        this.westUp,
+	        options["minimal"]
+	    );
+
+	    var start = movements[0].startPosition;
+
+	    // calculates scale of viewport
+	    var viewport = {
+	        startX: start.x,
+	        startY: start.y,
+	        minX: 0, // minX <= 0, maximum movement South
+	        minY: 0, // minY <= 0, maximum movement West
+	        maxX: 0, // maxX >= 0, maximum movement North
+	        maxY: 0, // maxY >= 0, maximum movement East
+	        deltaX: 0, // overall change in NS
+	        deltaY: 0, // overall change in EW
+	        width: 20, // in steps
+	        height: box.height/box.width * 20, // in steps, keeping height/width ratio
+	        update: function(x, y) {
+	            this.deltaX += x;
+	            this.deltaY += y;
+	            if (this.deltaX < this.minX) {
+	                this.minX = this.deltaX;
+	            } else if (this.deltaX > this.maxX) {
+	                this.maxX = this.deltaX;
+	            }
+
+	            if (this.deltaY < this.minY) {
+	                this.minY = this.deltaY;
+	            } else if (this.deltaY > this.maxY) {
+	                this.maxY = this.deltaY;
+	            }
+	        },
+	        getOverallX: function() {
+	            return this.maxX - this.minX;
+	        },
+	        getOverallY: function() {
+	            return this.maxY - this.minY;
+	        },
+	        scale: function() {
+	            var deltaX = this.getOverallX();
+	            var deltaY = this.getOverallY();
+	            if (deltaX > this.width - 4) {
+	                this.width = deltaX + 4;
+	                this.height = box.height/box.width * this.width;
+	            }
+	            if (deltaY > this.height - 4) {
+	                this.height = deltaY + 4;
+	                this.width = box.width/box.height * this.height;
+	            }
+	        }
+	    };
+
+	    movements.forEach(function(move) {
+	        viewport.update(move.deltaX, move.deltaY);
+	    });
+	    viewport.scale();
+
+	    var scale = box.width / viewport.width;
+
+	    // steps from sideline until start of viewport
+	    var south = viewport.startX + viewport.maxX - viewport.getOverallX()/2 - viewport.width/2;
+	    var west = viewport.startY + viewport.maxY - viewport.getOverallY()/2 - viewport.height/2;
+	    var north = south + viewport.width;
+	    var east = west + viewport.height;
+
+	    // renaming variables in terms of box for ease of abstraction
+	    var top, bottom, left, right;
+	    // first yardline in viewport
+	    var yardline;
+	    if (this.westUp) {
+	        top = west;
+	        bottom = east;
+	        left = south;
+	        right = north;
+	        yardline = Math.ceil(left/8) * 5;
+	    } else {
+	        top = east;
+	        bottom = west;
+	        left = north;
+	        right = south;
+	        yardline = Math.floor(left/8) * 5;
+	    }
+	    var yardlineViewport = {
+	        east: east,
+	        west: west,
+	        south: south,
+	        north: north,
+	        westUp: this.westUp,
+	    };
+
+	    this._drawYardlines(box, yardlineViewport, scale);
+
+	    var currX = box.x + Math.abs(left - viewport.startX) * scale;
+	    var currY = box.y + Math.abs(top - viewport.startY) * scale;
+	    var spotRadius = box.height / 15;
+	    var orientationFactor = (this.westUp) ? 1 : -1;
+
+	    this.pdf.setLineWidth(0.5);
+	    this.pdf.circle(currX, currY, spotRadius);
+	    this._drawPosition(
+	        box,
+	        viewport.startY,
+	        currY - box.y,
+	        Math.abs(left - viewport.startX) < Math.abs(left - right) / 2
+	    );
+
+	    this.pdf.setLineWidth(0.75);
+	    movements.forEach(function(movement) {
+	        var deltaX = orientationFactor * movement.deltaX * scale;
+	        var deltaY = orientationFactor * movement.deltaY * scale;
+	        _this.pdf.line(currX, currY, currX + deltaX, currY + deltaY);
+	        currX += deltaX;
+	        currY += deltaY;
+	    });
+
+	    this.pdf.setLineWidth(0.5);
+	    this.pdf.line(
+	        currX - spotRadius, currY - spotRadius,
+	        currX + spotRadius, currY + spotRadius
+	    );
+	    this.pdf.line(
+	        currX + spotRadius, currY - spotRadius,
+	        currX - spotRadius, currY + spotRadius
+	    );
+	    if (viewport.deltaY != 0) {
+	        this._drawPosition(
+	            box,
+	            viewport.startY + viewport.deltaY,
+	            currY - box.y,
+	            Math.abs(left - viewport.startX - viewport.deltaX) < Math.abs(left - right) / 2
+	        );
+	    }
+	    this.pdf.resetFormat();
+	};
+
+	/**
+	 * Draws the lines for the y-coordinate of the given position
+	 *
+	 * @param {object} box, holds the various properties of the enclosing box
+	 * @param {int} y, the y-coordinate of the dot's position in steps from west sideline
+	 * @param {float} offset, distance from top of box to dot position
+	 * @param {boolean} closeToLeft, true if dot is close to the left side of the box, false otherwise
+	 */
+	MovementDiagramWidget.prototype._drawPosition = function(box, y, offset, closeToLeft) {
+	    var lineY = box.y + offset;
+	    var text = PDFUtils.getYCoordinateText(y);
+	    this.pdf.setFontSize(8);
+	    if (closeToLeft) {
+	        this.pdf.text(
+	            text,
+	            box.x + box.width - PDFUtils.getTextWidth(text, 8) - .5,
+	            lineY - .5
+	        );
+	    } else {
+	        this.pdf.text(
+	            text,
+	            box.x + .5,
+	            lineY - .5
+	        );
+	    }
+	    this.pdf.resetFormat();
+	};
+
+	module.exports = MovementDiagramWidget;
+
+
+/***/ },
 /* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
-	 * @fileOverview Defines the Coordinate struct.
+	 * @fileOverview Defines the widget for generating the bird's eye view widget
 	 */
+
+	var JSUtils = __webpack_require__(9);
+	var PDFUtils = __webpack_require__(34);
+	var PDFWidget = __webpack_require__(36);
 
 	/**
-	 * A Coordinate struct marks a two-dimensional position:
-	 * {x: __,y: __}.
+	 * Represents the widget for the bird's eye view
 	 *
-	 * @param {float} x The x component of the coordinate.
-	 * @param {float} y The y component of the coordinate.
+	 * This widget will include the overall formation with grayed out dots, with
+	 * the selected dot being darkened, and coordinates for the selected dot. (See
+	 * the PDFUtils file for the format of the coordinates)
+	 *
+	 * @param {jsPDF} pdf, the jsPDF object to be written to
+	 * @param {String} orientation, the direction on the top of the box
 	 */
-	var Coordinate = function(x, y) {
-	    this.x = x;
-	    this.y = y;
+	var BirdsEyeWidget = function(pdf, orientation) {
+	    this.westUp = (orientation === "west") ? true : false;
+	    PDFWidget.apply(this, [pdf]);
 	};
 
-	module.exports = Coordinate;
+	JSUtils.extends(BirdsEyeWidget, PDFWidget);
+
+	/**
+	 * Draws the Bird's Eye Widget with the given options:
+	 *      - {Sheet} sheet, the current sheet
+	 *      - {Dot} dot, the selected dot
+	 *      - {boolean} minimal, true if drawing as little of the widget as possible, false otherwise
+	 */
+	BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
+	    var _this = this;
+
+	    var textWidth = PDFUtils.getTextWidth("S", PDFUtils.DEFAULT_FONT_SIZE);
+	    var textHeight = PDFUtils.getTextHeight(PDFUtils.DEFAULT_FONT_SIZE);
+	    var boxWidth = width - 2 * (textWidth + 1.5);
+
+	    var box = {
+	        x: x,
+	        y: y,
+	        width: boxWidth,
+	        height: boxWidth * 84/160 // maintain aspect ratio of field
+	    };
+
+	    // center box
+	    box.x += width/2 - box.width/2;
+	    box.y += height/2 - box.height/2;
+
+	    this._drawBox(box.x, box.y, box.width, box.height, this.westUp, options["minimal"]);
+
+	    var dots = options["sheet"].getDots();
+	    var selectedDot = options["dot"];
+	    var scale = box.width / 160; // units per step
+
+	    // drawing hashes
+	    this.pdf.setLineWidth(.2);
+	    var numDashes = 21;
+	    var dashLength = box.width / numDashes;
+	    var topHash = box.y + 32 * scale;
+	    var bottomHash = box.y + 52 * scale;
+	    this.pdf.setDrawColor(150);
+	    for (var i = 0; i < numDashes; i += 2) {
+	        var x = box.x + i * dashLength;
+	        this.pdf.hLine(x, topHash, dashLength);
+	        this.pdf.hLine(x, bottomHash, dashLength);
+	    }
+
+	    // drawing all the dots
+	    this.pdf.setFillColor(210);
+	    dots.forEach(function(dot) {
+	        if (dot === selectedDot) {
+	            return;
+	        }
+	        var position = dot.getAnimationState(0);
+	        if (!_this.westUp) {
+	            position.x = 160 - position.x;
+	            position.y = 84 - position.y;
+	        }
+	        _this.pdf.circle(
+	            box.x + position.x * scale,
+	            box.y + position.y * scale,
+	            .5,
+	            "F"
+	        );
+	    });
+
+	    // drawing selected dot
+	    var position = selectedDot.getAnimationState(0);
+	    var coordinates = {
+	        textSize: 8,
+	        textX: PDFUtils.getXCoordinateText(position.x),
+	        textY: PDFUtils.getYCoordinateText(position.y)
+	    };
+
+	    if (!this.westUp) {
+	        position.x = 160 - position.x;
+	        position.y = 84 - position.y;
+	    }
+	    var x = position.x * scale;
+	    var y = position.y * scale;
+
+	    coordinates.x = box.x + x - PDFUtils.getTextWidth(coordinates.textX, coordinates.textSize)/2;
+	    coordinates.y = box.y + y + PDFUtils.getTextHeight(coordinates.textSize)/4;
+
+	    this.pdf.setFillColor(0);
+	    this.pdf.setDrawColor(180);
+	    this.pdf.setFontSize(coordinates.textSize);
+
+	    this.pdf.vLine(box.x + x, box.y, box.height);
+	    this.pdf.hLine(box.x, box.y + y, box.width);
+
+	    // Put vertical coordinate text on opposite side of the field
+	    if (position.x > 80) {
+	        this.pdf.text(
+	            coordinates.textY,
+	            box.x + 1,
+	            coordinates.y
+	        );
+	    } else {
+	        this.pdf.text(
+	            coordinates.textY,
+	            box.x + box.width - PDFUtils.getTextWidth(coordinates.textY, coordinates.textSize) - 1,
+	            coordinates.y
+	        );
+	    }
+
+	    // Put horizontal coordinate text on opposite side of the field
+	    if (position.y > 42) {
+	        this.pdf.text(
+	            coordinates.textX,
+	            coordinates.x,
+	            box.y + PDFUtils.getTextHeight(coordinates.textSize)
+	        );
+	    } else {
+	        this.pdf.text(
+	            coordinates.textX,
+	            coordinates.x,
+	            box.y + box.height - 1
+	        );
+	    }
+	    this.pdf.circle(box.x + x, box.y + y, .5, "F");
+	    this.pdf.resetFormat();
+	};
+
+	module.exports = BirdsEyeWidget;
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @fileOverview Defines the widget for generating the surrounding dots widget
+	 */
+
+	var JSUtils = __webpack_require__(9);
+	var PDFUtils = __webpack_require__(34);
+	var PDFWidget = __webpack_require__(36);
+
+	// font size is smaller for dot labels
+	FONT_SIZE = 7;
+	DOT_RADIUS = 1;
+
+	/**
+	 * Represents the widget for the surrounding dots
+	 *
+	 * This widget will include a close up of the surrounding area of a 4-step radius,
+	 * with dots and dot labels marking any dots nearby the selected dot, which is
+	 * in the middle of the widget.
+	 *
+	 * @param {jsPDF} pdf, the jsPDF object to be written to
+	 * @param {String} orientation, the direction on the top of the box
+	 */
+	var SurroundingDotsWidget = function(pdf, orientation) {
+	    this.westUp = orientation === "west";
+	    PDFWidget.apply(this, [pdf]);
+	};
+
+	JSUtils.extends(SurroundingDotsWidget, PDFWidget);
+
+	/**
+	 * Draws the Surrounding Dots Widget with the given options:
+	 *      - {Sheet} sheet, the current sheet
+	 *      - {Dot} dot, the selected dot
+	 *      - {boolean} minimal, true if drawing as little of the widget as possible, false otherwise
+	 */
+	SurroundingDotsWidget.prototype.draw = function(x, y, width, height, options) {
+	    var _this = this;
+
+	    var textWidth = PDFUtils.getTextWidth("S", FONT_SIZE);
+	    var textHeight = PDFUtils.getTextHeight(FONT_SIZE);
+
+	    var box = {
+	        x: x,
+	        y: y,
+	        width: width - 2 * (textWidth + 2),
+	        height: height - 2 * (textHeight + 2),
+	    };
+
+	    // center box
+	    box.x += width/2 - box.width/2;
+	    box.y += height/2 - box.height/2;
+
+	    if (options.minimal) {
+	        box.y -= textHeight;
+	    }
+
+	    this._drawBox(box.x, box.y, box.width, box.height, this.westUp, options.minimal);
+
+	    var origin = {
+	        x: box.x + box.width/2,
+	        y: box.y + box.height/2
+	    };
+	    var sheet = options.sheet;
+	    var start = options.dot.getAnimationState(0);
+	    var orientationFactor = this.westUp ? 1 : -1;
+	    var scale = box.height / 19.5; // radius of 8 steps + 1.75 steps of padding
+
+	    // YARDLINES
+	    var radiusX = 14;
+	    var radiusY = 8;
+	    var left = this.westUp ? start.x - radiusX : start.x + radiusX;
+	    var viewport = {
+	        east: start.y + box.height/2 / scale,
+	        west: start.y - box.height/2 / scale,
+	        north: start.x + box.width/2 / scale,
+	        south: start.x - box.width/2 / scale,
+	        westUp: this.westUp,
+	    };
+	    this._drawYardlines(box, viewport, scale);
+
+	    // DOTS
+	    this.pdf.setFontSize(FONT_SIZE);
+	    sheet.getDots().forEach(function(dot) {
+	        var position = dot.getAnimationState(0);
+	        var deltaX = orientationFactor * (position.x - start.x);
+	        var deltaY = orientationFactor * (position.y - start.y);
+	        if (Math.abs(deltaX) > radiusX || Math.abs(deltaY) > radiusY) {
+	            return;
+	        }
+
+	        var label = dot.getLabel();
+	        if (deltaX === 0 && deltaY === 0) {
+	            _this.pdf.setFontStyle("bold");
+	        } else {
+	            _this.pdf.setFontStyle("normal");
+	        }
+
+	        var x = deltaX * scale + origin.x;
+	        var y = deltaY * scale + origin.y;
+	        _this.pdf.drawDot(sheet.getDotType(label), x, y, DOT_RADIUS);
+	        _this.pdf.text(label, x - DOT_RADIUS * 2, y - DOT_RADIUS * 1.5);
+	    });
+
+	    this.pdf.resetFormat();
+	};
+
+	module.exports = SurroundingDotsWidget;
 
 /***/ }
-/******/ ])
+/******/ ]);

@@ -1,3 +1,7 @@
+@font-face {
+  font-family: "icomoon";
+  src: url("../../other/fonts/icomoon.ttf") format("truetype");
+}
 body {
   padding-top: 20px;
   height: 100%;
@@ -54,20 +58,20 @@ body {
 .header .pdf-option.widget-orientation .labels {
   padding-right: 15px;
 }
-.header .pdf-option .js-dot-labels {
-  width: 200px;
-}
-.header .pdf-option .js-dot-labels + .chosen-container .chosen-choices {
-  height: 65px !important;
-  background-image: none;
-}
-.header .pdf-option .js-dot-labels + .chosen-container .search-field {
-  margin: 3px 0;
-  padding: 2px;
-}
-.header .pdf-option .choose-all-dots {
+.header .pdf-option.choose-dots span {
+  margin-left: 5px;
+  font-size: 0.8em;
   font-weight: normal;
-  float: right;
+}
+.header .pdf-option.choose-dots textarea {
+  width: 75%;
+  height: 65px;
+  resize: none;
+  vertical-align: middle;
+}
+.header .pdf-option.choose-dots div {
+  width: 100px;
+  text-align: center;
 }
 .js-pdf-loading {
   text-align: center;
@@ -80,7 +84,7 @@ body {
   font-weight: normal;
   font-size: 32px;
   margin-bottom: 15px;
-  color: #fdb515;
+  color: #FDB515;
 }
 .js-pdf-loading h1.error {
   color: #ff0000;
