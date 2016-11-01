@@ -90,6 +90,10 @@ BirdsEyeWidget.prototype.draw = function(x, y, width, height, options) {
 
     // drawing selected dot
     var position = selectedDot.getAnimationState(0);
+    if (!this.westUp) {
+        position.x = 160 - position.x;
+        position.y = 84 - position.y;
+    }
     var x = position.x * scale;
     var y = position.y * scale;
 
