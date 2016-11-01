@@ -59,8 +59,8 @@ var PDFGenerator = function(show, dots) {
  * @return {string} the PDF data
  */
 PDFGenerator.prototype.generate = function(options) {
-    // 4 stuntsheets per page + endsheet
-    var totalPages = Math.ceil(this.sheets.length / 4) + 1;
+    // 4 stuntsheets per page + front sheet + endsheet
+    var totalPages = Math.ceil(this.sheets.length / 4) + 2;
 
     for (var i = 0; i < this.dots.length; i++) {
         if (i !== 0) {
