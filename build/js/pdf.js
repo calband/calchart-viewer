@@ -2311,11 +2311,11 @@
 	    this.birdsEyeWidget = new BirdsEyeWidget(this.pdf, options["bev-orientation"]);
 	    this.surroundingDotsWidget = new SurroundingDotsWidget(this.pdf, options["sd-orientation"]);
 
+	    this._addFrontSheet();
+
 	    var movements = this._getMovements();
 	    for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
-	        if (pageNum != 0) {
-	            this.pdf.addPage();
-	        }
+	        this.pdf.addPage();
 
 	        var pageSheets = []
 	        for (var i = 0; i < 4; i++) {
@@ -2436,6 +2436,65 @@
 	        moves.push(lines);
 	    });
 	    return moves;
+	};
+
+	/**
+	 * Draws the front sheet which shows the birds eye view for all stuntsheets. Copied
+	 * mostly from endsheet
+	 */
+	PDFGenerator.prototype._addFrontSheet = function() {
+	    this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
+	    var title = this.show.getTitle() + " - Dot " + this.dot;
+	    this.pdf.setFontSize(15);
+	    this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
+	    var paddingX = 2;
+	    var paddingY = .5;
+	    var textSize = 10;
+	    var textHeight = PDFUtils.getTextHeight(textSize);
+	    var labelSize = 20;
+	    var labelWidth = PDFUtils.getTextWidth("00", labelSize) + paddingX * 2;
+	    var labelHeight = PDFUtils.getTextHeight(labelSize);
+	    var width = WIDTH/2 - labelWidth - paddingX * 3 - SIDE_MARGIN;
+	    var height = width * 84/160; // aspect ratio from BirdsEyeWidget
+	    var x = 0;
+	    var y = 10;
+	    for (var i = 0; i < this.sheets.length; i++) {
+	        var sheet = this.sheets[i];
+	        var dot = sheet.getDotByLabel(this.dot);
+
+	        if (y + height > HEIGHT - 5) {
+	            if (x === 0) {
+	                x = WIDTH/2 + paddingX - SIDE_MARGIN;
+	            } else {
+	                this.pdf.addPage();
+	                this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
+	                this.pdf.setFontSize(15);
+	                this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
+	                x = 0;
+	            }
+	            y = 10;
+	        }
+
+	        this.pdf.setFontSize(labelSize);
+	        this.pdf.text(
+	            String(i + 1),
+	            x + paddingX + SIDE_MARGIN,
+	            y + paddingY + labelHeight
+	        );
+	        var options = {
+	            sheet: sheet,
+	            dot: dot,
+	            minimal: true,
+	        };
+	        this.birdsEyeWidget.draw(
+	            x + labelWidth + paddingX + SIDE_MARGIN,
+	            y + paddingY,
+	            width,
+	            height,
+	            options
+	        );
+	        y += height + 2 * paddingY;
+	    }
 	};
 
 	/**
@@ -3631,13 +3690,16 @@
 	    var selectedDot = options["dot"];
 	    var scale = box.width / 160; // units per step
 
-	    // drawing hashes
+	    // drawing 50 yard line
 	    this.pdf.setLineWidth(.2);
+	    this.pdf.setDrawColor(150);
+	    this.pdf.vLine(box.x + box.width/2, box.y, box.height);
+
+	    // drawing hashes
 	    var numDashes = 21;
 	    var dashLength = box.width / numDashes;
 	    var topHash = box.y + 32 * scale;
 	    var bottomHash = box.y + 52 * scale;
-	    this.pdf.setDrawColor(150);
 	    for (var i = 0; i < numDashes; i += 2) {
 	        var x = box.x + i * dashLength;
 	        this.pdf.hLine(x, topHash, dashLength);
@@ -3665,12 +3727,6 @@
 
 	    // drawing selected dot
 	    var position = selectedDot.getAnimationState(0);
-	    var coordinates = {
-	        textSize: 8,
-	        textX: PDFUtils.getXCoordinateText(position.x),
-	        textY: PDFUtils.getYCoordinateText(position.y)
-	    };
-
 	    if (!this.westUp) {
 	        position.x = 160 - position.x;
 	        position.y = 84 - position.y;
@@ -3678,45 +3734,7 @@
 	    var x = position.x * scale;
 	    var y = position.y * scale;
 
-	    coordinates.x = box.x + x - PDFUtils.getTextWidth(coordinates.textX, coordinates.textSize)/2;
-	    coordinates.y = box.y + y + PDFUtils.getTextHeight(coordinates.textSize)/4;
-
 	    this.pdf.setFillColor(0);
-	    this.pdf.setDrawColor(180);
-	    this.pdf.setFontSize(coordinates.textSize);
-
-	    this.pdf.vLine(box.x + x, box.y, box.height);
-	    this.pdf.hLine(box.x, box.y + y, box.width);
-
-	    // Put vertical coordinate text on opposite side of the field
-	    if (position.x > 80) {
-	        this.pdf.text(
-	            coordinates.textY,
-	            box.x + 1,
-	            coordinates.y
-	        );
-	    } else {
-	        this.pdf.text(
-	            coordinates.textY,
-	            box.x + box.width - PDFUtils.getTextWidth(coordinates.textY, coordinates.textSize) - 1,
-	            coordinates.y
-	        );
-	    }
-
-	    // Put horizontal coordinate text on opposite side of the field
-	    if (position.y > 42) {
-	        this.pdf.text(
-	            coordinates.textX,
-	            coordinates.x,
-	            box.y + PDFUtils.getTextHeight(coordinates.textSize)
-	        );
-	    } else {
-	        this.pdf.text(
-	            coordinates.textX,
-	            coordinates.x,
-	            box.y + box.height - 1
-	        );
-	    }
 	    this.pdf.circle(box.x + x, box.y + y, .5, "F");
 	    this.pdf.resetFormat();
 	};
