@@ -95,11 +95,11 @@ PDFGenerator.prototype._generate = function(options) {
     this.birdsEyeWidget = new BirdsEyeWidget(this.pdf, options["bev-orientation"]);
     this.surroundingDotsWidget = new SurroundingDotsWidget(this.pdf, options["sd-orientation"]);
 
+    this._addFrontSheet();
+
     var movements = this._getMovements();
     for (var pageNum = 0; pageNum < Math.ceil(this.sheets.length / 4); pageNum++) {
-        if (pageNum != 0) {
-            this.pdf.addPage();
-        }
+        this.pdf.addPage();
 
         var pageSheets = []
         for (var i = 0; i < 4; i++) {
@@ -220,6 +220,65 @@ PDFGenerator.prototype._getMovements = function() {
         moves.push(lines);
     });
     return moves;
+};
+
+/**
+ * Draws the front sheet which shows the birds eye view for all stuntsheets. Copied
+ * mostly from endsheet
+ */
+PDFGenerator.prototype._addFrontSheet = function() {
+    this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
+    var title = this.show.getTitle() + " - Dot " + this.dot;
+    this.pdf.setFontSize(15);
+    this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
+    var paddingX = 2;
+    var paddingY = .5;
+    var textSize = 10;
+    var textHeight = PDFUtils.getTextHeight(textSize);
+    var labelSize = 20;
+    var labelWidth = PDFUtils.getTextWidth("00", labelSize) + paddingX * 2;
+    var labelHeight = PDFUtils.getTextHeight(labelSize);
+    var width = WIDTH/2 - labelWidth - paddingX * 3 - SIDE_MARGIN;
+    var height = width * 84/160; // aspect ratio from BirdsEyeWidget
+    var x = 0;
+    var y = 10;
+    for (var i = 0; i < this.sheets.length; i++) {
+        var sheet = this.sheets[i];
+        var dot = sheet.getDotByLabel(this.dot);
+
+        if (y + height > HEIGHT - 5) {
+            if (x === 0) {
+                x = WIDTH/2 + paddingX - SIDE_MARGIN;
+            } else {
+                this.pdf.addPage();
+                this.pdf.vLine(WIDTH/2, 10, HEIGHT - 10);
+                this.pdf.setFontSize(15);
+                this.pdf.text(title, WIDTH/2 - PDFUtils.getTextWidth(title, 15)/2, 8);
+                x = 0;
+            }
+            y = 10;
+        }
+
+        this.pdf.setFontSize(labelSize);
+        this.pdf.text(
+            String(i + 1),
+            x + paddingX + SIDE_MARGIN,
+            y + paddingY + labelHeight
+        );
+        var options = {
+            sheet: sheet,
+            dot: dot,
+            minimal: true,
+        };
+        this.birdsEyeWidget.draw(
+            x + labelWidth + paddingX + SIDE_MARGIN,
+            y + paddingY,
+            width,
+            height,
+            options
+        );
+        y += height + 2 * paddingY;
+    }
 };
 
 /**
