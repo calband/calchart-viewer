@@ -166,6 +166,7 @@ PDFUtils.getYCoordinateText = function(y) {
      */
     jsPDFAPI.resetFormat = function() {
         this.setFontSize(PDFUtils.DEFAULT_FONT_SIZE);
+        this.setFontStyle("normal");
         this.setTextColor(0);
         this.setDrawColor(0);
         this.setFillColor(255);
