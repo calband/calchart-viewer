@@ -39,4 +39,7 @@ echo "Cleaning up..."
 git checkout -q $CURR_BRANCH
 git branch -Dq demo-master
 
+echo "Rebuilding current branch..."
+grunt build > /dev/null # hide output
+
 echo "done."
