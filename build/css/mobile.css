@@ -1,0 +1,111 @@
+@font-face {
+  font-family: "icomoon";
+  src: url("../../other/fonts/icomoon.ttf") format("truetype");
+}
+html,
+body {
+  margin: 0;
+}
+.loading .wrapper {
+  width: initial;
+}
+.header {
+  margin: 0;
+  padding: 0;
+}
+.header img {
+  margin: 10px;
+  height: 100px;
+}
+.header .header-contents {
+  display: inline-block;
+  vertical-align: top;
+  margin: 10px;
+  font-size: 20px;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
+  color: #003262;
+}
+.header .header-contents h1 {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: normal;
+}
+.header .header-contents label {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+.header .header-contents select {
+  vertical-align: middle;
+}
+.container {
+  width: initial;
+}
+.container .main {
+  padding: 20px;
+}
+.container .main .graph-container {
+  width: 100%;
+  margin: 0;
+}
+.container .main .graph-container .graph {
+  height: initial;
+}
+.container .main .controls-container {
+  display: block;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+}
+.container .main .controls-container label {
+  font-size: 18px;
+}
+.container .main .controls-container .animation-state {
+  margin-top: 10px;
+}
+.container .main .controls-container .buttons .control-button {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  vertical-align: top;
+  margin-right: 10px;
+}
+.container .main .controls-container .buttons .control-button.disabled {
+  text-decoration: none;
+}
+.container .main .controls-container .buttons .control-button:last-child {
+  margin-right: 0;
+}
+.container .main .controls-container .buttons .control-button:before {
+  content: "";
+  height: 100%;
+  display: inline-block;
+  vertical-align: middle;
+}
+.container .main .controls-container .buttons .control-button span {
+  position: relative;
+  vertical-align: middle;
+  display: inline-block;
+  left: -1px;
+}
+.container .main .controls-container .buttons .control-button span:before {
+  font-family: "icomoon";
+  font-size: 20px;
+}
+.container .main .controls-container .buttons .control-button.prev-beat span:before {
+  content: "\ea23";
+}
+.container .main .controls-container .buttons .control-button.next-beat span:before {
+  content: "\ea24";
+}
+.container .main .controls-container .buttons .control-button.prev-stuntsheet span:before {
+  content: "\ea21";
+}
+.container .main .controls-container .buttons .control-button.next-stuntsheet span:before {
+  content: "\ea22";
+}
+.container .main .controls-container .buttons .control-button.play-button span:before {
+  content: "\ea1c";
+}
+.container .main .controls-container .buttons .control-button.play-button.playing span:before {
+  content: "\ea1d";
+}
