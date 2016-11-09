@@ -86,6 +86,7 @@
 	    var mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
 	    if (!window.isMobile && mobileRegex.test(navigator.userAgent.toLowerCase())) {
 	        window.location = "mobile.html";
+	        return;
 	    }
 
 	    var applicationController = ApplicationController.getInstance();
