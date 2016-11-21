@@ -1,0 +1,78 @@
+@import "utils.less";
+
+* {
+    font-family: @sans;
+    color: @calband-blue;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+// loading screen
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.8);
+    z-index: 100;
+    text-align: center;
+    &:before {
+        content: "";
+        display: inline-block;
+        vertical-align: middle;
+        height: 100%;
+    }
+    .wrapper {
+        display: inline-block;
+        vertical-align: middle;
+        width: 400px;
+        text-align: left;
+        h1 {
+            font-size: 48px;
+            color: @calband-blue;
+            font-family: @sans;
+            text-transform: uppercase;
+            text-align: center;
+            margin: 0 0 5px;
+        }
+        .progress-bar {
+            display: inline-block;
+            height: 5px;
+            background: @calband-gold;
+        }
+    }
+}
+
+header {
+    border-bottom: 1px solid @calband-gold;
+    margin: 10px;
+    padding: 10px;
+    padding-bottom: 15px;
+    h1 {
+        margin: 0;
+        margin-bottom: 10px;
+    }
+    .details {
+        & > div {
+            margin-right: 10px;
+            display: inline-block;
+            text-align: center;
+            label {
+                margin-right: 5px;
+            }
+        }
+        .viewpsheet-options {
+            float: right;
+            cursor: pointer;
+            padding: 3px 15px;
+            border: 1px solid @calband-blue;
+            border-radius: 3px;
+            background: @calband-blue;
+            color: #fff;
+        }
+    }
+}

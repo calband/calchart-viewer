@@ -17,7 +17,7 @@ module.exports = function (grunt) {
             build: {
                 entry: {
                     application: "./js/application.js",
-                    pdf: "./js/pdf.js",
+                    viewpsheet: "./js/viewpsheet.js",
                     mobile: "./js/mobile.js",
                 },
                 output: {

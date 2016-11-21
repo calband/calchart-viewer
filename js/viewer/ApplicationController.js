@@ -122,6 +122,7 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
             var viewer = ShowUtils.fromJSON(data.viewer);
             _this.setShow(viewer);
             _this._setFileInputText(".js-viewer-file-btn", show);
+            $(".js-generate-continuity").removeClass("disabled");
             if (dot !== undefined && dot !== "") {
                 _this.applyAnimationAction("selectDot", dot);
                 $("option[value=" + dot + "]").prop("selected", true);

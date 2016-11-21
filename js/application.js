@@ -91,14 +91,19 @@ $(document).ready(function () {
     });
 
     $(".js-animate").click(function () {
+        if ($(this).hasClass("disabled")) {
+            return;
+        }
         applicationController.toggleAnimation();
     });
 
     $(".js-generate-continuity").click(function () {
+        if ($(this).hasClass("disabled")) {
+            return;
+        }
         var show = $(".js-select-show").val();
         var dot = $(".js-dot-labels").val();
-        var defaults = "&md-orientation=east&bev-orientation=east&sd-orientation=east&layout-order=ltr";
-        window.location.href = "pdf.html?show=" + show + "&dots=" + dot + defaults;
+        window.location.href = "viewpsheet.html?show=" + show + "&dot=" + dot;
     });
     
     $(".js-dot-labels").chosen({

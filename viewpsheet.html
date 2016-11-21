@@ -1,0 +1,41 @@
+<html>
+<head>
+    <title>Calchart Viewer - Continuity Generator</title>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <link rel="shortcut icon" href="img/favicon.png">
+    <link rel="stylesheet" type="text/css" href="build/css/viewpsheet.css" media="not print">
+    <link rel="stylesheet" type="text/css" href="build/css/pdf.css" media="print">
+    <link rel="stylesheet" type="text/css" href="build/css/graph.css">
+    <link rel="stylesheet" type="text/css" href="css/vendor/chosen.min.css">
+    <script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="js/vendor/d3.min.js"></script>
+    <script type="text/javascript" src="js/vendor/chosen.jquery.min.js"></script>
+    <script type="text/javascript" src="build/js/viewpsheet.js"></script>
+</head>
+<body>
+    <!-- Loading screen -->
+    <div class="loading">
+        <div class="wrapper">
+            <h1>Loading</h1>
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+    <header>
+        <a class="back-link">Back to Viewer</a>
+        <h1>Continuity Generator</h1>
+        <div class="details">
+            <div class="choose-show">
+                <label>Show:</label>
+                <select class="js-select-show select-show"></select>
+            </div>
+            <div class="choose-dot">
+                <label>Dot:</label>
+                <select class="js-dot-labels" data-placeholder="None">
+                    <option></option>
+                </select>
+            </div>
+            <div class="viewpsheet-options">Options</div>
+        </div>
+    </header>
+</body>
+</html>
