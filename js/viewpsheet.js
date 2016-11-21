@@ -5,6 +5,8 @@ var JSUtils = require("./viewer/utils/JSUtils");
 var options = JSUtils.getAllURLParams();
 var applicationController = ApplicationController.getInstance();
 
+var emptyStuntsheet, totalSheets;
+
 /**
  * This function will be executed by jQuery when the HTML DOM is loaded. Here,
  * we automatically load the show and generate the individual continuity for the
@@ -12,6 +14,8 @@ var applicationController = ApplicationController.getInstance();
  */
 $(document).ready(function() {
     $(".back-link").attr("href", "index.html?show=" + options.show + "&dot=" + options.dot);
+
+    emptyStuntsheet = $(".stuntsheet").remove();
 
     $(".js-select-show")
         .chosen({
@@ -58,7 +62,6 @@ var loadShow = function() {
             return xhr;
         },
         success: function(data) {
-            $(".loading").remove();
             var show = ShowUtils.fromJSONString(data);
 
             // load dot labels
@@ -71,10 +74,47 @@ var loadShow = function() {
             });
             $(".js-dot-labels").val(options.dot).trigger("chosen:updated");
 
-            console.log(show);
+            var sheets = show.getSheets();
+            totalSheets = sheets.length;
+            sheets.forEach(initSheet);
+
+            $(".viewpsheet").show();
+            $(".loading").remove();
         },
         error: function() {
             showError("Could not reach server.");
         },
     });
+};
+
+var initSheet = function(sheet) {
+    var stuntsheet = emptyStuntsheet.clone();
+    var dot = sheet.getDotByLabel(options.dot);
+
+    var label = sheet.getSheetLabel();
+    var sheetNum = parseInt(label);
+    if (sheetNum !== NaN) {
+        label = sheetNum + "/" + totalSheets;
+    }
+    stuntsheet.find(".stuntsheet-label").text(label);
+
+    // dot continuities
+    var dotType = sheet.getDotType(options.dot);
+    stuntsheet.find("img.dot-type").attr("src", "img/" + dotType + ".jpg");
+    var dotContinuities = stuntsheet.find(".dot-continuity ul");
+    sheet.getContinuityTexts(dotType).forEach(function(continuity) {
+        $("<li>").text(continuity).appendTo(dotContinuities);
+    });
+
+    // individual continuities
+    stuntsheet.find("span.total-beats").text(sheet.getDuration());
+    var dotMovements = stuntsheet.find(".individual-continuity ul");
+    dot.getMovementTexts().forEach(function(movement) {
+        $("<li>").text(movement).appendTo(dotMovements);
+    });
+
+    // TODO: fill in rest of stuntsheet
+    // TODO: populate frontsheet/endsheet
+
+    stuntsheet.appendTo(".viewpsheet .stuntsheets");
 };

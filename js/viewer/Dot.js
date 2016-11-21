@@ -41,6 +41,22 @@ Dot.prototype.getMovementCommands = function() {
 };
 
 /**
+ * Returns this dot's movement commands as text.
+ *
+ * @return {Array<string>} The dot's movement commands.
+ */
+Dot.prototype.getMovementTexts = function() {
+    var movements = [];
+    this._movements.forEach(function(movement) {
+        var text = movement.getContinuityText();
+        if (text !== "") {
+            movements.push(text);
+        }
+    });
+    return movements;
+};
+
+/**
  * Returns an AnimationState object that describes the Dot's
  * position, orientation, etc. at a specific moment in the show.
  *
