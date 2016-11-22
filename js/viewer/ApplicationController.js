@@ -138,8 +138,10 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
                 // close loading screen
                 $(".loading").remove();
             } else {
+                alert("starting to load audio");
                 var newSound = _this._musicPlayer.createSound();
                 var onMusicLoaded = function() {
+                    alert("music loaded");
                     _this._animator.setMusic(newSound);
                     _this._setFileInputText(".js-audio-file-btn", show);
 

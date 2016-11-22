@@ -43,6 +43,7 @@ JSUtils.extends(SMSound, Sound);
 SMSound.prototype._eventTypes = ["play", "stop", "finished", "startLoading", "finishedLoading"];
 
 SMSound.prototype.load = function(musicURL) {
+    alert("SMSound.load");
     this.stop();
     this.unload();
     var _this = this;
@@ -52,6 +53,7 @@ SMSound.prototype.load = function(musicURL) {
         onstop: this._makeEventRouter("stop"),
         onfinish: _this._handleFinished,
         onload: function() {
+            alert("SMSound.createSound.onload");
             _this._destroyURL();
             _this._callEventHandler("finishedLoading");
         }
