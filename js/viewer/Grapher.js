@@ -10,11 +10,8 @@
  *   @see Grapher.prototype.setFieldType.
  * @param {jQuery} drawTarget The HTML element which the Grapher
  *   will draw to.
- * @param {object} options Any options to customize the field being graphed.
- *   Possible options:
- *      - colorDots: if true, colors dots according to their direction of travel (default true)
  */
-var Grapher = function(fieldType, drawTarget, options) {
+var Grapher = function(fieldType, drawTarget) {
     if (!d3) {
         throw new TypeError("Cannot load grapher because d3 was not found.");
     }
@@ -38,8 +35,6 @@ var Grapher = function(fieldType, drawTarget, options) {
         .append("svg")
         .attr("width", this._svgWidth)
         .attr("height", this._svgHeight);
-
-    this._options = options || {};
 };
 
 /**
@@ -306,20 +301,20 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
     var xScale = this._getHorizontalStepScale(Grapher.COLLEGE_FIELD_PADDING);
     var yScale = this._getVerticalStepScale(Grapher.COLLEGE_FIELD_PADDING);
     var angleScale = this._getAngleScale();
-    var options = this._options;
 
     var classForDot = function (dot) {
         var dotClass = "dot ";
         if (dot.getLabel() === selectedDotLabel) {
             dotClass += "selected";
-        } else if (options.colorDots !== false) {
+        } else {
             dotClass += angleScale(dot.getAnimationState(currentBeat).angle);
         }
         return dotClass;
     };
 
-    // pixels, represents length and width since the dots are square
-    var dotRectSize = window.isMobile ? 3 : 5;
+    // pixels, represents length and width since the dots are square. Size is proportional
+    // to the size of the field (ratio adjusted manually)
+    var dotRectSize = this._svgWidth / 120;
 
     var dotsGroup = this._svg.append("g")
         .attr("class", "dots-wrap");

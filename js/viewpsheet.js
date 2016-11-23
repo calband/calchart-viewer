@@ -1,7 +1,8 @@
 var ApplicationController = require("./viewer/ApplicationController");
-var Grapher = require("./viewer/Grapher");
 var ShowUtils = require("./viewer/utils/ShowUtils");
 var JSUtils = require("./viewer/utils/JSUtils");
+var BirdsEyeGrapher = require("./viewpsheet/BirdsEyeGrapher");
+var MovementGrapher = require("./viewpsheet/MovementGrapher");
 
 var options = JSUtils.getAllURLParams();
 var applicationController = ApplicationController.getInstance();
@@ -108,23 +109,20 @@ var initSheet = function(sheet) {
     });
 
     // individual continuities
-    stuntsheet.find("span.total-beats").text(sheet.getDuration());
+    stuntsheet.find("p.total-beats span").text(sheet.getDuration());
     var dotMovements = stuntsheet.find(".individual-continuity ul");
     dot.getMovementTexts().forEach(function(movement) {
         $("<li>").text(movement).appendTo(dotMovements);
     });
 
+    // movement diagram
+    // TODO: direction labels
+    new MovementGrapher(stuntsheet).draw(sheet, options.dot);
+
     // birds eye view
-    var birdsEyeGrapher = _getBirdsEyeGrapher(stuntsheet);
-    birdsEyeGrapher.draw(sheet, 0, options.dot);
+    // TODO: direction labels
+    new BirdsEyeGrapher(stuntsheet).draw(sheet, options.dot);
 
     // TODO: fill in rest of stuntsheet
     // TODO: populate frontsheet/endsheet
-};
-
-var _getBirdsEyeGrapher = function(stuntsheet) {
-    var options = {
-        colorDots: false,
-    };
-    return new Grapher("college", stuntsheet.find(".birds-eye-view .graph"), options);
 };

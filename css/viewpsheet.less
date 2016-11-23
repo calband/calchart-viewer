@@ -79,6 +79,8 @@ header {
 
 @main-width: 1000px;
 @widget-margin: 20px;
+@stuntsheet-gutter: 100px;
+@stuntsheet-width: @main-width - 2 * @stuntsheet-gutter;
 
 .viewpsheet {
     width: @main-width;
@@ -92,7 +94,6 @@ header {
     h1 {
         margin: 0;
         font-weight: normal;
-        font-size: 1.5em;
     }
     ul {
         list-style: none;
@@ -106,9 +107,16 @@ header {
         display: none;
     }
     .stuntsheet {
-        margin-bottom: 30px;
-        padding-bottom: 40px;
+        width: @stuntsheet-width;
+        padding: 20px @stuntsheet-gutter 30px;
         border-bottom: 1px solid @calband-blue;
+        font-size: 0; // inline-block spacing issues
+        & > h1 {
+            font-size: 24px;
+        }
+        & > div {
+            font-size: initial;
+        }
     }
     .dot-continuity {
         margin: 10px 0;
@@ -126,7 +134,7 @@ header {
     }
     .widget {
         display: inline-block;
-        width: @main-width/2 - @widget-margin;
+        width: @stuntsheet-width/2 - @widget-margin/2;
         height: 250px;
         vertical-align: top;
         .graph {
@@ -134,8 +142,19 @@ header {
         }
     }
     .individual-continuity {
+        position: relative;
         margin-right: @widget-margin;
         margin-bottom: @widget-margin;
+        padding: 15px;
+        box-sizing: border-box; // include padding in calculations for width
+        border: 1px solid @calband-blue;
+        p.total-beats {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
     }
     .movement-diagram {
         margin-bottom: @widget-margin;
