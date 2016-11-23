@@ -77,9 +77,18 @@ header {
     }
 }
 
+@main-width: 1000px;
+@widget-margin: 20px;
+
 .viewpsheet {
-    display: none;
+    width: @main-width;
     padding: 10px 20px;
+    margin: 0 auto;
+    &.hide {
+        // hide viewpsheet while it's being generated, but let children
+        // know their dimensions
+        visibility: hidden;
+    }
     h1 {
         margin: 0;
         font-weight: normal;
@@ -93,7 +102,18 @@ header {
     p {
         margin: 0;
     }
+    .frontsheet, .endsheet {
+        display: none;
+    }
+    .stuntsheet {
+        margin-bottom: 30px;
+        padding-bottom: 40px;
+        border-bottom: 1px solid @calband-blue;
+    }
     .dot-continuity {
+        margin: 10px 0;
+        padding: 10px 20px;
+        border: 1px solid @calband-blue;
         img.dot-type {
             // manually center dot
             position: relative;
@@ -104,7 +124,28 @@ header {
             vertical-align: top;
         }
     }
-    .frontsheet, .endsheet {
-        display: none;
+    .widget {
+        display: inline-block;
+        width: @main-width/2 - @widget-margin;
+        height: 250px;
+        vertical-align: top;
+        .graph {
+            height: 100%;
+        }
+    }
+    .individual-continuity {
+        margin-right: @widget-margin;
+        margin-bottom: @widget-margin;
+    }
+    .movement-diagram {
+        margin-bottom: @widget-margin;
+        height: 250px;
+    }
+    .birds-eye-view {
+        margin-right: @widget-margin;
+        height: 250px;
+    }
+    .surrounding-dots {
+        height: 250px;
     }
 }

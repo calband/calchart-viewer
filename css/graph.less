@@ -1,12 +1,34 @@
 .field {
-	fill: #269C2E;
+    fill: #269C2E;
 }
 
 .endline, .yardline, .hash {
-	stroke: white;
+    stroke: white;
+}
+
+@uniform-white: #F9FBF6; // scraped from image of uniform front
+@uniform-yellow: #FFEA59; // scraped from image of cape
+@uniform-blue: #38363B; // scraped from image of uniform side
+@selected-purple: #F19DF5;
+
+rect.dot {
+    fill: @uniform-yellow;
+    &.facing-east {
+        fill: @uniform-white;
+    }
+    &.facing-west {
+        fill: @uniform-yellow;
+    }
+    &.facing-north, &.facing-south {
+        fill: @uniform-blue;
+    }
+    &.selected {
+        fill: @selected-purple;
+    }
 }
 
 .selected-dot-highlight {
-	stroke-width: 2px;
-	fill: transparent;
+    stroke: @selected-purple;
+    stroke-width: 2px;
+    fill: transparent;
 }

@@ -10,8 +10,11 @@
  *   @see Grapher.prototype.setFieldType.
  * @param {jQuery} drawTarget The HTML element which the Grapher
  *   will draw to.
+ * @param {object} options Any options to customize the field being graphed.
+ *   Possible options:
+ *      - colorDots: if true, colors dots according to their direction of travel (default true)
  */
-var Grapher = function(fieldType, drawTarget) {
+var Grapher = function(fieldType, drawTarget, options) {
     if (!d3) {
         throw new TypeError("Cannot load grapher because d3 was not found.");
     }
@@ -35,6 +38,8 @@ var Grapher = function(fieldType, drawTarget) {
         .append("svg")
         .attr("width", this._svgWidth)
         .attr("height", this._svgHeight);
+
+    this._options = options || {};
 };
 
 /**
@@ -84,14 +89,21 @@ Grapher.prototype.getFieldType = function() {
  * @param {Stuntsheet} sheet The stuntsheet to draw.
  * @param {int} currentBeat The beat to draw, relative to the
  *   start of the stuntsheet.
- * @param {string=} selectedDot The label of the currently selected
+ * @param {string} selectedDot The label of the currently selected
  *   dot, or undefined if no dot is selected.
  */
 Grapher.prototype.draw = function(sheet, currentBeat, selectedDot) {
-    this._clearSvg();
-    if (this._fieldType === "college") {
-        this._drawCollegeField();
+    // draw background
+    if (this._drawTarget.find(".field-wrap").length === 0) {
+        switch (this._fieldType) {
+            case "college":
+                this._drawCollegeField();
+                break;
+        }
     }
+
+    // draw dots
+    this._clearDots();
     if (sheet && (currentBeat >= 0)) {
         this._drawStuntsheetAtBeat(sheet, currentBeat, selectedDot);
     }
@@ -155,25 +167,19 @@ Grapher.prototype._getHorizontalStepScale = function (fieldPadding) {
 };
 
 /**
- * Return a d3 scale which maps an angle between 0 and 360 to a color hash
- * representing what color we should draw the dot as based on its angle.
+ * Return a d3 scale which maps an angle between 0 and 360 to the name of
+ * the nearest direction, which will be selected and colored in the CSS.
  * 
  * This is a d3 quantize scale, which means that it has a continuous domain but
  * a discrete range: d3 automatically looks at the size of the range and the
  * bounds of the input domain and returns a function that maps the domain to
  * the range in even steps.
- * @return {function(Number):string} function converts angle to color string
+ * @return {function(Number):string} function converts angle to direction string
  */
-Grapher.prototype._getAngleColorScale = function () {
-    var colors = {
-        east: "#F9FBF6", // scraped from images of front of the uniform
-        west: "#FFEA59", // scraped from images of uniform side
-        north: "#38363B", // scraped from images of uniform side
-        south: "#38363B" // scraped from actual images of cal band's capes #38363B
-    };
+Grapher.prototype._getAngleScale = function () {
     return d3.scale.quantize()
         .domain([0, 360])
-        .range([colors.east, colors.south, colors.west, colors.north]);
+        .range(["facing-east", "facing-south", "facing-west", "facing-north"]);
 };
 
 /**
@@ -193,10 +199,10 @@ Grapher.prototype._generateYardlineSteps = function () {
 };
 
 /**
- * Clear the grapher's svg context (remove all of the svg's children elements).
+ * Clear the dots in the svg.
  */
-Grapher.prototype._clearSvg = function () {
-    this._drawTarget.find("svg").empty();
+Grapher.prototype._clearDots = function () {
+    this._drawTarget.find("g.dots-wrap").remove();
 };
 
 /**
@@ -299,18 +305,21 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
     var dots = sheet.getDots();
     var xScale = this._getHorizontalStepScale(Grapher.COLLEGE_FIELD_PADDING);
     var yScale = this._getVerticalStepScale(Grapher.COLLEGE_FIELD_PADDING);
-    var colorScale = this._getAngleColorScale();
-    var purple = "#F19DF5";
+    var angleScale = this._getAngleScale();
+    var options = this._options;
 
-    var colorForDot = function (dot) {
+    var classForDot = function (dot) {
+        var dotClass = "dot ";
         if (dot.getLabel() === selectedDotLabel) {
-            return purple;
+            dotClass += "selected";
+        } else if (options.colorDots !== false) {
+            dotClass += angleScale(dot.getAnimationState(currentBeat).angle);
         }
-        return  colorScale(dot.getAnimationState(currentBeat).angle);
+        return dotClass;
     };
 
     // pixels, represents length and width since the dots are square
-    var dotRectSize = window.isMobile ? 4 : 5;
+    var dotRectSize = window.isMobile ? 3 : 5;
 
     var dotsGroup = this._svg.append("g")
         .attr("class", "dots-wrap");
@@ -319,12 +328,11 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
         .data(dots)
         .enter()
         .append("rect")
-            .attr("class", "dot")
+            .attr("class", classForDot)
             .attr("x", function (dot) { return xScale(dot.getAnimationState(currentBeat).x) - dotRectSize / 2; })
             .attr("y", function (dot) { return yScale(dot.getAnimationState(currentBeat).y) - dotRectSize / 2; })
             .attr("width", dotRectSize)
             .attr("height", dotRectSize)
-            .attr("fill", colorForDot)
             .style("cursor", "pointer")
             .on("click", function (dot) {
                 var label = dot.getLabel();
@@ -343,10 +351,7 @@ Grapher.prototype._drawStuntsheetAtBeat = function (sheet, currentBeat, selected
             .attr("class", "selected-dot-highlight")
             .attr("cx", circleX)
             .attr("cy", circleY)
-            .attr("r", dotRectSize * 2)
-            .attr("stroke", purple)
-            .attr("stroke-width", "2px")
-            .attr("fill", "transparent");
+            .attr("r", dotRectSize * 2);
     }
 };
 
