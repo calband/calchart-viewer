@@ -129,7 +129,12 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
             }
 
             // load beats file
-            var beats = TimedBeatsUtils.fromJSON(data.beats);
+            var beatsData = (
+                data.beats.meta ?
+                data.beats :
+                JSON.parse(data.beats)
+            );
+            var beats = TimedBeatsUtils.fromJSON(beatsData);
             _this._animator.setBeats(beats);
             _this._setFileInputText(".js-beats-file-btn", show);
 
@@ -138,6 +143,11 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
                 // close loading screen
                 $(".loading").remove();
             } else {
+                // temporary fix; audio isn't loading on mobile
+                if (window.isMobile) {
+                    $(".loading").remove();
+                }
+
                 var newSound = _this._musicPlayer.createSound();
                 var onMusicLoaded = function() {
                     _this._animator.setMusic(newSound);
