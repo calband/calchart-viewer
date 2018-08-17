@@ -21,7 +21,7 @@ module.exports = function (grunt) {
                     mobile: "./js/mobile.js",
                 },
                 output: {
-                    path: "build/js/",
+                    path: __dirname + "/build/js/",
                     filename: "[name].js"
                 }
             }
