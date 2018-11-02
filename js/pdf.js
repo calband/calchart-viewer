@@ -31,7 +31,8 @@ function refreshPage() {
  */
 function removeIFrame() {
     $(".js-pdf-preview").remove();
-    showError("Displaying preview timed out");
+    $(".js-pdf-loading h1").remove();
+    $(".js-pdf-loading .progress-bar").remove();
     var link = $("<a>")
         .text("Download here")
         .attr("href", "#")
@@ -43,9 +44,6 @@ function removeIFrame() {
         .append(link)
         .appendTo(".js-pdf-loading");
         
-    $("<p>")
-        .text("Are you on Google Chrome? Try opening the PDF outside of Chrome.")
-        .appendTo(".js-pdf-loading");
 };
 
 /**
@@ -131,7 +129,7 @@ $(document).ready(function() {
                 return;
             }
 
-            // generate pdf
+            // // generate pdf
             window.generator = new PDFGenerator(show, options.dots)
             try {
                 window.generator.generate(options);
@@ -139,19 +137,9 @@ $(document).ready(function() {
                 showError("An error occurred.");
                 throw err;
             }
-            $("<iframe>")
-                .addClass("js-pdf-preview")
-                .attr("src", window.generator.data)
-                .appendTo("body")
-                .hide()
-                .load(function() {
-                    $(".js-pdf-loading").remove();
-                    $(this).show();
-                    // cancel remove
-                    clearTimeout(window.removeIFrame);
-                });
-            // after 5 seconds, timeout PDF generation
-            window.removeIFrame = setTimeout(removeIFrame, 5000);
+            // window.removeIFrame = setTimeout(removeIFrame, 10);
+            removeIFrame();
+
         },
         error: function() {
             showError("Could not reach server.");
