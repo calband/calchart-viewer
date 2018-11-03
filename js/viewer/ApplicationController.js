@@ -146,6 +146,8 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
                 // temporary fix; audio isn't loading on mobile
                 if (window.isMobile) {
                     $(".loading").remove();
+                    $(".js-load-song span").text(data.audio);
+                    return;
                 }
 
                 var newSound = _this._musicPlayer.createSound();
@@ -476,6 +478,22 @@ ApplicationController.prototype.getMusicFileHandler = function () {
             newSound.load(fileURL);
         }
     });
+};
+
+ApplicationController.prototype.mobileMusicLoader = function () {
+    var _this = this;
+    return function () {
+        var newSound = _this._musicPlayer.createSound();
+        var onMusicLoaded = function() {
+            if (newSound.errorFlag()) {
+                _this.displayFileInputError("Please upload a valid audio file.");
+            } else {
+                _this._animator.setMusic(newSound);
+            }
+        };
+        newSound.registerEventHandler("finishedLoading", onMusicLoaded);
+        newSound.load($(this).children("span").text());
+    }
 };
 
 /**
