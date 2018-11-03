@@ -59,6 +59,8 @@ $(document).ready(function () {
         $(".js-audio-file").click();
     });
     $(".js-audio-file").change(applicationController.getMusicFileHandler());
+    // Mobile
+    $(".js-load-song").click(applicationController.mobileMusicLoader());
 
     // bindings for user interface components
     onLongPress(".js-prev-beat", function() {
