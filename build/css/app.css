@@ -114,6 +114,7 @@
   color: #003262;
   border: 1px solid #003262;
   border-right: 25px solid #003262;
+  cursor: pointer;
 }
 .main .graph-container,
 .main .controls-container {
