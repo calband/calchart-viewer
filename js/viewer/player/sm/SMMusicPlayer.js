@@ -17,6 +17,7 @@ var SMMusicPlayer = function() {
     var _this = this;
     soundManager.setup({
         url: './soundmanager/swf/',
+        debugMode: true,
         onready: function() {
             _this._isReady = true;
             _this._informReadyEventHandler();

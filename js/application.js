@@ -36,12 +36,10 @@ var onLongPress = function(selector, callback) {
  * @todo: implement the Calchart Viewer app here
  */
 $(document).ready(function () {
-    // if viewing on mobile, redirect to the mobile page
-    var mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-    if (!window.isMobile && mobileRegex.test(navigator.userAgent.toLowerCase())) {
+    $(".header-feedback-link").click(function() {
         window.location = "mobile.html";
         return;
-    }
+    });
 
     var applicationController = ApplicationController.getInstance();
     applicationController.init();
@@ -97,7 +95,7 @@ $(document).ready(function () {
     $(".js-generate-continuity").click(function () {
         var show = $(".js-select-show").val();
         var dot = $(".js-dot-labels").val();
-        var defaults = "&md-orientation=east&bev-orientation=east&sd-orientation=east&layout-order=ltr";
+        var defaults = "&md-orientation=west&bev-orientation=west&sd-orientation=west&layout-order=ltr";
         window.location.href = "pdf.html?show=" + show + "&dots=" + dot + defaults;
     });
     
@@ -121,14 +119,6 @@ $(document).ready(function () {
         .change(function() {
             window.location.search = "show=" + $(this).val();
         });
-
-    // Detect browser from http://stackoverflow.com/questions/5899783/detect-safari-using-jquery
-    var browserString = navigator.userAgent;
-    var isSafari = !window.isMobile && (browserString.indexOf("Safari") > -1) && (browserString.indexOf("Chrome") == -1);
-    // alert about safari not supporting ogg files. can remove if we stop using ogg files completely
-    if (isSafari) {
-        alert("You may not be able to upload .ogg files using Safari. Either use an mp3 version of the file or use the Viewer on another browser.")
-    }
 
     applicationController.getShows()
         .complete(function() {

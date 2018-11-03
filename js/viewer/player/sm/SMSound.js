@@ -54,6 +54,17 @@ SMSound.prototype.load = function(musicURL) {
         onload: function() {
             _this._destroyURL();
             _this._callEventHandler("finishedLoading");
+        },
+        onerror: function(code, description) {
+            console.log(this.id + ' failed?', code, description);
+            // Did the sound fail to load entirely, or failed during playback / loading partially?
+            if (this.loaded) {
+                // HTML5 case: network error, or client aborted download etc.?
+                this.stop(); // Reset sound state, to be safe
+                // Show play / retry button to user in UI?
+            } else {
+                // Load failed entirely. 404, bad sound format, etc.
+            }
         }
     });
     this._installTimedEvents();
