@@ -33,14 +33,14 @@ function removeIFrame() {
     $(".js-pdf-preview").remove();
     $(".js-pdf-loading h1").remove();
     $(".js-pdf-loading .progress-bar").remove();
-    var link = $("<a>")
+    var link = $("<h1 class=\"download-link\">")
         .text("Download here")
         .attr("href", "#")
         .click(function() {
             window.generator.pdf.save();
             return false;
         });
-    $("<p>")
+    $("<h1>")
         .append(link)
         .appendTo(".js-pdf-loading");
         

@@ -36,11 +36,6 @@ var onLongPress = function(selector, callback) {
  * @todo: implement the Calchart Viewer app here
  */
 $(document).ready(function () {
-    $(".header-feedback-link").click(function() {
-        window.location = "mobile.html";
-        return;
-    });
-
     var applicationController = ApplicationController.getInstance();
     applicationController.init();
 
