@@ -89,6 +89,11 @@ body {
 .js-pdf-loading h1.error {
   color: #ff0000;
 }
+.js-pdf-loading h1.download-link {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #003262;
+}
 .js-pdf-loading p {
   margin-bottom: 10px;
 }

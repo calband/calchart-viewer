@@ -158,6 +158,10 @@
   display: table;
   clear: both;
 }
+.main .controls-container .dev-notes {
+  line-height: 25px;
+  font-size: 18px;
+}
 .main .controls-container .stuntsheet,
 .main .controls-container .beats,
 .main .controls-container .continuity-container {
@@ -274,4 +278,8 @@
   display: inline-block;
   height: 5px;
   background: #FDB515;
+}
+.loading .wrapper .mobile-link {
+  margin-top: 1em;
+  text-align: center;
 }
