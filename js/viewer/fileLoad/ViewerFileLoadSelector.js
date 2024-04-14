@@ -21,6 +21,7 @@ var Dot = require("../Dot");
 var Sheet = require("../Sheet");
 var Show = require("../Show");
 var MovementCommandStand = require("../MovementCommandStand");
+var MovementCommandClose = require("../MovementCommandClose");
 var MovementCommandMarkTime = require("../MovementCommandMarkTime");
 var MovementCommandArc = require("../MovementCommandArc");
 var MovementCommandMove = require("../MovementCommandMove");
@@ -218,6 +219,8 @@ ViewerFileLoad_1_0_0.prototype.buildIndividualMovement = function(movementToBuil
     switch (movementToBuild.type) {
         case "stand":
             return this.buildStandMovement(movementToBuild);
+        case "close":
+            return this.buildCloseMovement(movementToBuild);
         case "mark":
             return this.buildMarkMovement(movementToBuild);
         case "move":
@@ -244,6 +247,19 @@ ViewerFileLoad_1_0_0.prototype.buildIndividualMovement = function(movementToBuil
  */
 ViewerFileLoad_1_0_0.prototype.buildStandMovement = function(movementToBuild) {
     return new MovementCommandStand(movementToBuild.x, movementToBuild.y, movementToBuild.facing, movementToBuild.beats);
+};
+
+/**
+ * Builds a MovementCommandClose from its representation in
+ * a viewer file.
+ *
+ * @param {object} movementToBuild The MovementCommand's representation
+ *   in the viewer file.
+ * @return {MovementCommandClose} The MovementCommandClose represented
+ *   in the viewer file.
+ */
+ViewerFileLoad_1_0_0.prototype.buildCloseMovement = function(movementToBuild) {
+    return new MovementCommandClose(movementToBuild.x, movementToBuild.y, movementToBuild.facing, movementToBuild.beats);
 };
 
 /**
