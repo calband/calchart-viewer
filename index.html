@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <title>Calchart Viewer</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
@@ -6,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="build/css/app.css">
     <link rel="stylesheet" type="text/css" href="build/css/graph.css">
     <link rel="stylesheet" type="text/css" href="css/vendor/chosen.min.css">
+    <script type="text/javascript" src="js/vendor/jspdf.min.js"></script>
     <script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="js/vendor/d3.min.js"></script>
     <script type="text/javascript" src="js/vendor/soundmanager2-jsmin.js"></script>
@@ -13,6 +15,7 @@
     <script type="text/javascript" src="build/js/application.js"></script>
 
 </head>
+
 <body>
     <!-- Loading screen -->
     <div class="loading">
@@ -66,7 +69,8 @@
                 <div class="show-title js-show-title">No Show Selected</div>
                 <div class="animation-state">
                     <div class="stuntsheet">Stuntsheet: <span class="js-stuntsheet-label">None selected</span></div>
-                    <div class="beats">Beat: <span class="js-beat-number">0</span>/<span class="js-stuntsheet-total">0</span></div>
+                    <div class="beats">Beat: <span class="js-beat-number">0</span>/<span
+                            class="js-stuntsheet-total">0</span></div>
                     <div class="js-dot-continuity continuity-container"></div>
                 </div>
                 <div class="next-prev-control">
@@ -86,11 +90,17 @@
                         <option></option>
                     </select>
                 </div>
-                <div class="control-button js-generate-continuity">
-                    Generate continuity for <span class="js-selected-dot-label">dots</span>
+                <div class="next-prev-control">
+                    <div class="control-button js-generate-continuity">
+                        Generate continuity for <span class="js-selected-dot-label">dots</span>
+                    </div>
+                    <div class="control-button js-quick-generate-continuity disabled">
+                        Quick Gen for <span class="js-selected-dot-label">dot</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </body>
+
 </html>

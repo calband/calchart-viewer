@@ -1,5 +1,6 @@
 var ApplicationController = require("./viewer/ApplicationController");
 var JSUtils = require("./viewer/utils/JSUtils");
+var PDFGenerator = require("./pdf/PDFGenerator");
 
 // will hold timeout event for long pressing buttons
 var longPress = null;
@@ -95,6 +96,30 @@ $(document).ready(function () {
         var defaults = "&md-orientation=west&bev-orientation=west&sd-orientation=west&layout-order=ltr";
         window.location.href = "pdf.html?show=" + show + "&dots=" + dot + defaults;
     });
+
+    $(".js-quick-generate-continuity").click(function () {
+        var show = $(".js-viewer-file").val();
+        var dot = $(".js-dot-labels").val();
+        window.generator = new PDFGenerator(applicationController._show, [dot])
+        try {
+            var options = {
+                "md-orientation":"west",
+                "bev-orientation":"west",
+                "sd-orientation":"west",
+                "layout-order":"ltr"
+            };
+            window.generator.generate(options);
+            window.generator.pdf.save();
+        } catch(err) {
+            console.log("Error occured ", err);
+            $(".file-input-error")
+            .text("Error occured " + err)
+            .fadeIn(1000)
+            .delay(1000)
+            .fadeOut(500);
+            throw err;
+        }
+    });
     
     $(".js-dot-labels").chosen({
         allow_single_deselect: true,
@@ -102,8 +127,10 @@ $(document).ready(function () {
     }).change(function(evt, params){
         if (params) {
             applicationController.applyAnimationAction("selectDot", params.selected);
+            $(".js-quick-generate-continuity").removeClass("disabled");
         } else {
             applicationController.applyAnimationAction("clearSelectedDot");
+            $(".js-quick-generate-continuity").addClass("disabled");
         }
     });
 
