@@ -1,5 +1,5 @@
 /**
- * @fileOverview Defines the MovementCommandStand class.
+ * @fileOverview Defines the MovementCommandClose class.
  */
 
 var JSUtils = require("./utils/JSUtils");
@@ -7,7 +7,7 @@ var MovementCommand = require("./MovementCommand");
 var AnimationState = require("./AnimationState");
  
 /**
- * A MovementCommand representing a period of standing.
+ * A MovementCommand representing being closed.
  * @param {float} x The x coordinate to stand at.
  * @param {float} y The y coordinate to stand at.
  * @param {float} orientation The angle at which the marcher will
@@ -16,23 +16,23 @@ var AnimationState = require("./AnimationState");
  *   of "grapher standard position).
  * @param {int} beats The duration of the movement, in beats.
  */
-var MovementCommandStand = function(x, y, orientation, beats) {
+var MovementCommandClose = function(x, y, orientation, beats) {
     this._orientation = orientation;
     MovementCommand.apply(this, [x, y, x, y, beats]);
 };
 
-JSUtils.extends(MovementCommandStand, MovementCommand);
+JSUtils.extends(MovementCommandClose, MovementCommand);
 
-MovementCommandStand.prototype.getAnimationState = function(beatNum) {
+MovementCommandClose.prototype.getAnimationState = function(beatNum) {
     return new AnimationState(this._startX, this._startY, this._orientation);
 };
 
 /**
  * Returns the continuity text for this movement
- * @return {String} the continuity text in the form of "Close 16E"
+ * @return {String} the continuity text in the form of "Close E"
  */
-MovementCommandStand.prototype.getContinuityText = function() {
-    return "Stand & Play " + this._numBeats + this.getOrientation();
+MovementCommandClose.prototype.getContinuityText = function() {
+    return "Close " + this.getOrientation();
 };
 
-module.exports = MovementCommandStand;
+module.exports = MovementCommandClose;
