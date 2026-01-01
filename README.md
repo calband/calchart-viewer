@@ -26,10 +26,12 @@ Open issues and milestones are on the issues page. When you start work on an iss
 
 If you have an idea for a feature, general question, bug report, etc, open an issue about it! All issues will be triaged.
 
-#### Architecture Diagram
+### Architecture & Detailed Documentation
 
-You can find a very high level overview of how the code architecture should work and interact with the UI [here](http://imgur.com/yw7FbWL.png).
+For comprehensive information about the project architecture, component breakdown, build system details, and deployment process, see [PROJECT_NOTES.md](PROJECT_NOTES.md).
+
+Quick reference: A high-level overview of how the code architecture interacts with the UI is available [here](http://imgur.com/yw7FbWL.png).
 
 ### Deploying
 
-To push changes to `http://calband.github.io/calchart-viewer`, checkout the master branch and run `source scripts/push.sh`.
+To push changes to `http://calband.github.io/calchart-viewer`, checkout the master branch and run `source scripts/push.sh`. For details about the deployment process and the demo deployment option, see [PROJECT_NOTES.md](PROJECT_NOTES.md#deployment).
