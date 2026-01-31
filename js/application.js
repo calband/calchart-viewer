@@ -168,4 +168,9 @@ $(document).ready(function () {
             // just remove the loading page on error
             $(".loading").remove();
         });
+    
+    // Expose a global function for CalChart to trigger show loading
+    window.loadCalChartShow = function() {
+        applicationController.loadFromCalChart();
+    };
 });
