@@ -52,6 +52,30 @@ ApplicationController.prototype.setShow = function (show) {
 };
 
 /**
+ * Load show data from CalChart's /api/show endpoint.
+ * This is used when CalChart is embedding the viewer.
+ */
+ApplicationController.prototype.loadFromCalChart = function() {
+    var _this = this;
+    $.ajax({
+        url: "/api/show",
+        dataType: "json",
+        success: function(data) {
+            try {
+                // The API returns the show data directly (not wrapped in meta/show structure)
+                var show = ShowUtils.fromJSON(data);
+                _this.setShow(show);
+            } catch (err) {
+                console.error("Error loading show from CalChart:", err);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Failed to load show from CalChart:", error);
+        }
+    });
+};
+
+/**
  * Sends a GET call to the Calchart server and retrieves all shows from the
  * server and adds it to the HTML UI
  *
