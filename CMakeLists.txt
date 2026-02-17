@@ -29,10 +29,12 @@ set(VIEWER_CSS ${VIEWER_BUILD_DIR}/css/app.css)
 add_custom_command(
     OUTPUT ${VIEWER_NODE_MODULES}/.npm-install-stamp
     COMMAND ${NPM_EXECUTABLE} install
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${VIEWER_NODE_MODULES}
     COMMAND ${CMAKE_COMMAND} -E touch ${VIEWER_NODE_MODULES}/.npm-install-stamp
     WORKING_DIRECTORY ${VIEWER_SOURCE_DIR}
     DEPENDS ${VIEWER_PACKAGE_JSON}
     COMMENT "CalChart Viewer: Installing npm dependencies..."
+    VERBATIM
 )
 
 add_custom_target(calchart_viewer_npm_install
@@ -40,13 +42,18 @@ add_custom_target(calchart_viewer_npm_install
 )
 
 # Step 2: Build viewer assets (JS and CSS)
+# Use npm run build which internally calls grunt - this works cross-platform
+# Add --verbose to get detailed error messages on failure
+# Ensure build directories exist first
 add_custom_command(
     OUTPUT ${VIEWER_JS} ${VIEWER_CSS}
-    COMMAND ${CMAKE_COMMAND} -E env "PATH=${VIEWER_NODE_MODULES}/.bin:$ENV{PATH}" 
-            ${NPM_EXECUTABLE} run build
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${VIEWER_BUILD_DIR}/js
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${VIEWER_BUILD_DIR}/css
+    COMMAND ${NPM_EXECUTABLE} run build -- --verbose
     WORKING_DIRECTORY ${VIEWER_SOURCE_DIR}
     DEPENDS calchart_viewer_npm_install ${VIEWER_NODE_MODULES}/.npm-install-stamp
     COMMENT "CalChart Viewer: Building assets (JavaScript and CSS)..."
+    VERBATIM
 )
 
 # Main target that external projects can depend on
