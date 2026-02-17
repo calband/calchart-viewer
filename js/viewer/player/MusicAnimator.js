@@ -10,28 +10,29 @@
 
 /**
  * A MusicAnimator will animate the show in sync with
- * music. To get the MusicAnimator to work, you must provide
- * it with music (through the setMusic(...) method)
- * and a TimedBeats object (through the setBeats(...) method), and
- * with an AnimationStateDelegate object (through the setAnimationStateDelegate(...) method).
+ * music (or in silence). To get the MusicAnimator to work, you must provide
+ * it with a TimedBeats object (through the setBeats(...) method) and
+ * an AnimationStateDelegate object (through the setAnimationStateDelegate(...) method).
+ * Optionally, you can provide music (through the setMusic(...) method) for synced animation.
  * After you set up the object, you should check if the MusicAnimator is 
  * ready to play using the isReady(...) method, since it may have encountered
  * an error while loading. If it is ready, then feel free to start and stop the
  * animator with the start(...) and stop(...) methods. The animator
- * will automatically stop when it reaches the end of the show, or when
- * it runs out of beats to animate in the music.
+ * will automatically stop when it reaches the end of the show.
  *
  * @param {AnimationStateDelegate} The AnimationStateDelegate that will
- *   be used to animate the show. Whenever the music advances a beat, the
- *   delegate will advance a beat as well.
+ *   be used to animate the show. Whenever a beat is reached (via music or timer),
+ *   the delegate will advance a beat as well.
  * @param {MusicPlayer} The music player.
  */
 var MusicAnimator = function() {
     this._animStateDelegate = null;
     this._sound = null;
-    this._timedBeats = null;
+    this._beats = null;
     this._eventHandlers = {};
     this._blockStopEvent = false;
+    this._silentAnimationTimer = null;
+    this._nextBeatTime = null;
 };
 
 /**
@@ -109,7 +110,7 @@ MusicAnimator.prototype._loadBeatsOntoSound = function() {
 };
 
 /**
- * Start playing the animation with music.
+ * Start playing the animation with music (if available) or in silence.
  */
 MusicAnimator.prototype.start = function() {
     this.stop();
@@ -124,9 +125,12 @@ MusicAnimator.prototype.start = function() {
         if (overallBeat < 0) {
             this._animStateDelegate.nextBeat();
             $(".js-beat-number").text("1");
-            this._sound.play(0);
+        }
+        // If we have music, use music playback; otherwise use silent timer-based animation
+        if (this._sound !== null && this._sound.isReady()) {
+            this._startMusicAnimation(overallBeat);
         } else {
-            this._sound.play(this._beats.getBeatTime(overallBeat));
+            this._startSilentAnimation(overallBeat);
         }
     } else {
         this._endOfShow();
@@ -134,11 +138,17 @@ MusicAnimator.prototype.start = function() {
 };
 
 /**
- * Stop playing the animation with music.
+ * Stop playing the animation with music or in silence.
  */
 MusicAnimator.prototype.stop = function() {
+    // Stop music if it's playing
     if (this._sound !== null && this._sound.isPlaying()) {
         this._sound.stop();
+    }
+    // Clear silent animation timer if it's running
+    if (this._silentAnimationTimer !== null) {
+        cancelAnimationFrame(this._silentAnimationTimer);
+        this._silentAnimationTimer = null;
     }
 };
 
@@ -149,25 +159,49 @@ MusicAnimator.prototype.stop = function() {
  *   otherwise.
  */
 MusicAnimator.prototype.isPlaying = function() {
-    if (this._sound !== null) {
-        return this._sound.isPlaying();
-    } else {
-        return false;
+    // Check if music is playing
+    if (this._sound !== null && this._sound.isPlaying()) {
+        return true;
     }
+    // Check if silent animation is running
+    if (this._silentAnimationTimer !== null) {
+        return true;
+    }
+    return false;
 };
 
 /**
  * Returns whether or not the animator is ready to play.
+ * The animator is ready if it has beats and an animation state delegate.
+ * Music is optional - if not provided, animation will run in silence.
  *
  * @return {boolean} True if the animator is ready to play; false
  *   otherwise.
  */
 MusicAnimator.prototype.isReady = function() {
     return (
-        this._sound && this._sound.isReady() &&
         this._beats &&
-        this._animStateDelegate !== null
+        this._animStateDelegate !== null &&
+        (this._sound === null || this._sound.isReady())
     );
+};
+
+/**
+ * Returns whether or not music has been loaded.
+ *
+ * @return {boolean} True if music is loaded and ready; false otherwise.
+ */
+MusicAnimator.prototype.hasMusicLoaded = function() {
+    return this._sound !== null && this._sound.isReady();
+};
+
+/**
+ * Returns whether or not beats have been loaded.
+ *
+ * @return {boolean} True if beats have been loaded; false otherwise.
+ */
+MusicAnimator.prototype.hasBeatsLoaded = function() {
+    return this._beats !== null;
 };
 
 /**
@@ -266,6 +300,74 @@ MusicAnimator.prototype._musicStopped = function() {
     } else {
         this._callEventHandler("stop");
     }
+};
+
+/**
+ * Start animation synced with music playback.
+ * @private
+ */
+MusicAnimator.prototype._startMusicAnimation = function(overallBeat) {
+    if (overallBeat < 0) {
+        this._sound.play(0);
+    } else {
+        this._sound.play(this._beats.getBeatTime(overallBeat));
+    }
+};
+
+/**
+ * Start animation in silence using timer-based beat advancement.
+ * Uses requestAnimationFrame with beat timing from getBeatTime() (in milliseconds).
+ * @private
+ */
+MusicAnimator.prototype._startSilentAnimation = function(overallBeat) {
+    this._callEventHandler("start");
+    // Determine the starting beat and time
+    var startBeatNum = overallBeat;
+    if (startBeatNum < 0) {
+        startBeatNum = 0;
+    }
+    var beatTimeMs = this._beats.getBeatTime(startBeatNum);
+    var nextBeatTimeMs = this._beats.getBeatTime(startBeatNum + 1);
+    
+    var animationStartTimeMs = performance.now();
+    this._nextBeatTime = animationStartTimeMs + (nextBeatTimeMs - beatTimeMs);
+    
+    var _this = this;
+    var animationFrameHandler = function(timestampMs) {
+        if (_this._silentAnimationTimer === null) {
+            return; // Animation was stopped
+        }
+        
+        // Check if it's time to advance to the next beat
+        if (timestampMs >= _this._nextBeatTime) {
+            _this._nextBeat();
+            // Schedule next beat
+            var nextBeatNum = _this._getCurrentOverallBeatNum() + 1;
+            if (nextBeatNum < _this._beats.getNumBeats()) {
+                var beatDurationMs = _this._beats.getBeatTime(nextBeatNum) - _this._beats.getBeatTime(nextBeatNum - 1);
+                _this._nextBeatTime = timestampMs + beatDurationMs;
+            }
+        }
+        
+        _this._silentAnimationTimer = requestAnimationFrame(animationFrameHandler);
+    };
+    
+    this._silentAnimationTimer = requestAnimationFrame(animationFrameHandler);
+};
+
+/**
+ * Get the current overall beat number across all stuntsheets.
+ * @private
+ * @return {number} the overall beat number
+ */
+MusicAnimator.prototype._getCurrentOverallBeatNum = function() {
+    var overallBeat = -1;
+    var show = this._animStateDelegate.getShow();
+    for (var sheet = 0; sheet < this._animStateDelegate.getCurrentSheetNum(); sheet++) {
+        overallBeat += show.getSheet(sheet).getDuration();
+    }
+    overallBeat += this._animStateDelegate.getCurrentBeatNum();
+    return overallBeat;
 };
 
 module.exports = MusicAnimator;

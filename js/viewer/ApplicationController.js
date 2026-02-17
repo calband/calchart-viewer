@@ -530,8 +530,9 @@ ApplicationController.prototype.toggleAnimation = function() {
 /**
  * Updates the animation button, making sure that it tells the user whether it
  * will start or stop the animation. The button should also indicate when it is
- * disabled (e.g. when the music and beats files have not been loaded, and the
- * show cannot be animated).
+ * disabled (e.g. when the beats file has not been loaded, and the
+ * show cannot be animated). The button text changes based on whether music
+ * is loaded: "Animate with music" or "Animate in Silence".
  */
 ApplicationController.prototype._updateAnimationControl = function() {
     if (this._animator.isPlaying()) {
@@ -544,7 +545,13 @@ ApplicationController.prototype._updateAnimationControl = function() {
         if (window.isMobile) {
             $(".js-animate").removeClass("playing");
         } else {
-            $(".js-animate").text("Animate with music");
+            // Show different text based on whether beats and music are loaded
+            // Only show "Animate in Silence" if beats are loaded but music is not
+            if (this._animator.hasBeatsLoaded() && !this._animator.hasMusicLoaded()) {
+                $(".js-animate").text("Animate in Silence");
+            } else {
+                $(".js-animate").text("Animate with music");
+            }
         }
         if (this._animator.isReady()) {
             $(".js-animate").removeClass("disabled");
