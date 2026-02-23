@@ -32,6 +32,10 @@ var ApplicationController = window.ApplicationController = function () {
     this._animator = null;
 };
 
+ApplicationController.prototype._logLoadError = function(source, err) {
+    console.error("[Calchart Viewer] Failed to load " + source + ".", err);
+};
+
 /**
  * Return the currently loaded show, or null if one has not been set yet.
  * @return {Show|null} the currently loaded show
@@ -118,48 +122,54 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
             return xhr;
         },
         success: function(data) {
-            // load viewer file
-            var viewer = ShowUtils.fromJSON(data.viewer);
-            _this.setShow(viewer);
-            _this._setFileInputText(".js-viewer-file-btn", show);
-            if (dot !== undefined && dot !== "") {
-                _this.applyAnimationAction("selectDot", dot);
-                $("option[value=" + dot + "]").prop("selected", true);
-                $(".js-dot-labels").trigger("chosen:updated");
-            }
-
-            // load beats file
-            var beatsData = (
-                data.beats.meta ?
-                data.beats :
-                JSON.parse(data.beats)
-            );
-            var beats = TimedBeatsUtils.fromJSON(beatsData);
-            _this._animator.setBeats(beats);
-            _this._setFileInputText(".js-beats-file-btn", show);
-
-            // load audio file
-            if (data.audio === null) {
-                // close loading screen
-                $(".loading").remove();
-            } else {
-                // temporary fix; audio isn't loading on mobile
-                if (window.isMobile) {
-                    $(".loading").remove();
-                    $(".js-load-song span").text(data.audio);
-                    return;
+            try {
+                // load viewer file
+                var viewer = ShowUtils.fromJSON(data.viewer);
+                _this.setShow(viewer);
+                _this._setFileInputText(".js-viewer-file-btn", show);
+                if (dot !== undefined && dot !== "") {
+                    _this.applyAnimationAction("selectDot", dot);
+                    $("option[value=" + dot + "]").prop("selected", true);
+                    $(".js-dot-labels").trigger("chosen:updated");
                 }
 
-                var newSound = _this._musicPlayer.createSound();
-                var onMusicLoaded = function() {
-                    _this._animator.setMusic(newSound);
-                    _this._setFileInputText(".js-audio-file-btn", show);
+                // load beats file
+                var beatsData = (
+                    data.beats.meta ?
+                    data.beats :
+                    JSON.parse(data.beats)
+                );
+                var beats = TimedBeatsUtils.fromJSON(beatsData);
+                _this._animator.setBeats(beats);
+                _this._setFileInputText(".js-beats-file-btn", show);
 
+                // load audio file
+                if (data.audio === null) {
                     // close loading screen
                     $(".loading").remove();
-                };
-                newSound.registerEventHandler("finishedLoading", onMusicLoaded);
-                newSound.load(data.audio);
+                } else {
+                    // temporary fix; audio isn't loading on mobile
+                    if (window.isMobile) {
+                        $(".loading").remove();
+                        $(".js-load-song span").text(data.audio);
+                        return;
+                    }
+
+                    var newSound = _this._musicPlayer.createSound();
+                    var onMusicLoaded = function() {
+                        _this._animator.setMusic(newSound);
+                        _this._setFileInputText(".js-audio-file-btn", show);
+
+                        // close loading screen
+                        $(".loading").remove();
+                    };
+                    newSound.registerEventHandler("finishedLoading", onMusicLoaded);
+                    newSound.load(data.audio);
+                }
+            } catch (err) {
+                _this._logLoadError("autoload show '" + show + "'", err);
+                _this.displayFileInputError("Could not load show. Check console for details.");
+                $(".loading").remove();
             }
         },
     });
@@ -427,7 +437,10 @@ ApplicationController.prototype.getBeatsFileHandler = function () {
                 _this.displayFileInputError("Please upload a valid beats file.");
             } else if (err.name === "InvalidFileTypeError") {
                 _this.displayFileInputError(err.message);
+            } else {
+                _this.displayFileInputError("Could not load beats file. Check console for details.");
             }
+            _this._logLoadError("beats file '" + fileName + "'", err);
         }
     });
 };
@@ -450,7 +463,10 @@ ApplicationController.prototype.getViewerFileHandler = function () {
                 _this.displayFileInputError("Please upload a valid viewer file.");
             } else if (err.name === "InvalidFileTypeError") {
                 _this.displayFileInputError(err.message);
+            } else {
+                _this.displayFileInputError("Could not load viewer file. Check console for details.");
             }
+            _this._logLoadError("viewer file '" + fileName + "'", err);
         }
     });
 };
