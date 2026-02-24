@@ -37,6 +37,19 @@ var onLongPress = function(selector, callback) {
  * @todo: implement the Calchart Viewer app here
  */
 $(document).ready(function () {
+    $.getJSON("build/build-info.json")
+        .done(function(buildInfo) {
+            console.log(
+                "[Calchart Viewer] Build info:",
+                buildInfo.branch + "@" + buildInfo.commit,
+                "built",
+                buildInfo.builtAt
+            );
+        })
+        .fail(function() {
+            console.log("[Calchart Viewer] Build info unavailable.");
+        });
+
     var applicationController = ApplicationController.getInstance();
     applicationController.init();
 
