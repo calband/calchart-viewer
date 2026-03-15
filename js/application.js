@@ -173,4 +173,9 @@ $(document).ready(function () {
     window.loadCalChartShow = function() {
         applicationController.loadFromCalChart();
     };
+
+    // Expose a global function for CalChart to trigger beats loading
+    window.loadCalChartBeats = function() {
+        applicationController.loadBeatsFromCalChart();
+    };
 });

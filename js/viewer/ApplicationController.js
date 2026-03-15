@@ -80,6 +80,31 @@ ApplicationController.prototype.loadFromCalChart = function() {
 };
 
 /**
+ * Load beats data from CalChart's /api/beats endpoint.
+ * This is used when CalChart is embedding the viewer.
+ */
+ApplicationController.prototype.loadBeatsFromCalChart = function() {
+    var _this = this;
+    $.ajax({
+        url: "/api/beats",
+        dataType: "json",
+        success: function(data) {
+            try {
+                // The API returns the beats data as a JSON object
+                var beats = TimedBeatsUtils.fromJSON(data);
+                _this._animator.setBeats(beats);
+                console.log("Beats loaded from CalChart successfully");
+            } catch (err) {
+                console.error("Error loading beats from CalChart:", err);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Failed to load beats from CalChart:", error);
+        }
+    });
+};
+
+/**
  * Sends a GET call to the Calchart server and retrieves all shows from the
  * server and adds it to the HTML UI
  *
