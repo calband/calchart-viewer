@@ -39,7 +39,32 @@ Dot.prototype.getLabel = function() {
 Dot.prototype.getMovementCommands = function() {
     return this._movements;
 };
+/**
+ * Returns the movement command that contains a specific beat.
+ *
+ * Also returns the beat number relative to the beginning of
+ * that movement command.
+ *
+ * @param {int} beatNum The beat relative to the start of the stuntsheet.
+ * @return {object|null} Information about the movement at this beat.
+ */
+Dot.prototype.getMovementAtBeat = function(beatNum) {
+    for (var commandIndex = 0; commandIndex < this._movements.length; commandIndex++) {
+        var movement = this._movements[commandIndex];
 
+        if (beatNum < movement.getBeatDuration()) {
+            return {
+                movement: movement,
+                movementIndex: commandIndex,
+                localBeat: beatNum
+            };
+        }
+
+        beatNum -= movement.getBeatDuration();
+    }
+
+    return null;
+};
 /**
  * Returns an AnimationState object that describes the Dot's
  * position, orientation, etc. at a specific moment in the show.
