@@ -248,6 +248,7 @@ ApplicationController.prototype.applyAnimationAction = function(action) {
  */
 ApplicationController.prototype._syncWithDelegate = function() {
     this._updateUIWithAnimationState();
+    this._updateDotNavDebug();
 
     this._grapher.draw(
         this._animationStateDelegate.getCurrentSheet(),
@@ -256,6 +257,60 @@ ApplicationController.prototype._syncWithDelegate = function() {
     );
 };
 
+ApplicationController.prototype._updateDotNavDebug = function() {
+    if ($(".dotnav-debug").length === 0) {
+        return;
+    }
+
+    var delegate = this._animationStateDelegate;
+    var currentSheet = delegate.getCurrentSheet();
+    var currentBeat = delegate.getCurrentBeatNum();
+    var selectedDot = delegate.getSelectedDot();
+
+    $(".js-dotnav-sheet").text(delegate.getCurrentSheetNum() + 1);
+    $(".js-dotnav-beat").text(currentBeat);
+
+    if (selectedDot === null) {
+        $(".js-dotnav-dot").text("None");
+        $(".js-dotnav-movement").text("None");
+        $(".js-dotnav-local-beat").text("0");
+        $(".js-dotnav-continuity").text("None");
+        return;
+    }
+
+    $(".js-dotnav-dot").text(selectedDot);
+
+    var dot = currentSheet.getDotByLabel(selectedDot);
+    if (dot === null) {
+        $(".js-dotnav-movement").text("None");
+        $(".js-dotnav-local-beat").text("0");
+        $(".js-dotnav-continuity").text("None");
+        return;
+    }
+
+    var movementInfo = dot.getMovementAtBeat(currentBeat);
+
+    if (movementInfo !== null) {
+        $(".js-dotnav-movement").text(
+            (movementInfo.movementIndex + 1) + "/" +
+            dot.getMovementCommands().length
+        );
+        $(".js-dotnav-local-beat").text(movementInfo.localBeat);
+    }
+
+    var dotType = currentSheet.getDotType(selectedDot);
+    var continuities = currentSheet.getContinuityTexts(dotType);
+
+    $(".js-dotnav-continuity").empty();
+
+    if (continuities !== undefined) {
+        continuities.forEach(function(continuity) {
+            $("<div>")
+                .text(continuity)
+                .appendTo(".js-dotnav-continuity");
+        });
+    }
+};
 /**
  * Update the DOM with the correct stuntsheet number, beat number, and number
  * of beats in the current stuntsheet depending on the state of the
