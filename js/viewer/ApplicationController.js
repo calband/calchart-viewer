@@ -31,6 +31,7 @@ var ApplicationController = window.ApplicationController = function () {
     this._grapher = null;
     this._show = null;
     this._animator = null;
+    this._dotNavTargetHeading = null;
 };
 
 ApplicationController.prototype._logLoadError = function(source, err) {
@@ -306,9 +307,11 @@ ApplicationController.prototype._updateDotNavDebug = function() {
     var orientation = movement.getOrientation();
 
     var orientationHeading =
-        FieldOrientation.getHeadingForDirection(
-            orientation
-        );
+    FieldOrientation.getHeadingForDirection(
+        orientation
+    );
+
+    var targetHeading = orientationHeading;
 
     if (orientationHeading === null) {
         $(".js-dotnav-orient").text("—");
@@ -323,6 +326,7 @@ ApplicationController.prototype._updateDotNavDebug = function() {
 
         if (typeof movement.getMiddlePoints === "function") {
             $(".js-dotnav-travel").text("Arc");
+            targetHeading = null;
         } else {
             var startPosition = movement.getStartPosition();
             var endPosition = movement.getEndPosition();
@@ -339,6 +343,8 @@ ApplicationController.prototype._updateDotNavDebug = function() {
             if (travelHeading === null) {
                 $(".js-dotnav-travel").text("—");
             } else {
+                targetHeading = travelHeading;
+
                 $(".js-dotnav-travel").text(
                     FieldOrientation.getDirectionLabel(
                         travelHeading
@@ -349,7 +355,27 @@ ApplicationController.prototype._updateDotNavDebug = function() {
                 );
             }
         }
-}
+
+        this._dotNavTargetHeading = targetHeading;
+
+        if (targetHeading === null) {
+            $(".js-dotnav-target").text("—");
+        } else {
+            $(".js-dotnav-target").text(
+                FieldOrientation.getDirectionLabel(
+                    targetHeading
+                ) +
+                " " +
+                Math.round(targetHeading) +
+                "°"
+            );
+        }
+    } else {
+        this._dotNavTargetHeading = null;
+        $(".js-dotnav-travel").text("—");
+        $(".js-dotnav-orient").text("—");
+        $(".js-dotnav-target").text("—");
+    }
 
     var dotType = currentSheet.getDotType(selectedDot);
     var continuities = currentSheet.getContinuityTexts(dotType);

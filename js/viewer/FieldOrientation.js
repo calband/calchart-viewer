@@ -117,4 +117,22 @@ FieldOrientation.getHeadingForDirection = function(direction) {
             return null;
     }
 };
+
+/**
+ * Returns the shortest signed turn from the current heading
+ * to the target heading.
+ *
+ * Positive = turn right
+ * Negative = turn left
+ *
+ * @return {number} Turn angle from -180 to 180 degrees.
+ */
+FieldOrientation.getTurnError = function(currentHeading, targetHeading) {
+    return (
+        targetHeading -
+        currentHeading +
+        540
+    ) % 360 - 180;
+};
+
 module.exports = FieldOrientation;

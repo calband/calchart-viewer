@@ -82,6 +82,54 @@ $(document).ready(function() {
         $(".js-dotnav-phone-heading").text("Waiting for heading...");
     }
 
+    function getTargetHeading() {
+        if (
+            window.ApplicationController === undefined ||
+            typeof window.ApplicationController.getInstance !== "function"
+        ) {
+            return null;
+        }
+
+        var applicationController =
+            window.ApplicationController.getInstance();
+
+        return applicationController._dotNavTargetHeading;
+    }
+
+    function getTurnInstruction(
+        currentHeading,
+        targetHeading
+    ) {
+        if (
+            currentHeading === null ||
+            targetHeading === null
+        ) {
+            return "TURN —";
+        }
+
+        var turnError = FieldOrientation.getTurnError(
+            currentHeading,
+            targetHeading
+        );
+
+        var roundedTurn = Math.round(turnError);
+        var absoluteTurn = Math.abs(roundedTurn);
+
+        if (absoluteTurn === 0) {
+            return "STRAIGHT";
+        }
+
+        if (absoluteTurn === 180) {
+            return "TURN 180°";
+        }
+
+        if (roundedTurn > 0) {
+            return "TURN RIGHT " + absoluteTurn + "°";
+        }
+
+        return "TURN LEFT " + absoluteTurn + "°";
+    }
+
     function handleDeviceOrientation(event) {
         if (selectedVenue === null) {
             return;
@@ -116,6 +164,13 @@ $(document).ready(function() {
             fieldHeading
         );
 
+        var targetHeading = getTargetHeading();
+
+        var turnInstruction = getTurnInstruction(
+            fieldHeading,
+            targetHeading
+        );
+
         $(".js-dotnav-phone-heading").text(
             direction +
             " " +
@@ -123,7 +178,9 @@ $(document).ready(function() {
             "°" +
             " (raw " +
             Math.round(rawHeading) +
-            "°)"
+            "°)" +
+            " | " +
+            turnInstruction
         );
     }
 });
