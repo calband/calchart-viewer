@@ -80,4 +80,24 @@ FieldOrientation.getTurnError = function(currentHeading, targetHeading) {
     ) - 180;
 };
 
+/**
+ * Converts a CalChart movement displacement into a
+ * field-relative travel heading.
+ *
+ * CalChart movement coordinates:
+ *   +x = North
+ *   +y = East
+ *
+ * @return {number|null} Heading in degrees, or null if stationary.
+ */
+FieldOrientation.getTravelHeading = function(deltaX, deltaY) {
+    if (deltaX === 0 && deltaY === 0) {
+        return null;
+    }
+
+    return FieldOrientation.normalizeDegrees(
+        Math.atan2(deltaY, deltaX) * 180 / Math.PI
+    );
+};
+
 module.exports = FieldOrientation;
