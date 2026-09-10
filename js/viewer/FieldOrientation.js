@@ -99,5 +99,22 @@ FieldOrientation.getTravelHeading = function(deltaX, deltaY) {
         Math.atan2(deltaY, deltaX) * 180 / Math.PI
     );
 };
-
+/**
+ * Converts a Cal Band direction label into a
+ * field-relative heading.
+ */
+FieldOrientation.getHeadingForDirection = function(direction) {
+    switch (direction) {
+        case "N":
+            return 0;
+        case "E":
+            return 90;
+        case "S":
+            return 180;
+        case "W":
+            return 270;
+        default:
+            return null;
+    }
+};
 module.exports = FieldOrientation;

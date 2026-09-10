@@ -8,6 +8,7 @@ var TimedBeatsUtils = require("./utils/TimedBeatsUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
 var AnimationStateDelegate = require("./AnimationStateDelegate");
+var FieldOrientation = require("./FieldOrientation");
 
 /**
  * The ApplicationController is the backbone of how functional components
@@ -291,12 +292,64 @@ ApplicationController.prototype._updateDotNavDebug = function() {
     var movementInfo = dot.getMovementAtBeat(currentBeat);
 
     if (movementInfo !== null) {
-        $(".js-dotnav-movement").text(
-            (movementInfo.movementIndex + 1) + "/" +
-            dot.getMovementCommands().length
+    $(".js-dotnav-movement").text(
+        (movementInfo.movementIndex + 1) + "/" +
+        dot.getMovementCommands().length
+    );
+
+    $(".js-dotnav-local-beat").text(
+        movementInfo.localBeat
+    );
+
+    var movement = movementInfo.movement;
+
+    var orientation = movement.getOrientation();
+
+    var orientationHeading =
+        FieldOrientation.getHeadingForDirection(
+            orientation
         );
-        $(".js-dotnav-local-beat").text(movementInfo.localBeat);
+
+    if (orientationHeading === null) {
+        $(".js-dotnav-orient").text("—");
+    } else {
+        $(".js-dotnav-orient").text(
+            orientation +
+            " " +
+            orientationHeading +
+            "°"
+        );
     }
+
+        if (typeof movement.getMiddlePoints === "function") {
+            $(".js-dotnav-travel").text("Arc");
+        } else {
+            var startPosition = movement.getStartPosition();
+            var endPosition = movement.getEndPosition();
+
+            var deltaX = endPosition.x - startPosition.x;
+            var deltaY = endPosition.y - startPosition.y;
+
+            var travelHeading =
+                FieldOrientation.getTravelHeading(
+                    deltaX,
+                    deltaY
+                );
+
+            if (travelHeading === null) {
+                $(".js-dotnav-travel").text("—");
+            } else {
+                $(".js-dotnav-travel").text(
+                    FieldOrientation.getDirectionLabel(
+                        travelHeading
+                    ) +
+                    " " +
+                    Math.round(travelHeading) +
+                    "°"
+                );
+            }
+        }
+}
 
     var dotType = currentSheet.getDotType(selectedDot);
     var continuities = currentSheet.getContinuityTexts(dotType);
