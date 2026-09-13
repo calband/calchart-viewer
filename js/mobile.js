@@ -4,84 +4,43 @@ window.isMobile = true;
 
 $(document).ready(function() {
     /*
-     * DotNav mobile field view
+     * DotNav mobile rehearsal/navigation layer.
      *
-     * Adds:
-     *
-     *  - heading-up navigation
-     *  - local zoom
-     *  - rehearsal pacing references
-     *  - current movement route
-     *  - movement-state guidance
-     *  - next movement preview
-     *  - final 4-beat countdown
-     *  - heading-up visual compass
+     * BLUE   = phone/self direction (fixed screen-up)
+     * RED    = current required target
+     * YELLOW = next movement target
      */
 
     var graphContainer = $(".graph-container");
     var graph = $(".graph-container .graph");
-
     var width = graphContainer.outerWidth();
 
-    graph.css(
-        "height",
-        Math.round(width * 0.82)
-    );
+    graph.css("height", Math.round(width * 0.82));
 
     var selectedVenue = null;
     var compassEnabled = false;
-
-    /*
-     * Last known heading in Cal Band field coordinates.
-     *
-     * N =   0
-     * E =  90
-     * S = 180
-     * W = 270
-     */
     var lastFieldHeading = null;
-
-    /*
-     * Local navigation zoom.
-     */
     var navigationScale = 2.3;
 
-    /*
-     * CalChart field geometry.
-     */
     var FIELD_STEPS_HORIZONTAL = 160;
     var FIELD_STEPS_VERTICAL = 84;
     var FIELD_PADDING = 10;
     var FIELD_ASPECT_RATIO = 0.5333;
 
-
-    /*
+    /* ------------------------------------------------------------
      * Field selection
-     */
+     * ------------------------------------------------------------ */
 
     $(".js-dotnav-field").change(function() {
         var venueId = $(this).val();
-
-        selectedVenue =
-            FieldOrientation.VENUES[venueId] || null;
+        selectedVenue = FieldOrientation.VENUES[venueId] || null;
 
         if (selectedVenue === null) {
-            console.log(
-                "[DotNav] No field selected"
-            );
-
-            $(".js-dotnav-phone-heading").text(
-                "Select field"
-            );
-
+            console.log("[DotNav] No field selected");
+            $(".js-dotnav-phone-heading").text("Select field");
             lastFieldHeading = null;
-
             resetHeadingUpView();
-
-            updateVisualCompass(
-                null
-            );
-
+            updateVisualCompass(null);
             return;
         }
 
@@ -92,65 +51,36 @@ $(document).ready(function() {
             selectedVenue.eastHeading
         );
 
-        updateVisualCompass(
-            lastFieldHeading
-        );
+        updateVisualCompass(lastFieldHeading);
     });
 
-
-    /*
+    /* ------------------------------------------------------------
      * Compass permission
-     */
+     * ------------------------------------------------------------ */
 
     $(".js-dotnav-enable-compass").click(function() {
         if (selectedVenue === null) {
-            $(".js-dotnav-phone-heading").text(
-                "Select field first"
-            );
-
+            $(".js-dotnav-phone-heading").text("Select field first");
             return;
         }
 
-        if (
-            typeof window.DeviceOrientationEvent ===
-            "undefined"
-        ) {
-            $(".js-dotnav-phone-heading").text(
-                "Compass unavailable"
-            );
-
+        if (typeof window.DeviceOrientationEvent === "undefined") {
+            $(".js-dotnav-phone-heading").text("Compass unavailable");
             return;
         }
 
-        if (
-            typeof window.DeviceOrientationEvent
-                .requestPermission === "function"
-        ) {
-            window.DeviceOrientationEvent
-                .requestPermission()
+        if (typeof window.DeviceOrientationEvent.requestPermission === "function") {
+            window.DeviceOrientationEvent.requestPermission()
                 .then(function(permissionState) {
-                    if (
-                        permissionState ===
-                        "granted"
-                    ) {
+                    if (permissionState === "granted") {
                         enableCompass();
-
                     } else {
-                        $(".js-dotnav-phone-heading")
-                            .text(
-                                "Permission denied"
-                            );
+                        $(".js-dotnav-phone-heading").text("Permission denied");
                     }
                 })
                 .catch(function(error) {
-                    console.log(
-                        "[DotNav] Compass error:",
-                        error
-                    );
-
-                    $(".js-dotnav-phone-heading").text(
-                        "Compass unavailable"
-                    );
+                    console.log("[DotNav] Compass error:", error);
+                    $(".js-dotnav-phone-heading").text("Compass unavailable");
                 });
 
             return;
@@ -158,7 +88,6 @@ $(document).ready(function() {
 
         enableCompass();
     });
-
 
     function enableCompass() {
         if (compassEnabled) {
@@ -176,72 +105,417 @@ $(document).ready(function() {
             "Waiting for heading..."
         );
 
-        updateVisualCompass(
-            null
-        );
+        updateVisualCompass(null);
     }
 
-
-    /*
-     * Application state
-     */
+    /* ------------------------------------------------------------
+     * Application / movement state
+     * ------------------------------------------------------------ */
 
     function getApplicationState() {
         if (
             window.ApplicationController === undefined ||
-            typeof window.ApplicationController
-                .getInstance !== "function"
+            typeof window.ApplicationController.getInstance !== "function"
         ) {
             return null;
         }
 
-        var applicationController =
+        var controller =
             window.ApplicationController.getInstance();
 
         var delegate =
-            applicationController
-                .getAnimationStateDelegate();
+            controller.getAnimationStateDelegate();
 
         if (delegate === null) {
             return null;
         }
 
         return {
-            controller:
-                applicationController,
-
-            delegate:
-                delegate
+            controller: controller,
+            delegate: delegate
         };
     }
 
-
-    /*
-     * DotNav target heading
-     */
-
-    function getTargetHeading() {
-        var state =
-            getApplicationState();
+    function getCurrentMovementContext() {
+        var state = getApplicationState();
 
         if (state === null) {
             return null;
         }
 
+        var delegate = state.delegate;
+        var selectedDot = delegate.getSelectedDot();
+
+        if (selectedDot === null) {
+            return null;
+        }
+
+        var sheet = delegate.getCurrentSheet();
+        var beat = delegate.getCurrentBeatNum();
+
+        var dot =
+            sheet.getDotByLabel(
+                selectedDot
+            );
+
+        if (dot === null) {
+            return null;
+        }
+
+        var movementInfo =
+            dot.getMovementAtBeat(
+                beat
+            );
+
+        if (movementInfo === null) {
+            return null;
+        }
+
+        return {
+            state: state,
+            delegate: delegate,
+            selectedDot: selectedDot,
+            sheet: sheet,
+            beat: beat,
+            dot: dot,
+            movementInfo: movementInfo,
+            movement: movementInfo.movement
+        };
+    }
+
+    function isArcMovement(movement) {
+        return (
+            movement !== null &&
+            movement !== undefined &&
+            typeof movement.getMiddlePoints === "function"
+        );
+    }
+
+    function isEvenMovement(movement) {
+        return (
+            movement !== null &&
+            movement !== undefined &&
+            !isArcMovement(movement) &&
+            typeof movement.getBeatsPerStep === "function"
+        );
+    }
+
+    /*
+     * CalChart/Grapher facing:
+     *
+     * E =   0
+     * S =  90
+     * W = 180
+     * N = 270
+     *
+     * DotNav field heading:
+     *
+     * N =   0
+     * E =  90
+     * S = 180
+     * W = 270
+     */
+
+    function grapherAngleToFieldHeading(angle) {
         if (
-            state.delegate.getSelectedDot() === null
+            angle === null ||
+            angle === undefined ||
+            typeof angle !== "number" ||
+            isNaN(angle)
         ) {
             return null;
         }
 
-        return state.controller
-            ._dotNavTargetHeading;
+        return FieldOrientation.normalizeDegrees(
+            angle + 90
+        );
     }
 
+    function getMovementOrientationHeading(
+        movement,
+        localBeat
+    ) {
+        if (
+            movement === null ||
+            movement === undefined
+        ) {
+            return null;
+        }
+
+        if (
+            typeof movement.getAnimationState ===
+            "function"
+        ) {
+            var animationState =
+                movement.getAnimationState(
+                    localBeat || 0
+                );
+
+            if (
+                animationState !== null &&
+                animationState !== undefined &&
+                typeof animationState.angle ===
+                "number"
+            ) {
+                return grapherAngleToFieldHeading(
+                    animationState.angle
+                );
+            }
+        }
+
+        if (
+            typeof movement.getOrientation ===
+            "function"
+        ) {
+            return FieldOrientation.getHeadingForDirection(
+                movement.getOrientation()
+            );
+        }
+
+        return null;
+    }
 
     /*
-     * Turn instruction
+     * Arc target heading is the local direction of travel.
+     *
+     * Instead of drawing a straight heading toward the final
+     * endpoint, find the nearest changed arc position and use
+     * that small segment as the local travel/tangent vector.
      */
+
+    function getArcTravelHeading(
+        movement,
+        localBeat
+    ) {
+        if (
+            !isArcMovement(movement) ||
+            typeof movement.getAnimationState !==
+                "function" ||
+            typeof movement.getBeatDuration !==
+                "function"
+        ) {
+            return null;
+        }
+
+        var duration =
+            movement.getBeatDuration();
+
+        var beat =
+            Math.max(
+                0,
+                Math.min(
+                    localBeat || 0,
+                    duration
+                )
+            );
+
+        var currentState =
+            movement.getAnimationState(
+                beat
+            );
+
+        if (
+            currentState === null ||
+            currentState === undefined
+        ) {
+            return null;
+        }
+
+        var epsilon = 0.0001;
+        var futureBeat;
+
+        for (
+            futureBeat = beat + 1;
+            futureBeat <= duration;
+            futureBeat++
+        ) {
+            var futureState =
+                movement.getAnimationState(
+                    futureBeat
+                );
+
+            var dx =
+                futureState.x -
+                currentState.x;
+
+            var dy =
+                futureState.y -
+                currentState.y;
+
+            if (
+                Math.abs(dx) > epsilon ||
+                Math.abs(dy) > epsilon
+            ) {
+                return FieldOrientation.getTravelHeading(
+                    dx,
+                    dy
+                );
+            }
+        }
+
+        var previousBeat;
+
+        for (
+            previousBeat = beat - 1;
+            previousBeat >= 0;
+            previousBeat--
+        ) {
+            var previousState =
+                movement.getAnimationState(
+                    previousBeat
+                );
+
+            var previousDx =
+                currentState.x -
+                previousState.x;
+
+            var previousDy =
+                currentState.y -
+                previousState.y;
+
+            if (
+                Math.abs(previousDx) > epsilon ||
+                Math.abs(previousDy) > epsilon
+            ) {
+                return FieldOrientation.getTravelHeading(
+                    previousDx,
+                    previousDy
+                );
+            }
+        }
+
+        return null;
+    }
+
+    function getMovementTravelHeading(
+        movement,
+        localBeat
+    ) {
+        if (
+            movement === null ||
+            movement === undefined
+        ) {
+            return null;
+        }
+
+        if (isArcMovement(movement)) {
+            return getArcTravelHeading(
+                movement,
+                localBeat
+            );
+        }
+
+        if (
+            typeof movement.getStartPosition !==
+                "function" ||
+            typeof movement.getEndPosition !==
+                "function"
+        ) {
+            return null;
+        }
+
+        var start =
+            movement.getStartPosition();
+
+        var end =
+            movement.getEndPosition();
+
+        if (!start || !end) {
+            return null;
+        }
+
+        return FieldOrientation.getTravelHeading(
+            end.x - start.x,
+            end.y - start.y
+        );
+    }
+
+    function getMovementTargetHeading(
+        movement,
+        localBeat
+    ) {
+        var travelHeading =
+            getMovementTravelHeading(
+                movement,
+                localBeat
+            );
+
+        /*
+         * Translating:
+         * TARGET = MOVE
+         */
+
+        if (travelHeading !== null) {
+            return travelHeading;
+        }
+
+        /*
+         * Stationary:
+         * TARGET = ORIENT
+         */
+
+        return getMovementOrientationHeading(
+            movement,
+            localBeat
+        );
+    }
+
+    function getTargetHeading() {
+        var context =
+            getCurrentMovementContext();
+
+        if (context === null) {
+            return null;
+        }
+
+        return getMovementTargetHeading(
+            context.movement,
+            context.movementInfo.localBeat
+        );
+    }
+
+    function getNextMovement() {
+        var context =
+            getCurrentMovementContext();
+
+        if (context === null) {
+            return null;
+        }
+
+        var movements =
+            context.dot.getMovementCommands();
+
+        var nextIndex =
+            context.movementInfo.movementIndex +
+            1;
+
+        if (
+            !movements ||
+            nextIndex >= movements.length
+        ) {
+            return null;
+        }
+
+        return movements[nextIndex];
+    }
+
+    function getNextTargetHeading() {
+        var nextMovement =
+            getNextMovement();
+
+        if (nextMovement === null) {
+            return null;
+        }
+
+        return getMovementTargetHeading(
+            nextMovement,
+            0
+        );
+    }
+
+    /* ------------------------------------------------------------
+     * Heading / turn formatting
+     * ------------------------------------------------------------ */
 
     function getTurnInstruction(
         currentHeading,
@@ -263,28 +537,24 @@ $(document).ready(function() {
             );
 
         var roundedTurn =
-            Math.round(turnError);
+            Math.round(
+                turnError
+            );
 
         var absoluteTurn =
             Math.abs(
                 roundedTurn
             );
 
-        if (
-            absoluteTurn === 0
-        ) {
+        if (absoluteTurn === 0) {
             return "STRAIGHT";
         }
 
-        if (
-            absoluteTurn === 180
-        ) {
+        if (absoluteTurn === 180) {
             return "TURN 180°";
         }
 
-        if (
-            roundedTurn > 0
-        ) {
+        if (roundedTurn > 0) {
             return (
                 "TURN RIGHT " +
                 absoluteTurn +
@@ -299,14 +569,7 @@ $(document).ready(function() {
         );
     }
 
-
-    /*
-     * Heading formatting
-     */
-
-    function formatHeading(
-        heading
-    ) {
+    function formatHeading(heading) {
         if (
             heading === null ||
             heading === undefined
@@ -315,10 +578,9 @@ $(document).ready(function() {
         }
 
         return (
-            FieldOrientation
-                .getDirectionLabel(
-                    heading
-                ) +
+            FieldOrientation.getDirectionLabel(
+                heading
+            ) +
             " " +
             Math.round(
                 heading
@@ -327,29 +589,14 @@ $(document).ready(function() {
         );
     }
 
-
-    /*
-     * Heading-up visual compass
-     *
-     * Phone direction is always screen-up.
-     *
-     * The compass rose moves underneath the phone.
-     */
-
-    function formatCompassHeading(
-        heading
-    ) {
-        return formatHeading(
-            heading
-        );
-    }
-
-
     function updateVisualCompass(
         currentHeading
     ) {
         var targetHeading =
             getTargetHeading();
+
+        var nextTargetHeading =
+            getNextTargetHeading();
 
         var rose =
             $(".js-dotnav-compass-rose");
@@ -357,25 +604,40 @@ $(document).ready(function() {
         var headingMarker =
             $(".js-dotnav-compass-heading-marker");
 
-        var targetMarker =
-            $(".js-dotnav-compass-target-marker");
+        var currentTargetMarker =
+            $(
+                ".js-dotnav-compass-current-target-marker"
+            );
 
+        var nextTargetMarker =
+            $(
+                ".js-dotnav-compass-next-target-marker"
+            );
+
+        /*
+         * Readouts
+         */
 
         $(".js-dotnav-compass-current")
             .text(
-                formatCompassHeading(
+                formatHeading(
                     currentHeading
                 )
             );
 
-
         $(".js-dotnav-compass-target")
             .text(
-                formatCompassHeading(
+                formatHeading(
                     targetHeading
                 )
             );
 
+        $(".js-dotnav-compass-next-target")
+            .text(
+                formatHeading(
+                    nextTargetHeading
+                )
+            );
 
         $(".js-dotnav-compass-turn")
             .text(
@@ -385,9 +647,11 @@ $(document).ready(function() {
                 )
             );
 
-
         /*
-         * Rotate compass card underneath phone.
+         * BLUE
+         *
+         * Phone/self remains screen-up.
+         * Field compass rose rotates underneath it.
          */
 
         if (
@@ -412,20 +676,20 @@ $(document).ready(function() {
             );
         }
 
-
         /*
-         * Target marker represents absolute
-         * field heading on the rotating card.
+         * RED
+         *
+         * Current required target.
          */
 
         if (
             targetHeading === null ||
             targetHeading === undefined
         ) {
-            targetMarker.hide();
+            currentTargetMarker.hide();
 
         } else {
-            targetMarker
+            currentTargetMarker
                 .show()
                 .css(
                     "transform",
@@ -434,12 +698,34 @@ $(document).ready(function() {
                     "deg)"
                 );
         }
+
+        /*
+         * YELLOW
+         *
+         * Next required target.
+         */
+
+        if (
+            nextTargetHeading === null ||
+            nextTargetHeading === undefined
+        ) {
+            nextTargetMarker.hide();
+
+        } else {
+            nextTargetMarker
+                .show()
+                .css(
+                    "transform",
+                    "rotate(" +
+                    nextTargetHeading +
+                    "deg)"
+                );
+        }
     }
 
-
-    /*
-     * SVG field geometry
-     */
+    /* ------------------------------------------------------------
+     * SVG field geometry / pacing grid
+     * ------------------------------------------------------------ */
 
     function getFieldGeometry(svg) {
         var svgWidth =
@@ -474,55 +760,39 @@ $(document).ready(function() {
             ) / 2;
 
         return {
-            svgWidth:
-                svgWidth,
+            svgWidth: svgWidth,
+            svgHeight: svgHeight,
 
-            svgHeight:
-                svgHeight,
+            xScale: function(step) {
+                return (
+                    FIELD_PADDING +
+                    step /
+                        FIELD_STEPS_HORIZONTAL *
+                        fieldWidth
+                );
+            },
 
-            xScale:
-                function(step) {
-                    return (
-                        FIELD_PADDING +
-                        step /
-                            FIELD_STEPS_HORIZONTAL *
-                            fieldWidth
-                    );
-                },
-
-            yScale:
-                function(step) {
-                    return (
-                        verticalPadding +
-                        step /
-                            FIELD_STEPS_VERTICAL *
-                            fieldHeight
-                    );
-                }
+            yScale: function(step) {
+                return (
+                    verticalPadding +
+                    step /
+                        FIELD_STEPS_VERTICAL *
+                        fieldHeight
+                );
+            }
         };
     }
 
-
-    /*
-     * Cal Band pacing labels
-     */
-
     function getPacingLabel(step) {
-        if (
-            step === 32
-        ) {
+        if (step === 32) {
             return "WH";
         }
 
-        if (
-            step === 52
-        ) {
+        if (step === 52) {
             return "EH";
         }
 
-        if (
-            step < 32
-        ) {
+        if (step < 32) {
             return String(
                 Math.min(
                     step,
@@ -531,9 +801,7 @@ $(document).ready(function() {
             );
         }
 
-        if (
-            step < 52
-        ) {
+        if (step < 52) {
             return String(
                 Math.min(
                     step - 32,
@@ -550,22 +818,12 @@ $(document).ready(function() {
         );
     }
 
-
-    /*
-     * Draw pacing grid
-     */
-
     function drawPacingGrid() {
         var svg =
             $(".js-grapher-draw-target svg");
 
         if (
-            svg.length === 0
-        ) {
-            return;
-        }
-
-        if (
+            svg.length === 0 ||
             svg.find(
                 ".dotnav-pacing-grid"
             ).length !== 0
@@ -578,9 +836,7 @@ $(document).ready(function() {
                 svg
             );
 
-        if (
-            geometry === null
-        ) {
+        if (geometry === null) {
             return;
         }
 
@@ -603,22 +859,19 @@ $(document).ready(function() {
                     "dotnav-pacing-grid"
                 );
 
-
         /*
-         * Four-step split lines
+         * 4-step along-field split lines.
          */
 
-        var splitSteps =
-            [];
+        var splitSteps = [];
+        var x;
 
         for (
-            var x = 4;
+            x = 4;
             x < FIELD_STEPS_HORIZONTAL;
             x += 4
         ) {
-            if (
-                x % 8 !== 0
-            ) {
+            if (x % 8 !== 0) {
                 splitSteps.push(
                     x
                 );
@@ -669,16 +922,15 @@ $(document).ready(function() {
                 )
             );
 
-
         /*
-         * Two-step cross-field lines
+         * 2-step cross-field lines.
          */
 
-        var crossFieldSteps =
-            [];
+        var crossFieldSteps = [];
+        var y;
 
         for (
-            var y = 2;
+            y = 2;
             y < FIELD_STEPS_VERTICAL;
             y += 2
         ) {
@@ -745,9 +997,9 @@ $(document).ready(function() {
                 }
             );
 
-
         /*
-         * Pacing number columns.
+         * Repeated pacing labels so zoomed heading-up view
+         * still has useful references.
          */
 
         var pacingColumnSteps =
@@ -757,17 +1009,18 @@ $(document).ready(function() {
                 120
             ];
 
-        var pacingLabels =
-            [];
+        var pacingLabels = [];
+        var columnIndex;
+        var labelStep;
 
         for (
-            var columnIndex = 0;
+            columnIndex = 0;
             columnIndex <
                 pacingColumnSteps.length;
             columnIndex++
         ) {
             for (
-                var labelStep = 0;
+                labelStep = 0;
                 labelStep <=
                     FIELD_STEPS_VERTICAL;
                 labelStep += 2
@@ -783,7 +1036,6 @@ $(document).ready(function() {
                 });
             }
         }
-
 
         grid
             .selectAll(
@@ -844,9 +1096,8 @@ $(document).ready(function() {
                 }
             );
 
-
         /*
-         * Grid underneath dots
+         * Keep pacing grid underneath marcher dots.
          */
 
         var dotsGroup =
@@ -854,9 +1105,7 @@ $(document).ready(function() {
                 ".dots-wrap"
             ).get(0);
 
-        if (
-            dotsGroup
-        ) {
+        if (dotsGroup) {
             svg.get(0)
                 .insertBefore(
                     grid.node(),
@@ -865,107 +1114,55 @@ $(document).ready(function() {
         }
     }
 
-
-    /*
+    /* ------------------------------------------------------------
      * Current movement route
-     */
+     * ------------------------------------------------------------ */
 
     function getCurrentMovementRoute() {
-        var state =
-            getApplicationState();
+        var context =
+            getCurrentMovementContext();
 
-        if (
-            state === null
-        ) {
-            return null;
-        }
-
-        var delegate =
-            state.delegate;
-
-        var selectedDot =
-            delegate.getSelectedDot();
-
-        if (
-            selectedDot === null
-        ) {
-            return null;
-        }
-
-        var sheet =
-            delegate.getCurrentSheet();
-
-        var beat =
-            delegate.getCurrentBeatNum();
-
-        var dot =
-            sheet.getDotByLabel(
-                selectedDot
-            );
-
-        if (
-            dot === null
-        ) {
-            return null;
-        }
-
-        var movementInfo =
-            dot.getMovementAtBeat(
-                beat
-            );
-
-        if (
-            movementInfo === null
-        ) {
+        if (context === null) {
             return null;
         }
 
         var movement =
-            movementInfo.movement;
-
+            context.movement;
 
         /*
-         * Arc not supported yet.
+         * Arc route drawing remains separate.
+         *
+         * The compass does support Arc local travel heading,
+         * but the visual path is not yet reconstructed here.
          */
 
-        if (
-            typeof movement
-                .getMiddlePoints ===
-            "function"
-        ) {
+        if (isArcMovement(movement)) {
             return null;
         }
 
-
         if (
-            typeof movement
-                .getAnimationState !==
+            typeof movement.getAnimationState !==
                 "function" ||
-            typeof movement
-                .getEndPosition !==
+            typeof movement.getEndPosition !==
                 "function"
         ) {
             return null;
         }
 
-
         var currentState =
             movement.getAnimationState(
-                movementInfo.localBeat
+                context.movementInfo.localBeat
             );
 
         var targetPosition =
             movement.getEndPosition();
 
         if (
-            currentState === undefined ||
-            currentState === null ||
-            targetPosition === undefined ||
-            targetPosition === null
+            !currentState ||
+            !targetPosition
         ) {
             return null;
         }
-
 
         var deltaX =
             targetPosition.x -
@@ -990,7 +1187,6 @@ $(document).ready(function() {
             ) >
             epsilon;
 
-
         if (
             !movesNorthSouth &&
             !movesEastWest
@@ -998,14 +1194,24 @@ $(document).ready(function() {
             return null;
         }
 
+        /*
+         * Even explicitly interpolates directly between
+         * arbitrary endpoints, so a diagonal straight
+         * route is valid for Even.
+         *
+         * For other multi-axis movements, do not invent
+         * traversal order yet.
+         */
 
         if (
             movesNorthSouth &&
-            movesEastWest
+            movesEastWest &&
+            !isEvenMovement(
+                movement
+            )
         ) {
             return null;
         }
-
 
         return {
             current: {
@@ -1026,22 +1232,12 @@ $(document).ready(function() {
         };
     }
 
-
-    /*
-     * Draw movement route
-     */
-
     function drawMovementRoute() {
         var svg =
             $(".js-grapher-draw-target svg");
 
         if (
-            svg.length === 0
-        ) {
-            return;
-        }
-
-        if (
+            svg.length === 0 ||
             svg.find(
                 ".dotnav-route"
             ).length !== 0
@@ -1052,9 +1248,7 @@ $(document).ready(function() {
         var route =
             getCurrentMovementRoute();
 
-        if (
-            route === null
-        ) {
+        if (route === null) {
             return;
         }
 
@@ -1063,12 +1257,9 @@ $(document).ready(function() {
                 svg
             );
 
-        if (
-            geometry === null
-        ) {
+        if (geometry === null) {
             return;
         }
-
 
         var startX =
             geometry.xScale(
@@ -1090,7 +1281,6 @@ $(document).ready(function() {
                 route.target.y
             );
 
-
         var svgSelection =
             d3.select(
                 svg.get(0)
@@ -1105,7 +1295,6 @@ $(document).ready(function() {
                     "class",
                     "dotnav-route"
                 );
-
 
         routeGroup
             .append(
@@ -1132,7 +1321,6 @@ $(document).ready(function() {
                 targetY
             );
 
-
         var markerRadius =
             3 /
             navigationScale;
@@ -1157,7 +1345,6 @@ $(document).ready(function() {
                 "r",
                 markerRadius
             );
-
 
         var crossSize =
             3 /
@@ -1221,15 +1408,12 @@ $(document).ready(function() {
                 crossSize
             );
 
-
         var dotsGroup =
             svg.find(
                 ".dots-wrap"
             ).get(0);
 
-        if (
-            dotsGroup
-        ) {
+        if (dotsGroup) {
             svg.get(0)
                 .insertBefore(
                     routeGroup.node(),
@@ -1238,10 +1422,475 @@ $(document).ready(function() {
         }
     }
 
+    /* ------------------------------------------------------------
+     * Movement semantics
+     * ------------------------------------------------------------ */
+
+    function getMovementText(
+        movement
+    ) {
+        if (
+            movement === null ||
+            movement === undefined ||
+            typeof movement.getContinuityText !==
+                "function"
+        ) {
+            return "";
+        }
+
+        var movementText =
+            movement.getContinuityText();
+
+        if (
+            movementText === null ||
+            movementText === undefined
+        ) {
+            return "";
+        }
+
+        return String(
+            movementText
+        );
+    }
 
     /*
-     * NEXT movement preview
+     * Human-readable CalChart sheet continuity.
+     *
+     * This is where terms such as:
+     *
+     * FMHS
+     * FMMM
+     * FMSH
+     * GVFW
+     * MTHS
+     * MTMM
+     * Hup Vamp
+     *
+     * may still exist even when the machine MovementCommand
+     * only says move / mark / stand.
      */
+
+    function getSheetContinuityText(
+        sheet,
+        selectedDot
+    ) {
+        if (
+            !sheet ||
+            selectedDot === null ||
+            selectedDot === undefined
+        ) {
+            return "";
+        }
+
+        var dotType =
+            sheet.getDotType(
+                selectedDot
+            );
+
+        var continuities =
+            sheet.getContinuityTexts(
+                dotType
+            );
+
+        if (!continuities) {
+            return "";
+        }
+
+        return continuities
+            .join(
+                " | "
+            )
+            .toUpperCase();
+    }
+
+    function getUniqueSemanticMatch(
+        continuityText,
+        candidates
+    ) {
+        var matches = [];
+
+        candidates.forEach(
+            function(candidate) {
+                if (
+                    candidate.pattern.test(
+                        continuityText
+                    )
+                ) {
+                    matches.push(
+                        candidate.label
+                    );
+                }
+            }
+        );
+
+        /*
+         * Do not guess if more than one candidate
+         * exists in the sheet continuity.
+         */
+
+        if (matches.length === 1) {
+            return matches[0];
+        }
+
+        return null;
+    }
+
+    function getMovementSemantic(
+        movement,
+        sheet,
+        selectedDot
+    ) {
+        var movementText =
+            getMovementText(
+                movement
+            );
+
+        var upperMovementText =
+            movementText.toUpperCase();
+
+        var continuityText =
+            getSheetContinuityText(
+                sheet,
+                selectedDot
+            );
+
+        var start =
+            movement.getStartPosition();
+
+        var end =
+            movement.getEndPosition();
+
+        var isMoving =
+            (
+                Math.abs(
+                    end.x -
+                    start.x
+                ) >
+                0.001 ||
+                Math.abs(
+                    end.y -
+                    start.y
+                ) >
+                0.001
+            );
+
+        /*
+         * Path geometry is separate from marching technique.
+         */
+
+        var pathType =
+            "";
+
+        if (
+            isArcMovement(
+                movement
+            )
+        ) {
+            pathType =
+                "ARC";
+
+        } else if (
+            isEvenMovement(
+                movement
+            )
+        ) {
+            pathType =
+                "EVEN";
+        }
+
+        /*
+         * CLOSE
+         */
+
+        if (
+            upperMovementText.indexOf(
+                "CLOSE"
+            ) === 0
+        ) {
+            return {
+                stepType:
+                    "CLOSE",
+
+                mode:
+                    "STOP",
+
+                colorClass:
+                    "is-stop",
+
+                pathType:
+                    pathType
+            };
+        }
+
+        /*
+         * HUP VAMP
+         *
+         * Hup Vamp is a stationary posture/action.
+         *
+         * If the marcher is stationary and the individual
+         * continuity clearly says Hup Vamp, prefer it over a
+         * generic machine Mark Time command.
+         *
+         * If the same continuity context also explicitly contains
+         * MTHS or MTMM, we do not guess which one applies to this
+         * exact MovementCommand yet.
+         */
+
+        if (
+            !isMoving &&
+            /\bHUP\s+VAMP\b/.test(
+                continuityText
+            )
+        ) {
+            var conflictingMarkTechnique =
+                (
+                    /\bMTHS\b/.test(
+                        continuityText
+                    ) ||
+                    /\bMTMM\b/.test(
+                        continuityText
+                    )
+                );
+
+            if (
+                !conflictingMarkTechnique
+            ) {
+                return {
+                    stepType:
+                        "HUP VAMP",
+
+                    mode:
+                        "HOLD",
+
+                    colorClass:
+                        "is-stop",
+
+                    pathType:
+                        pathType
+                };
+            }
+        }
+
+        /*
+         * STAND & PLAY
+         */
+
+        if (
+            upperMovementText.indexOf(
+                "STAND & PLAY"
+            ) === 0
+        ) {
+            return {
+                stepType:
+                    "STAND & PLAY",
+
+                mode:
+                    "HOLD",
+
+                colorClass:
+                    "is-stop",
+
+                pathType:
+                    pathType
+            };
+        }
+
+        /*
+         * MARK TIME
+         *
+         * Generic MovementCommandMarkTime may correspond to:
+         *
+         * MTHS
+         * MTMM
+         * Hup Vamp
+         */
+
+        if (
+            upperMovementText.indexOf(
+                "MT "
+            ) === 0
+        ) {
+            var markTechnique =
+                getUniqueSemanticMatch(
+                    continuityText,
+                    [
+                        {
+                            label:
+                                "MTHS",
+
+                            pattern:
+                                /\bMTHS\b/
+                        },
+
+                        {
+                            label:
+                                "MTMM",
+
+                            pattern:
+                                /\bMTMM\b/
+                        },
+
+                        {
+                            label:
+                                "HUP VAMP",
+
+                            pattern:
+                                /\bHUP\s+VAMP\b/
+                        }
+                    ]
+                );
+
+            if (
+                markTechnique ===
+                "HUP VAMP"
+            ) {
+                return {
+                    stepType:
+                        "HUP VAMP",
+
+                    mode:
+                        "HOLD",
+
+                    colorClass:
+                        "is-stop",
+
+                    pathType:
+                        pathType
+                };
+            }
+
+            return {
+                stepType:
+                    markTechnique ||
+                    "MARK TIME",
+
+                mode:
+                    "MARK TIME",
+
+                colorClass:
+                    "is-mark-time",
+
+                pathType:
+                    pathType
+            };
+        }
+
+        /*
+         * TRANSLATING MOVEMENT
+         *
+         * Try to recover the actual Cal Band step technique
+         * from the human-readable continuity.
+         */
+
+        if (isMoving) {
+            var locomotionTechnique =
+                getUniqueSemanticMatch(
+                    continuityText,
+                    [
+                        {
+                            label:
+                                "FMHS",
+
+                            pattern:
+                                /\bFMHS\b/
+                        },
+
+                        {
+                            label:
+                                "FMMM",
+
+                            pattern:
+                                /\bFMMM\b/
+                        },
+
+                        {
+                            label:
+                                "FMSH",
+
+                            pattern:
+                                /\bFMSH\b/
+                        },
+
+                        {
+                            label:
+                                "GVFW",
+
+                            pattern:
+                                /\bGVFW\b/
+                        }
+                    ]
+                );
+
+            /*
+             * Even describes how arbitrary displacement is
+             * divided evenly across the available steps/counts.
+             *
+             * It is kept separate as a path/interpolation tag.
+             */
+
+            if (
+                locomotionTechnique === null &&
+                isEvenMovement(
+                    movement
+                )
+            ) {
+                locomotionTechnique =
+                    "EVEN MOVE";
+            }
+
+            /*
+             * Arc is path geometry, not a step technique.
+             */
+
+            if (
+                locomotionTechnique === null &&
+                isArcMovement(
+                    movement
+                )
+            ) {
+                locomotionTechnique =
+                    "MOVE";
+            }
+
+            return {
+                stepType:
+                    locomotionTechnique ||
+                    "MOVE",
+
+                mode:
+                    "MOVING",
+
+                colorClass:
+                    "is-moving",
+
+                pathType:
+                    pathType
+            };
+        }
+
+        /*
+         * Blue/navy now explicitly means:
+         * DotNav has not classified this movement yet.
+         */
+
+        return {
+            stepType:
+                "UNCLASSIFIED",
+
+            mode:
+                "CURRENT",
+
+            colorClass:
+                "is-neutral",
+
+            pathType:
+                pathType
+        };
+    }
+
+    /* ------------------------------------------------------------
+     * NEXT movement preview
+     * ------------------------------------------------------------ */
 
     function clearNextGuidance() {
         $(".js-dotnav-next-mode")
@@ -1265,38 +1914,10 @@ $(document).ready(function() {
             );
     }
 
-
-    function getMovementText(
-        movement
-    ) {
-        if (
-            movement === null ||
-            movement === undefined ||
-            typeof movement
-                .getContinuityText !==
-                "function"
-        ) {
-            return "";
-        }
-
-        var movementText =
-            movement.getContinuityText();
-
-        if (
-            movementText === null ||
-            movementText === undefined
-        ) {
-            return "";
-        }
-
-        return String(
-            movementText
-        );
-    }
-
-
     function getMovementPreview(
-        movement
+        movement,
+        sheet,
+        selectedDot
     ) {
         if (
             movement === null ||
@@ -1305,277 +1926,131 @@ $(document).ready(function() {
             return null;
         }
 
+        var semantic =
+            getMovementSemantic(
+                movement,
+                sheet,
+                selectedDot
+            );
 
         var movementText =
             getMovementText(
                 movement
             );
 
-        var upperMovementText =
-            movementText.toUpperCase();
-
+        var travelHeading =
+            getMovementTravelHeading(
+                movement,
+                0
+            );
 
         var orientationHeading =
-            null;
+            getMovementOrientationHeading(
+                movement,
+                0
+            );
 
-        if (
-            typeof movement
-                .getOrientation ===
-            "function"
-        ) {
-            var orientation =
-                movement.getOrientation();
+        var targetHeading =
+            getMovementTargetHeading(
+                movement,
+                0
+            );
 
-            orientationHeading =
-                FieldOrientation
-                    .getHeadingForDirection(
-                        orientation
-                    );
-        }
-
+        var secondary =
+            movementText;
 
         /*
-         * Arc
-         */
-
-        if (
-            typeof movement
-                .getMiddlePoints ===
-            "function"
-        ) {
-            return {
-                mode:
-                    "ARC",
-
-                primary:
-                    "ARC",
-
-                secondary:
-                    movementText
-            };
-        }
-
-
-        var startPosition =
-            null;
-
-        var endPosition =
-            null;
-
-
-        if (
-            typeof movement
-                .getStartPosition ===
-                "function"
-        ) {
-            startPosition =
-                movement
-                    .getStartPosition();
-        }
-
-
-        if (
-            typeof movement
-                .getEndPosition ===
-                "function"
-        ) {
-            endPosition =
-                movement
-                    .getEndPosition();
-        }
-
-
-        var travelHeading =
-            null;
-
-
-        if (
-            startPosition !== null &&
-            endPosition !== null
-        ) {
-            var deltaX =
-                endPosition.x -
-                startPosition.x;
-
-            var deltaY =
-                endPosition.y -
-                startPosition.y;
-
-            travelHeading =
-                FieldOrientation
-                    .getTravelHeading(
-                        deltaX,
-                        deltaY
-                    );
-        }
-
-
-        /*
-         * Stand & Play
-         */
-
-        if (
-            upperMovementText.indexOf(
-                "STAND & PLAY"
-            ) === 0
-        ) {
-            return {
-                mode:
-                    "STAND & PLAY",
-
-                primary:
-                    (
-                        orientationHeading ===
-                        null
-                    ) ?
-                        "HOLD" :
-                        formatHeading(
-                            orientationHeading
-                        ),
-
-                secondary:
-                    movementText
-            };
-        }
-
-
-        /*
-         * Mark Time
-         */
-
-        if (
-            upperMovementText.indexOf(
-                "MT "
-            ) === 0
-        ) {
-            return {
-                mode:
-                    "MARK TIME",
-
-                primary:
-                    formatHeading(
-                        orientationHeading
-                    ),
-
-                secondary:
-                    movementText
-            };
-        }
-
-
-        /*
-         * Translating movement
-         */
-
-        if (
-            travelHeading !== null
-        ) {
-            var secondaryText =
-                movementText;
-
-            /*
-             * If travel and facing are different,
-             * make that explicit.
-             */
-
-            if (
-                orientationHeading !== null &&
-                Math.round(
-                    orientationHeading
-                ) !==
-                Math.round(
-                    travelHeading
-                )
-            ) {
-                secondaryText =
-                    "FACE " +
-                    formatHeading(
-                        orientationHeading
-                    );
-            }
-
-            return {
-                mode:
-                    "MOVE",
-
-                primary:
-                    formatHeading(
-                        travelHeading
-                    ),
-
-                secondary:
-                    secondaryText
-            };
-        }
-
-
-        /*
-         * Other stationary movement.
+         * MOVE != ORIENT
          *
-         * Do not invent Cal Band semantics.
+         * Example:
+         * MOVE N
+         * FACE W
          */
+
+        if (
+            travelHeading !== null &&
+            orientationHeading !== null &&
+            Math.round(
+                travelHeading
+            ) !==
+            Math.round(
+                orientationHeading
+            )
+        ) {
+            secondary =
+                "FACE " +
+                formatHeading(
+                    orientationHeading
+                );
+        }
+
+        /*
+         * Stationary actions should retain their
+         * own continuity text instead of FACE.
+         */
+
+        if (
+            semantic.mode === "HOLD" ||
+            semantic.mode === "STOP" ||
+            semantic.mode === "MARK TIME"
+        ) {
+            secondary =
+                movementText;
+        }
 
         return {
             mode:
-                "NEXT",
+                (
+                    semantic.stepType +
+                    (
+                        semantic.pathType ?
+                            " · " +
+                            semantic.pathType :
+                            ""
+                    )
+                ),
 
             primary:
-                (
-                    orientationHeading ===
-                    null
-                ) ?
-                    "—" :
-                    formatHeading(
-                        orientationHeading
-                    ),
+                formatHeading(
+                    targetHeading
+                ),
 
             secondary:
-                movementText
+                secondary,
+
+            targetHeading:
+                targetHeading
         };
     }
 
-
     function updateNextGuidance(
-        dot,
-        movementInfo
+        context
     ) {
         clearNextGuidance();
 
-
-        if (
-            dot === null ||
-            movementInfo === null
-        ) {
+        if (context === null) {
             return;
         }
-
 
         var movements =
-            dot.getMovementCommands();
-
-        if (
-            movements === null ||
-            movements === undefined
-        ) {
-            return;
-        }
-
+            context.dot.getMovementCommands();
 
         var nextIndex =
-            movementInfo.movementIndex +
+            context.movementInfo.movementIndex +
             1;
 
+        var beatsRemaining =
+            context.movement
+                .getBeatDuration() -
+            context.movementInfo.localBeat;
 
         /*
-         * No more movements in this stuntsheet.
-         *
-         * For now, do not guess the first movement
-         * of the next stuntsheet.
+         * End of current stuntsheet.
          */
 
         if (
-            nextIndex >=
-            movements.length
+            !movements ||
+            nextIndex >= movements.length
         ) {
             $(".js-dotnav-next-mode")
                 .text(
@@ -1587,22 +2062,12 @@ $(document).ready(function() {
                     "—"
                 );
 
-            $(".js-dotnav-next-secondary")
-                .text(
-                    ""
-                );
-
-            var beatsUntilSheet =
-                movementInfo.movement
-                    .getBeatDuration() -
-                movementInfo.localBeat;
-
             $(".js-dotnav-next-timing")
                 .text(
                     "IN " +
-                    beatsUntilSheet +
+                    beatsRemaining +
                     (
-                        beatsUntilSheet === 1 ?
+                        beatsRemaining === 1 ?
                             " BEAT" :
                             " BEATS"
                     )
@@ -1611,7 +2076,6 @@ $(document).ready(function() {
             return;
         }
 
-
         var nextMovement =
             movements[
                 nextIndex
@@ -1619,45 +2083,29 @@ $(document).ready(function() {
 
         var preview =
             getMovementPreview(
-                nextMovement
+                nextMovement,
+                context.sheet,
+                context.selectedDot
             );
 
-
-        if (
-            preview === null
-        ) {
+        if (preview === null) {
             return;
         }
-
 
         $(".js-dotnav-next-mode")
             .text(
                 preview.mode
             );
 
-
         $(".js-dotnav-next-primary")
             .text(
                 preview.primary
             );
 
-
         $(".js-dotnav-next-secondary")
             .text(
                 preview.secondary
             );
-
-
-        /*
-         * Remaining beats in CURRENT movement,
-         * not duration of next movement.
-         */
-
-        var beatsRemaining =
-            movementInfo.movement
-                .getBeatDuration() -
-            movementInfo.localBeat;
-
 
         $(".js-dotnav-next-timing")
             .text(
@@ -1671,24 +2119,28 @@ $(document).ready(function() {
             );
     }
 
-
-    /*
-     * Main movement guidance
-     */
+    /* ------------------------------------------------------------
+     * Current guidance
+     * ------------------------------------------------------------ */
 
     function updateMovementGuidance() {
-        var state =
-            getApplicationState();
+        var context =
+            getCurrentMovementContext();
 
         var guidanceCard =
             $(".dotnav-guidance-primary");
 
+        var stepTypeLabel =
+            $(".js-dotnav-step-type");
+
         var modeLabel =
             $(".js-dotnav-mode");
 
+        var pathTypeLabel =
+            $(".js-dotnav-path-type");
+
         var countdown =
             $(".js-dotnav-countdown");
-
 
         guidanceCard.removeClass(
             "is-moving " +
@@ -1703,116 +2155,69 @@ $(document).ready(function() {
                 "is-active"
             );
 
-
-        if (
-            state === null
-        ) {
-            guidanceCard.addClass(
-                "is-neutral"
-            );
-
-            modeLabel.text(
-                "CURRENT"
-            );
-
-            clearNextGuidance();
-
-            return;
-        }
-
-
-        var delegate =
-            state.delegate;
-
-        var selectedDot =
-            delegate.getSelectedDot();
-
-        if (
-            selectedDot === null
-        ) {
-            guidanceCard.addClass(
-                "is-neutral"
-            );
-
-            modeLabel.text(
-                "CURRENT"
-            );
-
-            clearNextGuidance();
-
-            return;
-        }
-
-
-        var sheet =
-            delegate.getCurrentSheet();
-
-        var beat =
-            delegate.getCurrentBeatNum();
-
-        var dot =
-            sheet.getDotByLabel(
-                selectedDot
-            );
-
-        if (
-            dot === null
-        ) {
-            guidanceCard.addClass(
-                "is-neutral"
-            );
-
-            modeLabel.text(
-                "CURRENT"
-            );
-
-            clearNextGuidance();
-
-            return;
-        }
-
-
-        var movementInfo =
-            dot.getMovementAtBeat(
-                beat
-            );
-
-        if (
-            movementInfo === null
-        ) {
-            guidanceCard.addClass(
-                "is-neutral"
-            );
-
-            modeLabel.text(
-                "CURRENT"
-            );
-
-            clearNextGuidance();
-
-            return;
-        }
-
-
-        var movement =
-            movementInfo.movement;
-
-
-        /*
-         * Update NEXT preview before classifying
-         * the current movement.
-         */
-
-        updateNextGuidance(
-            dot,
-            movementInfo
+        stepTypeLabel.text(
+            "—"
         );
 
+        modeLabel.text(
+            "CURRENT"
+        );
+
+        pathTypeLabel.text(
+            ""
+        );
+
+        if (context === null) {
+            guidanceCard.addClass(
+                "is-neutral"
+            );
+
+            clearNextGuidance();
+
+            return;
+        }
+
+        var movement =
+            context.movement;
+
+        var movementInfo =
+            context.movementInfo;
+
+        var semantic =
+            getMovementSemantic(
+                movement,
+                context.sheet,
+                context.selectedDot
+            );
+
+        updateNextGuidance(
+            context
+        );
+
+        /*
+         * Apply semantic category.
+         */
+
+        guidanceCard.addClass(
+            semantic.colorClass
+        );
+
+        stepTypeLabel.text(
+            semantic.stepType
+        );
+
+        modeLabel.text(
+            semantic.mode
+        );
+
+        pathTypeLabel.text(
+            semantic.pathType
+        );
 
         /*
          * Temporary countdown.
          *
-         * Later:
+         * Future:
          *
          * 4
          * 3
@@ -1828,144 +2233,83 @@ $(document).ready(function() {
             duration -
             movementInfo.localBeat;
 
-
         if (
             remaining >= 1 &&
             remaining <= 4
         ) {
-            if (
-                remaining === 1
-            ) {
-                countdown.text(
-                    "1!"
-                );
-
-            } else {
-                countdown.text(
+            countdown.text(
+                remaining === 1 ?
+                    "1!" :
                     remaining
-                );
-            }
+            );
 
             countdown.addClass(
                 "is-active"
             );
         }
 
-
-        var startPosition =
-            movement.getStartPosition();
-
-        var endPosition =
-            movement.getEndPosition();
-
-        var deltaX =
-            endPosition.x -
-            startPosition.x;
-
-        var deltaY =
-            endPosition.y -
-            startPosition.y;
-
-        var isMoving =
-            Math.abs(
-                deltaX
-            ) >
-            0.001 ||
-            Math.abs(
-                deltaY
-            ) >
-            0.001;
-
-
-        var movementText =
-            "";
-
-        if (
-            typeof movement
-                .getContinuityText ===
-            "function"
-        ) {
-            movementText =
-                movement
-                    .getContinuityText()
-                    .toUpperCase();
-        }
-
-
         /*
-         * Stand & Play
+         * Recompute MOVE / ORIENT / TARGET here.
+         *
+         * This lets:
+         *
+         * - Arc use a local travel vector
+         * - arbitrary facing angles work
+         * - current target remain consistent with compass
          */
 
-        if (
-            movementText.indexOf(
-                "STAND & PLAY"
-            ) === 0
-        ) {
-            guidanceCard.addClass(
-                "is-stop"
+        var travelHeading =
+            getMovementTravelHeading(
+                movement,
+                movementInfo.localBeat
             );
 
-            modeLabel.text(
-                "STAND & PLAY"
+        var orientationHeading =
+            getMovementOrientationHeading(
+                movement,
+                movementInfo.localBeat
             );
 
-            return;
-        }
+        var targetHeading =
+            getMovementTargetHeading(
+                movement,
+                movementInfo.localBeat
+            );
 
+        $(".js-dotnav-travel")
+            .text(
+                formatHeading(
+                    travelHeading
+                )
+            );
+
+        $(".js-dotnav-orient")
+            .text(
+                formatHeading(
+                    orientationHeading
+                )
+            );
+
+        $(".js-dotnav-target")
+            .text(
+                formatHeading(
+                    targetHeading
+                )
+            );
 
         /*
-         * Mark Time
+         * Keep ApplicationController's shared DotNav target
+         * synchronized with the improved calculation.
          */
 
-        if (
-            movementText.indexOf(
-                "MT "
-            ) === 0
-        ) {
-            guidanceCard.addClass(
-                "is-mark-time"
-            );
-
-            modeLabel.text(
-                "MARK TIME"
-            );
-
-            return;
-        }
-
-
-        /*
-         * Real positional translation
-         */
-
-        if (
-            isMoving
-        ) {
-            guidanceCard.addClass(
-                "is-moving"
-            );
-
-            modeLabel.text(
-                "MOVING"
-            );
-
-            return;
-        }
-
-
-        guidanceCard.addClass(
-            "is-neutral"
-        );
-
-        modeLabel.text(
-            "CURRENT"
-        );
+        context.state.controller
+            ._dotNavTargetHeading =
+            targetHeading;
     }
 
-
-    /*
+    /* ------------------------------------------------------------
      * Heading-up field
-     */
+     * ------------------------------------------------------------ */
 
     function applyHeadingUpView(
         fieldHeading
@@ -1973,9 +2317,7 @@ $(document).ready(function() {
         var svg =
             $(".js-grapher-draw-target svg");
 
-        if (
-            svg.length === 0
-        ) {
+        if (svg.length === 0) {
             return;
         }
 
@@ -1984,11 +2326,8 @@ $(document).ready(function() {
                 ".selected-dot-highlight"
             ).get(0);
 
-        if (
-            !selectedDot
-        ) {
+        if (!selectedDot) {
             resetHeadingUpView();
-
             return;
         }
 
@@ -2008,37 +2347,30 @@ $(document).ready(function() {
 
         var dotX =
             parseFloat(
-                selectedDot
-                    .getAttribute(
-                        "cx"
-                    )
+                selectedDot.getAttribute(
+                    "cx"
+                )
             );
 
         var dotY =
             parseFloat(
-                selectedDot
-                    .getAttribute(
-                        "cy"
-                    )
+                selectedDot.getAttribute(
+                    "cy"
+                )
             );
 
         if (
-            isNaN(
-                svgWidth
-            ) ||
-            isNaN(
-                svgHeight
-            ) ||
-            isNaN(
-                dotX
-            ) ||
-            isNaN(
-                dotY
-            )
+            isNaN(svgWidth) ||
+            isNaN(svgHeight) ||
+            isNaN(dotX) ||
+            isNaN(dotY)
         ) {
             return;
         }
 
+        /*
+         * Selected marcher sits near lower-middle.
+         */
 
         var screenX =
             svgWidth /
@@ -2048,6 +2380,9 @@ $(document).ready(function() {
             svgHeight *
             0.66;
 
+        /*
+         * Phone-forward = screen-up.
+         */
 
         var rotationDegrees =
             -(
@@ -2070,7 +2405,6 @@ $(document).ready(function() {
                 rotationRadians
             );
 
-
         var a =
             navigationScale *
             cosValue;
@@ -2087,7 +2421,6 @@ $(document).ready(function() {
             navigationScale *
             cosValue;
 
-
         var e =
             screenX -
             a * dotX -
@@ -2098,17 +2431,17 @@ $(document).ready(function() {
             b * dotX -
             d * dotY;
 
-
         var matrix =
-            "matrix(" +
-            a + " " +
-            b + " " +
-            c + " " +
-            d + " " +
-            e + " " +
-            f +
-            ")";
-
+            (
+                "matrix(" +
+                a + " " +
+                b + " " +
+                c + " " +
+                d + " " +
+                e + " " +
+                f +
+                ")"
+            );
 
         svg.children(
             "g"
@@ -2117,7 +2450,6 @@ $(document).ready(function() {
             matrix
         );
     }
-
 
     function resetHeadingUpView() {
         $(".js-grapher-draw-target svg")
@@ -2130,10 +2462,9 @@ $(document).ready(function() {
             );
     }
 
-
-    /*
+    /* ------------------------------------------------------------
      * Grapher redraw handling
-     */
+     * ------------------------------------------------------------ */
 
     function refreshDotNavField() {
         drawPacingGrid();
@@ -2147,16 +2478,13 @@ $(document).ready(function() {
         );
 
         if (
-            lastFieldHeading === null
+            lastFieldHeading !== null
         ) {
-            return;
+            applyHeadingUpView(
+                lastFieldHeading
+            );
         }
-
-        applyHeadingUpView(
-            lastFieldHeading
-        );
     }
-
 
     var graphElement =
         $(".js-grapher-draw-target")
@@ -2186,10 +2514,9 @@ $(document).ready(function() {
         );
     }
 
-
-    /*
+    /* ------------------------------------------------------------
      * Device orientation
-     */
+     * ------------------------------------------------------------ */
 
     function handleDeviceOrientation(
         event
@@ -2203,15 +2530,20 @@ $(document).ready(function() {
         var rawHeading =
             null;
 
+        /*
+         * iOS Safari/Chrome.
+         */
 
         if (
-            typeof event
-                .webkitCompassHeading ===
+            typeof event.webkitCompassHeading ===
             "number"
         ) {
             rawHeading =
-                event
-                    .webkitCompassHeading;
+                event.webkitCompassHeading;
+
+        /*
+         * Other absolute orientation implementations.
+         */
 
         } else if (
             event.absolute &&
@@ -2219,13 +2551,11 @@ $(document).ready(function() {
                 "number"
         ) {
             rawHeading =
-                FieldOrientation
-                    .normalizeDegrees(
-                        360 -
-                        event.alpha
-                    );
+                FieldOrientation.normalizeDegrees(
+                    360 -
+                    event.alpha
+                );
         }
-
 
         if (
             rawHeading === null
@@ -2242,24 +2572,25 @@ $(document).ready(function() {
             return;
         }
 
+        /*
+         * Physical compass frame
+         * →
+         * Cal Band field frame
+         */
 
         var fieldHeading =
-            FieldOrientation
-                .toFieldHeading(
-                    rawHeading,
-                    selectedVenue
-                        .eastHeading
-                );
+            FieldOrientation.toFieldHeading(
+                rawHeading,
+                selectedVenue.eastHeading
+            );
 
         lastFieldHeading =
             fieldHeading;
 
-
         var direction =
-            FieldOrientation
-                .getDirectionLabel(
-                    fieldHeading
-                );
+            FieldOrientation.getDirectionLabel(
+                fieldHeading
+            );
 
         var targetHeading =
             getTargetHeading();
@@ -2269,7 +2600,6 @@ $(document).ready(function() {
                 fieldHeading,
                 targetHeading
             );
-
 
         $(".js-dotnav-phone-heading")
             .text(
@@ -2288,7 +2618,6 @@ $(document).ready(function() {
                 turnInstruction
             );
 
-
         drawPacingGrid();
 
         drawMovementRoute();
@@ -2304,10 +2633,9 @@ $(document).ready(function() {
         );
     }
 
-
-    /*
+    /* ------------------------------------------------------------
      * Initial UI
-     */
+     * ------------------------------------------------------------ */
 
     clearNextGuidance();
 

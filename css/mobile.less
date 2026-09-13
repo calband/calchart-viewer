@@ -6,11 +6,17 @@
 @dotnav-soft: #edf3f8;
 @dotnav-text: #082f5b;
 @dotnav-muted: #64768a;
+
 @dotnav-blue: #0b4b88;
 @dotnav-blue-dark: #063768;
+
 @dotnav-green: #287a52;
 @dotnav-amber: #d5a437;
 @dotnav-red: #a84f4a;
+
+@dotnav-target-red: #e53935;
+@dotnav-next-yellow: #ffd34d;
+@dotnav-next-yellow-text: #9b7500;
 
 
 html,
@@ -518,7 +524,7 @@ select,
 
 .dotnav-visual-compass {
     min-height:
-        128px;
+        142px;
 
     padding:
         9px;
@@ -799,7 +805,8 @@ select,
 
 
 /*
- * Fixed phone-forward indicator
+ * BLUE:
+ * Fixed phone-forward indicator.
  */
 
 .dotnav-compass-heading-marker {
@@ -915,10 +922,97 @@ select,
 
 
 /*
- * Target heading
+ * RED:
+ * Current target.
  */
 
-.dotnav-compass-target-rotator {
+.dotnav-compass-current-target-rotator {
+    position:
+        absolute;
+
+    z-index:
+        8;
+
+    width:
+        108px;
+
+    height:
+        108px;
+
+    left:
+        0;
+
+    top:
+        0;
+
+    transform:
+        rotate(
+            0deg
+        );
+
+    transform-origin:
+        54px
+        54px;
+
+    transition:
+        transform
+        100ms
+        linear;
+
+    pointer-events:
+        none;
+}
+
+
+.dotnav-compass-current-target-dot {
+    position:
+        absolute;
+
+    width:
+        13px;
+
+    height:
+        13px;
+
+    left:
+        47.5px;
+
+    top:
+        7px;
+
+    border:
+        3px solid
+        @dotnav-target-red;
+
+    border-radius:
+        50%;
+
+    background:
+        white;
+
+    box-sizing:
+        border-box;
+
+    box-shadow:
+        0
+        0
+        0
+        3px
+        rgba(
+            229,
+            57,
+            53,
+            0.22
+        );
+}
+
+
+/*
+ * YELLOW:
+ * Next target.
+ */
+
+.dotnav-compass-next-target-rotator {
     position:
         absolute;
 
@@ -956,25 +1050,25 @@ select,
 }
 
 
-.dotnav-compass-target-dot {
+.dotnav-compass-next-target-dot {
     position:
         absolute;
 
     width:
-        12px;
+        11px;
 
     height:
-        12px;
+        11px;
 
     left:
-        48px;
+        48.5px;
 
     top:
-        8px;
+        9px;
 
     border:
         3px solid
-        #ffd34d;
+        @dotnav-next-yellow;
 
     border-radius:
         50%;
@@ -994,7 +1088,7 @@ select,
             255,
             211,
             77,
-            0.28
+            0.24
         );
 }
 
@@ -1014,7 +1108,7 @@ select,
         column;
 
     gap:
-        7px;
+        5px;
 }
 
 
@@ -1043,17 +1137,37 @@ select,
             @dotnav-text;
 
         font-size:
-            15px;
+            14px;
 
         line-height:
-            1.1;
+            1.05;
     }
+}
+
+
+/*
+ * Current required target text = RED.
+ */
+
+.js-dotnav-compass-target {
+    color:
+        @dotnav-target-red !important;
+}
+
+
+/*
+ * Next required target text = YELLOW/GOLD.
+ */
+
+.js-dotnav-compass-next-target {
+    color:
+        @dotnav-next-yellow-text !important;
 }
 
 
 .dotnav-compass-turn {
     margin-top:
-        2px;
+        3px;
 
     padding:
         7px
@@ -1226,8 +1340,6 @@ select,
 
 
 /*
- * Main top row:
- *
  * Current = about 2/3
  * Next    = about 1/3
  */
@@ -1263,7 +1375,7 @@ select,
         0;
 
     min-height:
-        96px;
+        108px;
 
     padding:
         12px;
@@ -1334,7 +1446,7 @@ select,
 
 .dotnav-guidance-section-label {
     margin-bottom:
-        7px;
+        5px;
 
     font-size:
         8px;
@@ -1353,12 +1465,53 @@ select,
 }
 
 
+/*
+ * Cal Band step / action name.
+ *
+ * FMHS
+ * FMMM
+ * FMSH
+ * GVFW
+ * MTHS
+ * MTMM
+ * HUP VAMP
+ * STAND & PLAY
+ * CLOSE
+ */
+
+.dotnav-step-type {
+    margin-bottom:
+        5px;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+
+    font-size:
+        18px;
+
+    line-height:
+        1.05;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.02em;
+}
+
+
 .dotnav-guidance-mode {
     margin-bottom:
         8px;
 
     font-size:
-        11px;
+        10px;
 
     line-height:
         1;
@@ -1370,7 +1523,7 @@ select,
         0.08em;
 
     opacity:
-        0.82;
+        0.75;
 }
 
 
@@ -1466,6 +1619,74 @@ select,
 
 
 /*
+ * Path / geometry tag.
+ *
+ * EVEN
+ * ARC
+ */
+
+.dotnav-path-type {
+    min-height:
+        0;
+
+    margin-top:
+        7px;
+
+    font-size:
+        9px;
+
+    line-height:
+        1;
+
+    font-weight:
+        700;
+
+    letter-spacing:
+        0.09em;
+
+    opacity:
+        0.8;
+}
+
+
+.dotnav-path-type:not(:empty) {
+    display:
+        inline-block;
+
+    align-self:
+        flex-start;
+
+    padding:
+        4px
+        6px;
+
+    border:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.34
+        );
+
+    border-radius:
+        999px;
+}
+
+
+.dotnav-guidance-primary.is-mark-time
+.dotnav-path-type {
+    border-color:
+        rgba(
+            8,
+            47,
+            91,
+            0.28
+        );
+}
+
+
+/*
  * NEXT preview
  */
 
@@ -1474,7 +1695,7 @@ select,
         0;
 
     min-height:
-        96px;
+        108px;
 
     padding:
         10px;
@@ -2159,11 +2380,6 @@ select,
     }
 
 
-    /*
-     * Still keep Current / Next side-by-side.
-     * Current gets slightly more room.
-     */
-
     .dotnav-guidance-top {
         grid-template-columns:
             minmax(
@@ -2185,7 +2401,13 @@ select,
             10px;
 
         min-height:
-            92px;
+            104px;
+    }
+
+
+    .dotnav-step-type {
+        font-size:
+            16px;
     }
 
 
@@ -2206,7 +2428,7 @@ select,
 
     .dotnav-next-guidance {
         min-height:
-            92px;
+            104px;
 
         padding:
             8px;

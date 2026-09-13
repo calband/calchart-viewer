@@ -33,7 +33,7 @@
     <link
         rel="stylesheet"
         type="text/css"
-        href="build/css/mobile.css?dotnav=5"
+        href="build/css/mobile.css?dotnav=6"
     >
 
     <link
@@ -75,7 +75,7 @@
 
     <script
         type="text/javascript"
-        src="build/js/mobile.js?dotnav=19">
+        src="build/js/mobile.js?dotnav=20">
     </script>
 
     <script
@@ -234,6 +234,19 @@
 
                         <div class="dotnav-compass-dial">
 
+                            <!--
+                                Rotating field compass rose.
+
+                                BLUE:
+                                    Phone/self direction.
+                                    Fixed screen-up.
+
+                                RED:
+                                    Current required DotNav target.
+
+                                YELLOW:
+                                    Next movement target.
+                            -->
                             <div
                                 class="
                                     dotnav-compass-rose
@@ -295,16 +308,50 @@
                                 </span>
 
 
+                                <!--
+                                    CURRENT TARGET
+
+                                    Red marker.
+
+                                    This represents the direction
+                                    the marcher should be following
+                                    right now.
+                                -->
                                 <div
                                     class="
-                                        dotnav-compass-target-rotator
-                                        js-dotnav-compass-target-marker
+                                        dotnav-compass-current-target-rotator
+                                        js-dotnav-compass-current-target-marker
                                     "
                                 >
 
                                     <div
                                         class="
-                                            dotnav-compass-target-dot
+                                            dotnav-compass-current-target-dot
+                                        "
+                                    >
+                                    </div>
+
+                                </div>
+
+
+                                <!--
+                                    NEXT TARGET
+
+                                    Yellow marker.
+
+                                    This previews the heading required
+                                    by the next MovementCommand.
+                                -->
+                                <div
+                                    class="
+                                        dotnav-compass-next-target-rotator
+                                        js-dotnav-compass-next-target-marker
+                                    "
+                                >
+
+                                    <div
+                                        class="
+                                            dotnav-compass-next-target-dot
                                         "
                                     >
                                     </div>
@@ -314,6 +361,12 @@
                             </div>
 
 
+                            <!--
+                                PHONE / SELF
+
+                                Blue marker remains fixed and
+                                always points screen-up.
+                            -->
                             <div
                                 class="
                                     dotnav-compass-heading-marker
@@ -345,10 +398,13 @@
 
                         <div class="dotnav-compass-readout">
 
+                            <!--
+                                Actual phone/self heading.
+                            -->
                             <div class="dotnav-compass-value-group">
 
                                 <span class="dotnav-info-label">
-                                    CURRENT
+                                    PHONE
                                 </span>
 
                                 <strong
@@ -362,15 +418,38 @@
                             </div>
 
 
+                            <!--
+                                Current required heading.
+                            -->
                             <div class="dotnav-compass-value-group">
 
                                 <span class="dotnav-info-label">
-                                    TARGET
+                                    CURRENT TARGET
                                 </span>
 
                                 <strong
                                     class="
                                         js-dotnav-compass-target
+                                    "
+                                >
+                                    —
+                                </strong>
+
+                            </div>
+
+
+                            <!--
+                                Next movement heading.
+                            -->
+                            <div class="dotnav-compass-value-group">
+
+                                <span class="dotnav-info-label">
+                                    NEXT TARGET
+                                </span>
+
+                                <strong
+                                    class="
+                                        js-dotnav-compass-next-target
                                     "
                                 >
                                     —
@@ -465,8 +544,8 @@
             <!--
                 CURRENT + NEXT
 
-                Current remains the primary display.
-                Next is a preview of the next MovementCommand.
+                Current remains primary.
+                Next previews the next MovementCommand.
             -->
             <section class="dotnav-guidance-card">
 
@@ -490,6 +569,43 @@
                         </div>
 
 
+                        <!--
+                            Actual Cal Band step / action.
+
+                            Examples:
+
+                            FMHS
+                            FMMM
+                            FMSH
+                            GVFW
+                            MTHS
+                            MTMM
+                            HUP VAMP
+                            STAND & PLAY
+                            CLOSE
+
+                            We will populate this from JS once
+                            the semantic source is connected.
+                        -->
+                        <div
+                            class="
+                                dotnav-step-type
+                                js-dotnav-step-type
+                            "
+                        >
+                            —
+                        </div>
+
+
+                        <!--
+                            Geometric / operational state.
+
+                            Examples:
+
+                            MOVING
+                            MARK TIME
+                            HOLD
+                        -->
                         <div
                             class="
                                 dotnav-guidance-mode
@@ -530,6 +646,26 @@
 
                         </div>
 
+
+                        <!--
+                            Optional geometry tag.
+
+                            Examples:
+
+                            EVEN
+                            ARC
+
+                            This is intentionally separate from
+                            the step technique.
+                        -->
+                        <div
+                            class="
+                                dotnav-path-type
+                                js-dotnav-path-type
+                            "
+                        >
+                        </div>
+
                     </div>
 
 
@@ -541,6 +677,9 @@
                         </div>
 
 
+                        <!--
+                            Next step/action type.
+                        -->
                         <div
                             class="
                                 dotnav-next-mode
@@ -551,6 +690,9 @@
                         </div>
 
 
+                        <!--
+                            Next movement heading.
+                        -->
                         <div
                             class="
                                 dotnav-next-primary
@@ -561,6 +703,10 @@
                         </div>
 
 
+                        <!--
+                            Example:
+                            FACE W 270°
+                        -->
                         <div
                             class="
                                 dotnav-next-secondary
@@ -570,6 +716,10 @@
                         </div>
 
 
+                        <!--
+                            Example:
+                            IN 6 BEATS
+                        -->
                         <div
                             class="
                                 dotnav-next-timing
@@ -584,7 +734,7 @@
 
 
                 <!--
-                    Current movement detail stays underneath.
+                    Current movement details.
                 -->
                 <div class="dotnav-guidance-secondary">
 
