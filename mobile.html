@@ -2,20 +2,27 @@
 <head>
     <meta charset="utf-8">
 
-    <title>Calchart Viewer</title>
+    <title>Calchart Viewer - DotNav</title>
 
     <meta
         name="viewport"
-        content="width=device-width,height=device-height,initial-scale=1.0"
+        content="
+            width=device-width,
+            height=device-height,
+            initial-scale=1.0
+        "
     >
 
     <link
-        href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700"
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700"
         rel="stylesheet"
         type="text/css"
     >
 
-    <link rel="shortcut icon" href="img/favicon.png">
+    <link
+        rel="shortcut icon"
+        href="img/favicon.png"
+    >
 
     <link
         rel="stylesheet"
@@ -26,13 +33,13 @@
     <link
         rel="stylesheet"
         type="text/css"
-        href="build/css/mobile.css"
+        href="build/css/mobile.css?dotnav=5"
     >
 
     <link
         rel="stylesheet"
         type="text/css"
-        href="build/css/graph.css"
+        href="build/css/graph.css?dotnav=4"
     >
 
     <link
@@ -66,10 +73,9 @@
         src="js/vendor/chosen.jquery.min.js">
     </script>
 
-    <!-- DotNav cache-busted bundles -->
     <script
         type="text/javascript"
-        src="build/js/mobile.js?dotnav=14">
+        src="build/js/mobile.js?dotnav=19">
     </script>
 
     <script
@@ -78,9 +84,8 @@
     </script>
 </head>
 
-<body>
+<body class="dotnav-mobile">
 
-    <!-- Loading screen -->
     <div class="loading">
         <div class="wrapper">
             <h1>Loading</h1>
@@ -88,226 +93,74 @@
         </div>
     </div>
 
-    <div class="container">
 
-        <div class="header">
+    <div class="container dotnav-shell">
 
-            <img src="img/calchart-viewer-highstepper.png">
+        <header class="dotnav-header">
 
-            <div class="header-contents">
+            <div class="dotnav-brand">
 
-                <h1>Calchart Viewer</h1>
-
-                <label>Show:</label>
-
-                <select
-                    class="js-select-show select-show"
-                    data-placeholder="None">
-                </select>
-
-                <label>Field:</label>
-
-                <select class="js-dotnav-field">
-                    <option value="">Select field</option>
-                    <option value="maxwell">
-                        Maxwell Family Field
-                    </option>
-                    <option value="memorial">
-                        California Memorial Stadium
-                    </option>
-                </select>
-
-                <button
-                    type="button"
-                    class="js-dotnav-enable-compass"
+                <img
+                    src="img/calchart-viewer-highstepper.png"
+                    alt="Calchart Viewer"
                 >
-                    Enable Compass
-                </button>
 
-                <div class="dotnav-compass-status">
-                    Phone:
-                    <span class="js-dotnav-phone-heading">
-                        Compass off
-                    </span>
+                <div>
+                    <h1>Calchart Viewer</h1>
+
+                    <div class="dotnav-subtitle">
+                        DotNav
+                    </div>
                 </div>
 
             </div>
 
-        </div>
 
-        <div class="main">
+            <div class="dotnav-selector-grid">
 
-            <div class="graph-container">
-                <div class="graph js-grapher-draw-target"></div>
-            </div>
-
-            <div class="controls-container">
-
-                <div class="animation-state">
-
-                    <div class="stuntsheet">
-                        Stuntsheet:
-                        <span class="js-stuntsheet-label">
-                            None selected
-                        </span>
-                    </div>
-
-                    <div class="beats">
-                        Beat:
-                        <span class="js-beat-number">0</span>
-                        /
-                        <span class="js-stuntsheet-total">0</span>
-                    </div>
-
-                </div>
-
-
-                <!-- Temporary DotNav state display -->
-                <div
-                    class="dotnav-debug"
-                    style="font-size: 14px;"
-                >
-
-                    <div>
-                        Dot:
-                        <span class="js-dotnav-dot">
-                            None
-                        </span>
-                    </div>
-
-                    <div>
-                        SS:
-                        <span class="js-dotnav-sheet">
-                            None
-                        </span>
-                    </div>
-
-                    <div>
-                        Beat:
-                        <span class="js-dotnav-beat">
-                            0
-                        </span>
-                    </div>
-
-                    <div>
-                        Movement:
-                        <span class="js-dotnav-movement">
-                            None
-                        </span>
-                    </div>
-
-                    <div>
-                        Local Beat:
-                        <span class="js-dotnav-local-beat">
-                            0
-                        </span>
-                    </div>
-                    <div>
-                        Move:
-                        <span class="js-dotnav-travel">
-                            —
-                        </span>
-                    </div>
-                    <div>
-                        Orient:
-                    <div>
-                        Target:
-                        <span class="js-dotnav-target">
-                            —
-                        </span>
-                    </div>
-                        <span class="js-dotnav-orient">
-                            —
-                        </span>
-                    </div>
-                    <div>
-                        Continuity:
-                        <div class="js-dotnav-continuity">
-                            None
-                        </div>
-                    </div>
-
-                </div>
-
-
-                <div class="dev-notes">
-
-                    <p>
-                        Note: Currently, you can not play shows
-                        with music on mobile. You may click through
-                        or generate your viewpsheet below.
-                    </p>
-
-                </div>
-
-
-                <div class="buttons">
-
-                    <div
-                        class="
-                            control-button
-                            prev-stuntsheet
-                            js-prev-stuntsheet
-                        ">
-                        <span></span>
-                    </div>
-
-                    <div
-                        class="
-                            control-button
-                            prev-beat
-                            js-prev-beat
-                        ">
-                        <span></span>
-                    </div>
-
-                    <div
-                        class="
-                            control-button
-                            play-button
-                            js-animate
-                            disabled
-                        ">
-                        <span></span>
-                    </div>
-
-                    <div
-                        class="
-                            control-button
-                            next-beat
-                            js-next-beat
-                        ">
-                        <span></span>
-                    </div>
-
-                    <div
-                        class="
-                            control-button
-                            next-stuntsheet
-                            js-next-stuntsheet
-                        ">
-                        <span></span>
-                    </div>
-
-                    <div
-                        class="
-                            control-button
-                            js-load-song
-                        ">
-
-                        <span style="display:none;"></span>
-
-                        Load
-
-                    </div>
-
-                </div>
-
-
-                <div class="control-container">
+                <div class="dotnav-select-card">
 
                     <label>
-                        Generate viewpsheet:
+                        Show
+                    </label>
+
+                    <select
+                        class="js-select-show select-show"
+                        data-placeholder="None">
+                    </select>
+
+                </div>
+
+
+                <div class="dotnav-select-card">
+
+                    <label>
+                        Field
+                    </label>
+
+                    <select class="js-dotnav-field">
+
+                        <option value="">
+                            Select field
+                        </option>
+
+                        <option value="maxwell">
+                            Maxwell Family Field
+                        </option>
+
+                        <option value="memorial">
+                            California Memorial Stadium
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="dotnav-select-card">
+
+                    <label>
+                        Dot
                     </label>
 
                     <select
@@ -320,9 +173,605 @@
 
                 </div>
 
+
+                <button
+                    type="button"
+                    class="
+                        dotnav-compass-button
+                        js-dotnav-enable-compass
+                    "
+                >
+                    Enable Compass
+                </button>
+
             </div>
 
-        </div>
+        </header>
+
+
+        <main class="main dotnav-main dotnav-debug">
+
+            <section class="dotnav-view-card">
+
+                <div class="dotnav-view-header">
+
+                    <div>
+
+                        <div class="dotnav-view-title">
+                            Top-down
+                        </div>
+
+                        <div class="dotnav-view-subtitle">
+                            Heading-up · phone forward = screen up
+                        </div>
+
+                    </div>
+
+
+                    <div class="dotnav-live-pill">
+                        LIVE
+                    </div>
+
+                </div>
+
+
+                <div class="dotnav-navigation-status">
+
+                    <div class="dotnav-compass-status">
+
+                        <div class="dotnav-small-label">
+                            PHONE / TURN
+                        </div>
+
+                        <div class="js-dotnav-phone-heading">
+                            Compass off
+                        </div>
+
+                    </div>
+
+
+                    <div class="dotnav-visual-compass">
+
+                        <div class="dotnav-compass-dial">
+
+                            <div
+                                class="
+                                    dotnav-compass-rose
+                                    js-dotnav-compass-rose
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        dotnav-compass-axis
+                                        dotnav-compass-axis-ns
+                                    "
+                                >
+                                </div>
+
+                                <div
+                                    class="
+                                        dotnav-compass-axis
+                                        dotnav-compass-axis-ew
+                                    "
+                                >
+                                </div>
+
+
+                                <span
+                                    class="
+                                        dotnav-compass-cardinal
+                                        dotnav-compass-n
+                                    "
+                                >
+                                    N
+                                </span>
+
+                                <span
+                                    class="
+                                        dotnav-compass-cardinal
+                                        dotnav-compass-e
+                                    "
+                                >
+                                    E
+                                </span>
+
+                                <span
+                                    class="
+                                        dotnav-compass-cardinal
+                                        dotnav-compass-s
+                                    "
+                                >
+                                    S
+                                </span>
+
+                                <span
+                                    class="
+                                        dotnav-compass-cardinal
+                                        dotnav-compass-w
+                                    "
+                                >
+                                    W
+                                </span>
+
+
+                                <div
+                                    class="
+                                        dotnav-compass-target-rotator
+                                        js-dotnav-compass-target-marker
+                                    "
+                                >
+
+                                    <div
+                                        class="
+                                            dotnav-compass-target-dot
+                                        "
+                                    >
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="
+                                    dotnav-compass-heading-marker
+                                    js-dotnav-compass-heading-marker
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        dotnav-compass-heading-line
+                                    "
+                                >
+                                </div>
+
+                                <div
+                                    class="
+                                        dotnav-compass-heading-arrow
+                                    "
+                                >
+                                </div>
+
+                            </div>
+
+
+                            <div class="dotnav-compass-center"></div>
+
+                        </div>
+
+
+                        <div class="dotnav-compass-readout">
+
+                            <div class="dotnav-compass-value-group">
+
+                                <span class="dotnav-info-label">
+                                    CURRENT
+                                </span>
+
+                                <strong
+                                    class="
+                                        js-dotnav-compass-current
+                                    "
+                                >
+                                    —
+                                </strong>
+
+                            </div>
+
+
+                            <div class="dotnav-compass-value-group">
+
+                                <span class="dotnav-info-label">
+                                    TARGET
+                                </span>
+
+                                <strong
+                                    class="
+                                        js-dotnav-compass-target
+                                    "
+                                >
+                                    —
+                                </strong>
+
+                            </div>
+
+
+                            <div
+                                class="
+                                    dotnav-compass-turn
+                                    js-dotnav-compass-turn
+                                "
+                            >
+                                TURN —
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="graph-container">
+
+                    <div
+                        class="
+                            graph
+                            js-grapher-draw-target
+                        ">
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="dotnav-status-strip">
+
+                <div>
+
+                    <span class="dotnav-status-label">
+                        DOT
+                    </span>
+
+                    <strong class="js-dotnav-dot">
+                        None
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span class="dotnav-status-label">
+                        SS
+                    </span>
+
+                    <strong class="js-stuntsheet-label">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span class="dotnav-status-label">
+                        BEAT
+                    </span>
+
+                    <strong>
+
+                        <span class="js-beat-number">
+                            0
+                        </span>
+
+                        /
+
+                        <span class="js-stuntsheet-total">
+                            0
+                        </span>
+
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+            <!--
+                CURRENT + NEXT
+
+                Current remains the primary display.
+                Next is a preview of the next MovementCommand.
+            -->
+            <section class="dotnav-guidance-card">
+
+                <div class="dotnav-card-eyebrow">
+                    GUIDANCE
+                </div>
+
+
+                <div class="dotnav-guidance-top">
+
+                    <!-- CURRENT -->
+                    <div
+                        class="
+                            dotnav-guidance-primary
+                            is-neutral
+                        "
+                    >
+
+                        <div class="dotnav-guidance-section-label">
+                            CURRENT
+                        </div>
+
+
+                        <div
+                            class="
+                                dotnav-guidance-mode
+                                js-dotnav-mode
+                            "
+                        >
+                            CURRENT
+                        </div>
+
+
+                        <div class="dotnav-guidance-main">
+
+                            <div>
+
+                                <div class="dotnav-guidance-label">
+                                    MOVE
+                                </div>
+
+                                <div
+                                    class="
+                                        dotnav-guidance-value
+                                        js-dotnav-travel
+                                    "
+                                >
+                                    —
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="
+                                    dotnav-countdown
+                                    js-dotnav-countdown
+                                "
+                            >
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- NEXT -->
+                    <div class="dotnav-next-guidance">
+
+                        <div class="dotnav-next-label">
+                            NEXT
+                        </div>
+
+
+                        <div
+                            class="
+                                dotnav-next-mode
+                                js-dotnav-next-mode
+                            "
+                        >
+                            —
+                        </div>
+
+
+                        <div
+                            class="
+                                dotnav-next-primary
+                                js-dotnav-next-primary
+                            "
+                        >
+                            —
+                        </div>
+
+
+                        <div
+                            class="
+                                dotnav-next-secondary
+                                js-dotnav-next-secondary
+                            "
+                        >
+                        </div>
+
+
+                        <div
+                            class="
+                                dotnav-next-timing
+                                js-dotnav-next-timing
+                            "
+                        >
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!--
+                    Current movement detail stays underneath.
+                -->
+                <div class="dotnav-guidance-secondary">
+
+                    <div>
+
+                        <span class="dotnav-info-label">
+                            ORIENT
+                        </span>
+
+                        <strong class="js-dotnav-orient">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="dotnav-info-label">
+                            TARGET
+                        </span>
+
+                        <strong class="js-dotnav-target">
+                            —
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="dotnav-details-card">
+
+                <div class="dotnav-detail">
+
+                    <span class="dotnav-info-label">
+                        Local Beat
+                    </span>
+
+                    <strong class="js-dotnav-local-beat">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="dotnav-detail">
+
+                    <span class="dotnav-info-label">
+                        Movement
+                    </span>
+
+                    <strong class="js-dotnav-movement">
+                        None
+                    </strong>
+
+                </div>
+
+
+                <div class="dotnav-detail dotnav-hidden-state">
+
+                    <span class="js-dotnav-sheet">
+                        None
+                    </span>
+
+                    <span class="js-dotnav-beat">
+                        0
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <section class="dotnav-continuity-card">
+
+                <div class="dotnav-continuity-header">
+                    Raw continuity
+                </div>
+
+                <div class="js-dotnav-continuity">
+                    None
+                </div>
+
+            </section>
+
+
+            <section class="controls-container">
+
+                <div class="buttons dotnav-buttons">
+
+                    <div
+                        class="
+                            control-button
+                            prev-stuntsheet
+                            js-prev-stuntsheet
+                        "
+                    >
+                        <span></span>
+
+                        <div class="dotnav-button-label">
+                            Prev Sheet
+                        </div>
+                    </div>
+
+
+                    <div
+                        class="
+                            control-button
+                            prev-beat
+                            js-prev-beat
+                        "
+                    >
+                        <span></span>
+
+                        <div class="dotnav-button-label">
+                            Prev Beat
+                        </div>
+                    </div>
+
+
+                    <div
+                        class="
+                            control-button
+                            play-button
+                            js-animate
+                            disabled
+                        "
+                    >
+                        <span></span>
+
+                        <div class="dotnav-button-label">
+                            Play
+                        </div>
+                    </div>
+
+
+                    <div
+                        class="
+                            control-button
+                            next-beat
+                            js-next-beat
+                        "
+                    >
+                        <span></span>
+
+                        <div class="dotnav-button-label">
+                            Next Beat
+                        </div>
+                    </div>
+
+
+                    <div
+                        class="
+                            control-button
+                            next-stuntsheet
+                            js-next-stuntsheet
+                        "
+                    >
+                        <span></span>
+
+                        <div class="dotnav-button-label">
+                            Next Sheet
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="
+                        dotnav-load-music
+                        js-load-song
+                    "
+                >
+
+                    <span style="display:none;"></span>
+
+                    Load Music
+
+                </div>
+
+            </section>
+
+        </main>
 
     </div>
 
