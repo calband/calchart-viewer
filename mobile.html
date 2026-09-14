@@ -39,7 +39,7 @@
     <link
         rel="stylesheet"
         type="text/css"
-        href="build/css/graph.css?dotnav=4"
+        href="build/css/graph.css?dotnav=6"
     >
 
     <link
@@ -75,13 +75,69 @@
 
     <script
         type="text/javascript"
-        src="build/js/mobile.js?dotnav=20">
+        src="build/js/mobile.js?dotnav=23">
     </script>
 
     <script
         type="text/javascript"
         src="build/js/application.js?dotnav=15">
     </script>
+
+
+    <style>
+        .dotnav-tempo-control {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #dbe5ef;
+            border-radius: 12px;
+            background: #edf3f8;
+        }
+
+        .dotnav-tempo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .dotnav-tempo-title {
+            color: #64768a;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .dotnav-tempo-status {
+            color: #082f5b;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .dotnav-tempo-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .dotnav-tempo-button {
+            min-height: 38px;
+            border: 1px solid #bfcfdf;
+            border-radius: 9px;
+            background: #ffffff;
+            color: #082f5b;
+            font-family: "Open Sans", sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .dotnav-tempo-button.is-active {
+            border-color: #0b4b88;
+            background: #0b4b88;
+            color: #ffffff;
+        }
+    </style>
+
 </head>
 
 <body class="dotnav-mobile">
@@ -152,6 +208,10 @@
                             California Memorial Stadium
                         </option>
 
+                        <option value="manual">
+                            Manual / Other
+                        </option>
+
                     </select>
 
                 </div>
@@ -182,6 +242,21 @@
                     "
                 >
                     Enable Compass
+                </button>
+
+
+                <button
+                    type="button"
+                    class="
+                        dotnav-compass-button
+                        js-dotnav-set-east
+                    "
+                    style="
+                        display: none;
+                        grid-column: 1 / -1;
+                    "
+                >
+                    Set Current Direction as East
                 </button>
 
             </div>
@@ -553,6 +628,44 @@
                     GUIDANCE
                 </div>
 
+                <!--
+                    Current-stuntsheet overview.
+
+                    The map shows only this stuntsheet:
+                    passed route = pink/faded
+                    remaining route = red
+                -->
+                <div
+                    class="
+                        dotnav-next-guidance
+                        dotnav-sheet-path-preview
+                    "
+                >
+
+                    <div class="dotnav-next-label">
+                        CURRENT STUNTSHEET PATH
+                    </div>
+
+                    <div
+                        class="
+                            dotnav-next-primary
+                            js-dotnav-current-sheet-title
+                        "
+                    >
+                        —
+                    </div>
+
+                    <div
+                        class="
+                            dotnav-next-secondary
+                            js-dotnav-current-sheet-path
+                        "
+                    >
+                        —
+                    </div>
+
+                </div>
+
 
                 <div class="dotnav-guidance-top">
 
@@ -583,9 +696,6 @@
                             HUP VAMP
                             STAND & PLAY
                             CLOSE
-
-                            We will populate this from JS once
-                            the semantic source is connected.
                         -->
                         <div
                             class="
@@ -691,7 +801,7 @@
 
 
                         <!--
-                            Next movement heading.
+                            Next movement heading and step count.
                         -->
                         <div
                             class="
@@ -825,6 +935,73 @@
 
 
             <section class="controls-container">
+
+                <div class="dotnav-tempo-control">
+
+                    <div class="dotnav-tempo-header">
+                        <div class="dotnav-tempo-title">
+                            TEMPO SCALE
+                        </div>
+
+                        <div
+                            class="
+                                dotnav-tempo-status
+                                js-dotnav-tempo-status
+                            "
+                        >
+                            100% practice speed
+                        </div>
+                    </div>
+
+                    <div class="dotnav-tempo-buttons">
+                        <button
+                            type="button"
+                            class="
+                                dotnav-tempo-button
+                                js-dotnav-tempo
+                            "
+                            data-tempo="0.5"
+                        >
+                            50%
+                        </button>
+
+                        <button
+                            type="button"
+                            class="
+                                dotnav-tempo-button
+                                js-dotnav-tempo
+                            "
+                            data-tempo="0.75"
+                        >
+                            75%
+                        </button>
+
+                        <button
+                            type="button"
+                            class="
+                                dotnav-tempo-button
+                                js-dotnav-tempo
+                            "
+                            data-tempo="0.9"
+                        >
+                            90%
+                        </button>
+
+                        <button
+                            type="button"
+                            class="
+                                dotnav-tempo-button
+                                js-dotnav-tempo
+                                is-active
+                            "
+                            data-tempo="1"
+                        >
+                            100%
+                        </button>
+                    </div>
+
+                </div>
+
 
                 <div class="buttons dotnav-buttons">
 

@@ -70,10 +70,10 @@
 
 
 /*
- * DotNav current-movement navigation route
+ * DotNav current-stuntsheet navigation route
  *
- * Red is intentionally used for high visibility
- * against the green field.
+ * Pink/faded = path already completed in this stuntsheet.
+ * Red = current + remaining path in this stuntsheet.
  */
 
 .dotnav-route {
@@ -81,36 +81,24 @@
 }
 
 .dotnav-route-line {
-    stroke: #e53935;
-
     stroke-width: 2.8px;
-
     stroke-linecap: round;
-
-    opacity: 0.95;
-
-    vector-effect:
-        non-scaling-stroke;
+    vector-effect: non-scaling-stroke;
 }
 
-.dotnav-route-start {
-    fill: white;
+.dotnav-route-passed {
+    stroke: #ff78b8;
+    opacity: 0.42;
+}
 
+.dotnav-route-remaining {
     stroke: #e53935;
-
-    stroke-width: 2.4px;
-
-    vector-effect:
-        non-scaling-stroke;
+    opacity: 0.96;
 }
 
 .dotnav-route-target {
     stroke: #e53935;
-
     stroke-width: 2.6px;
-
     stroke-linecap: round;
-
-    vector-effect:
-        non-scaling-stroke;
+    vector-effect: non-scaling-stroke;
 }
