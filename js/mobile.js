@@ -20,8 +20,11 @@ $(document).ready(function() {
     var selectedVenue = null;
     var compassEnabled = false;
     var lastRawHeading = null;
+    var lastRawHeadingIsAbsolute = null;
     var fieldEastHeading = null;
+    var fieldEastHeadingIsAbsolute = null;
     var lastFieldHeading = null;
+    var absoluteHeadingSeen = false;
     var navigationScale = 2.3;
     var tempoScale = 1.0;
 
@@ -52,6 +55,7 @@ $(document).ready(function() {
                 name: "Manual / Other"
             };
             fieldEastHeading = null;
+            fieldEastHeadingIsAbsolute = null;
 
             $(".js-dotnav-phone-heading").text(
                 "Enable compass, point phone toward Field East, then tap Set Current Direction as East"
@@ -70,6 +74,7 @@ $(document).ready(function() {
         }
 
         fieldEastHeading = selectedVenue.eastHeading;
+        fieldEastHeadingIsAbsolute = true;
 
         console.log(
             "[DotNav] Field:",
@@ -102,6 +107,7 @@ $(document).ready(function() {
         }
 
         fieldEastHeading = lastRawHeading;
+        fieldEastHeadingIsAbsolute = lastRawHeadingIsAbsolute;
 
         console.log(
             "[DotNav] Manual Field East offset:",
@@ -155,6 +161,11 @@ $(document).ready(function() {
 
         window.addEventListener(
             "deviceorientation",
+            handleDeviceOrientation
+        );
+
+        window.addEventListener(
+            "deviceorientationabsolute",
             handleDeviceOrientation
         );
 
@@ -2024,32 +2035,110 @@ $(document).ready(function() {
         applyHeadingUpView(fieldHeading);
     }
 
+    function getOrientationReading(event) {
+        if (
+            typeof event.webkitCompassHeading === "number" &&
+            !isNaN(event.webkitCompassHeading)
+        ) {
+            return {
+                rawHeading: FieldOrientation.normalizeDegrees(
+                    event.webkitCompassHeading
+                ),
+                isAbsolute: true,
+                source: "webkitCompassHeading"
+            };
+        }
+
+        if (
+            typeof event.alpha !== "number" ||
+            isNaN(event.alpha)
+        ) {
+            return null;
+        }
+
+        var rawHeading = FieldOrientation.normalizeDegrees(
+            360 - event.alpha
+        );
+
+        if (event.type === "deviceorientationabsolute") {
+            return {
+                rawHeading: rawHeading,
+                isAbsolute: true,
+                source: "deviceorientationabsolute"
+            };
+        }
+
+        if (event.absolute === true) {
+            return {
+                rawHeading: rawHeading,
+                isAbsolute: true,
+                source: "deviceorientation-absolute"
+            };
+        }
+
+        return {
+            rawHeading: rawHeading,
+            isAbsolute: false,
+            source: "deviceorientation-relative"
+        };
+    }
+
     function handleDeviceOrientation(event) {
         if (selectedVenue === null) {
             return;
         }
 
-        var rawHeading = null;
+        var reading = getOrientationReading(event);
 
-        if (typeof event.webkitCompassHeading === "number") {
-            rawHeading = event.webkitCompassHeading;
-        } else if (
-            event.absolute &&
-            typeof event.alpha === "number"
-        ) {
-            rawHeading = FieldOrientation.normalizeDegrees(
-                360 - event.alpha
-            );
-        }
-
-        if (rawHeading === null) {
-            $(".js-dotnav-phone-heading").text("No absolute heading");
+        if (reading === null) {
+            $(".js-dotnav-phone-heading").text("No heading data");
             updateVisualCompass(null);
             return;
         }
 
-        lastRawHeading = rawHeading;
-        applyRawHeading(rawHeading);
+        if (reading.isAbsolute) {
+            absoluteHeadingSeen = true;
+        } else if (
+            absoluteHeadingSeen &&
+            fieldEastHeadingIsAbsolute !== false
+        ) {
+            return;
+        }
+
+        var isManualField = $(".js-dotnav-field").val() === "manual";
+
+        if (!reading.isAbsolute && !isManualField) {
+            lastFieldHeading = null;
+
+            $(".js-dotnav-phone-heading").text(
+                "Absolute compass unavailable — use Manual / Other"
+            );
+
+            updateVisualCompass(null);
+            resetHeadingUpView();
+            return;
+        }
+
+        if (
+            isManualField &&
+            fieldEastHeading !== null &&
+            fieldEastHeadingIsAbsolute !== null &&
+            fieldEastHeadingIsAbsolute !== reading.isAbsolute
+        ) {
+            return;
+        }
+
+        lastRawHeading = reading.rawHeading;
+        lastRawHeadingIsAbsolute = reading.isAbsolute;
+
+        console.log(
+            "[DotNav] Heading source:",
+            reading.source,
+            "absolute:",
+            reading.isAbsolute
+        );
+
+        applyRawHeading(reading.rawHeading);
     }
 
     /* ------------------------------------------------------------
