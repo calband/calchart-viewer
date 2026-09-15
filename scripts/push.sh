@@ -30,6 +30,9 @@ echo "Building static files..."
 grunt build > /dev/null # hide output
 
 echo "Committing to gh-pages branch..."
+# build/ is ignored on master, so force-add ensures new build artifacts like
+# build/build-info.json are included on gh-pages.
+git add -Af build > /dev/null
 git commit -am "Built production files" -q
 git push origin gh-pages -q
 
