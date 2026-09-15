@@ -15,12 +15,14 @@
 }
 
 @main-width: 1040px;
+
 .container {
     width: @main-width;
     margin: 0 auto;
 }
 
-.header, .main {
+.header,
+.main {
     font-size: 0; // to mitigate inline-block spacing issues
 }
 
@@ -28,7 +30,10 @@
     margin-top: 20px;
     border-bottom: 1px solid @calband-gold;
     padding-bottom: 20px;
-    .header-image, .header-title, .header-files {
+
+    .header-image,
+    .header-title,
+    .header-files {
         display: inline-block;
         vertical-align: top;
     }
@@ -37,13 +42,15 @@
         margin-right: 20px;
     }
 
-    .header-title .title, .header-files .files-description {
+    .header-title .title,
+    .header-files .files-description {
         border-bottom: 1px solid @calband-gold;
         height: 40px;
         line-height: 40px;
     }
 
-    .header-title, .header-files {
+    .header-title,
+    .header-files {
         font-family: @sans;
         color: @calband-blue;
     }
@@ -55,9 +62,10 @@
         }
 
         .version {
-            height: 30px;
-            line-height: 30px;
-            font-size: 14px;
+            height: 18px;
+            line-height: 18px;
+            font-size: 11px;
+            color: #9AA0A6;
         }
     }
 
@@ -67,6 +75,7 @@
         .files-description {
             font-size: 20px;
             width: @header-files-width;
+
             .file-input-error {
                 display: none;
                 font-family: @sans;
@@ -76,11 +85,13 @@
                 margin-left: 30px;
             }
         }
+
         .load-controls {
             .files {
                 display: inline-block;
                 width: @header-files-width * 0.6;
                 margin-top: 10px;
+
                 .file-input {
                     margin: 5px;
 
@@ -91,10 +102,12 @@
                         display: inline-block;
                         min-width: 75px;
                     }
+
                     input[type="file"] {
                         color: transparent;
                         display: none;
                     }
+
                     button {
                         font-family: @sans;
                         font-size: 14px;
@@ -108,6 +121,7 @@
                     }
                 }
             }
+
             .autoload {
                 display: inline-block;
                 vertical-align: top;
@@ -119,6 +133,7 @@
                     display: block;
                     margin: 20px 0 10px;
                 }
+
                 .chosen-drop .chosen-results {
                     max-height: 100px;
                 }
@@ -146,7 +161,9 @@
 .main {
     @graph-height: 400px;
     @graph-margin: 20px;
-    .graph-container, .controls-container {
+
+    .graph-container,
+    .controls-container {
         display: inline-block;
         margin-top: 20px;
         vertical-align: top;
@@ -163,10 +180,17 @@
     }
 
     @controls-width: @main-width * 0.4;
+
     .controls-container {
         width: @controls-width;
 
-        .show-title, .stuntsheet, .beats, .dot-continuity, .next-prev-control, .control-button, .control-container {
+        .show-title,
+        .stuntsheet,
+        .beats,
+        .dot-continuity,
+        .next-prev-control,
+        .control-button,
+        .control-container {
             color: @calband-blue;
             font-family: @sans;
         }
@@ -182,6 +206,7 @@
 
         .animation-state {
             margin-top: 5px;
+
             &:after {
                 content: "";
                 display: table;
@@ -194,7 +219,9 @@
             font-size: 18px;
         }
 
-        .stuntsheet, .beats, .continuity-container {
+        .stuntsheet,
+        .beats,
+        .continuity-container {
             display: block;
             height: 30px;
             line-height: 30px;
@@ -215,12 +242,15 @@
             margin-top: 40px;
             font-size: 16px;
             overflow: scroll;
+
             .dot-continuity {
                 line-height: 1.5em;
             }
         }
 
-        .increment-control, .control-button, .control-container {
+        .increment-control,
+        .control-button,
+        .control-container {
             height: 30px;
             line-height: 30px;
             font-size: 13px;
@@ -231,22 +261,26 @@
             label {
                 margin-right: 10px;
             }
+
             .chosen-results {
                 max-height: 140px;
                 display: none;
             }
+
             .chosen-with-drop .chosen-results {
                 display: block;
             }
         }
 
-        .increment-control, .control-button {
+        .increment-control,
+        .control-button {
             cursor: pointer;
         }
 
         @increment-button-margin: 10px;
         @increment-button-highlight-width: 25px;
         @increment-button-width: (@controls-width - @increment-button-margin) / 2;
+
         .increment-control {
             display: inline-block;
             width: @increment-button-width;
@@ -258,9 +292,11 @@
             &.next {
                 border-right: @increment-button-highlight-width solid @calband-blue;
             }
+
             &.prev {
                 border-left: @increment-button-highlight-width solid @calband-blue;
             }
+
             &:first-child {
                 margin-right: @increment-button-margin;
             }
@@ -292,20 +328,23 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255,255,255,0.8);
+    background: rgba(255, 255, 255, 0.8);
     z-index: 100;
     text-align: center;
+
     &:before {
         content: "";
         display: inline-block;
         vertical-align: middle;
         height: 100%;
     }
+
     .wrapper {
         display: inline-block;
         vertical-align: middle;
         width: 400px;
         text-align: left;
+
         h1 {
             font-size: 48px;
             color: @calband-blue;
@@ -314,11 +353,13 @@
             text-align: center;
             margin: 0 0 5px;
         }
+
         .progress-bar {
             display: inline-block;
             height: 5px;
             background: @calband-gold;
         }
+
         .mobile-link {
             margin-top: 1em;
             text-align: center;
