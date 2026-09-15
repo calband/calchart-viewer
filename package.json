@@ -12,7 +12,7 @@
     "watch": "grunt watch"
   },
   "devDependencies": {
-    "grunt": "^1.6.1",
+    "grunt": "^1.6.3",
     "grunt-contrib-less": "latest",
     "grunt-contrib-watch": "latest",
     "grunt-webpack": "latest",
