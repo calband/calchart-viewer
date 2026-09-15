@@ -37,6 +37,21 @@ var onLongPress = function(selector, callback) {
  * @todo: implement the Calchart Viewer app here
  */
 $(document).ready(function () {
+    var formatBuildStamp = function(buildInfo) {
+        var commit = buildInfo && buildInfo.commit ? buildInfo.commit : "unknown";
+        var builtAt = buildInfo && buildInfo.builtAt ? buildInfo.builtAt : null;
+        var deployDate = "unknown date";
+
+        if (builtAt) {
+            var parsedDate = new Date(builtAt);
+            if (!isNaN(parsedDate.getTime())) {
+                deployDate = parsedDate.toISOString().slice(0, 10);
+            }
+        }
+
+        return "build " + commit + " | " + deployDate;
+    };
+
     $.getJSON("build/build-info.json")
         .done(function(buildInfo) {
             console.log(
@@ -45,9 +60,12 @@ $(document).ready(function () {
                 "built",
                 buildInfo.builtAt
             );
+
+            $(".js-build-stamp").text(formatBuildStamp(buildInfo));
         })
         .fail(function() {
             console.log("[Calchart Viewer] Build info unavailable.");
+            $(".js-build-stamp").text("Build info unavailable");
         });
 
     var applicationController = ApplicationController.getInstance();
