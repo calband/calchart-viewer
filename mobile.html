@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <title>Calchart Viewer</title>
     <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="build/css/mobile.css">
     <link rel="stylesheet" type="text/css" href="build/css/graph.css">
     <link rel="stylesheet" type="text/css" href="css/vendor/chosen.min.css">
+    <script type="text/javascript" src="js/vendor/jspdf.min.js"></script>
     <script type="text/javascript" src="js/vendor/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="js/vendor/d3.min.js"></script>
     <script type="text/javascript" src="js/vendor/soundmanager2-jsmin.js"></script>
@@ -16,6 +18,7 @@
     <script type="text/javascript" src="build/js/application.js"></script>
 
 </head>
+
 <body>
     <!-- Loading screen -->
     <div class="loading">
@@ -40,10 +43,12 @@
             <div class="controls-container">
                 <div class="animation-state">
                     <div class="stuntsheet">Stuntsheet: <span class="js-stuntsheet-label">None selected</span></div>
-                    <div class="beats">Beat: <span class="js-beat-number">0</span>/<span class="js-stuntsheet-total">0</span></div>
+                    <div class="beats">Beat: <span class="js-beat-number">0</span>/<span
+                            class="js-stuntsheet-total">0</span></div>
                 </div>
                 <div class="dev-notes">
-                    <p>Note: Currently, you can not play shows with music on mobile. You may click through or generate your viewpsheet below.</p>
+                    <p>Note: Currently, you can not play shows with music on mobile. You may click through or generate
+                        your viewpsheet below.</p>
                 </div>
                 <div class="buttons">
                     <div class="control-button prev-stuntsheet js-prev-stuntsheet">
@@ -76,4 +81,5 @@
         </div>
     </div>
 </body>
+
 </html>
