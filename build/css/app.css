@@ -44,9 +44,10 @@
   width: 280.8px;
 }
 .header .header-title .version {
-  height: 30px;
-  line-height: 30px;
-  font-size: 14px;
+  height: 18px;
+  line-height: 18px;
+  font-size: 11px;
+  color: #9AA0A6;
 }
 .header .header-files .files-description {
   font-size: 20px;
