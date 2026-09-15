@@ -1,0 +1,69 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.11"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "calchart-viewer",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "calchart_viewer_assets::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-calchart_viewer_assets-Debug-2d2a12f5d225a608abee.json",
+					"name" : "calchart_viewer_assets",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "calchart_viewer_npm_install::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-calchart_viewer_npm_install-Debug-f71fe0587b30c737126c.json",
+					"name" : "calchart_viewer_npm_install",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/richardpowell/Development/github.com/calband/calchart-viewer.git/build",
+		"source" : "/Users/richardpowell/Development/github.com/calband/calchart-viewer.git"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}

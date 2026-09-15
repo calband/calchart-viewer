@@ -1,0 +1,4 @@
+/Users/richardpowell/Development/github.com/calband/calchart-viewer.git/build/CMakeFiles/calchart_viewer_npm_install.dir
+/Users/richardpowell/Development/github.com/calband/calchart-viewer.git/build/CMakeFiles/calchart_viewer_assets.dir
+/Users/richardpowell/Development/github.com/calband/calchart-viewer.git/build/CMakeFiles/edit_cache.dir
+/Users/richardpowell/Development/github.com/calband/calchart-viewer.git/build/CMakeFiles/rebuild_cache.dir
