@@ -63,6 +63,9 @@ select,
     max-width:
         680px;
 
+    min-height:
+        100dvh;
+
     margin:
         0 auto;
 
@@ -82,9 +85,9 @@ select,
 
 .dotnav-header {
     padding:
-        16px
-        16px
-        12px;
+        8px
+        10px
+        6px;
 }
 
 
@@ -96,18 +99,18 @@ select,
         center;
 
     gap:
-        10px;
+        6px;
 
     margin-bottom:
-        14px;
+        6px;
 
 
     img {
         width:
-            48px;
+            34px;
 
         height:
-            58px;
+            40px;
 
         margin:
             0;
@@ -122,7 +125,7 @@ select,
             0;
 
         font-size:
-            27px;
+            20px;
 
         line-height:
             1;
@@ -135,23 +138,6 @@ select,
     }
 }
 
-
-.dotnav-subtitle {
-    margin-top:
-        5px;
-
-    color:
-        @dotnav-muted;
-
-    font-size:
-        13px;
-
-    font-weight:
-        600;
-
-    letter-spacing:
-        0.03em;
-}
 
 
 /*
@@ -2343,6 +2329,25 @@ select,
  * Narrow phones
  */
 
+
+/* ------------------------------------------------------------------------
+ * Desktop preview
+ *
+ * On a wide desktop browser, cap the app to a phone-like vertical viewport.
+ * This prevents the map's 1fr row from becoming an enormous green area.
+ * Mobile widths still use the real 100dvh viewport.
+ * --------------------------------------------------------------------- */
+
+@media (min-width: 700px) {
+    .dotnav-shell.dotnav-v1 {
+        height: 900px;
+        max-height: calc(100dvh - 16px);
+        min-height: 0;
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+}
+
 @media (max-width: 390px) {
 
     .dotnav-brand h1 {
@@ -2489,4 +2494,1159 @@ select,
         font-size:
             7px;
     }
+}
+
+/* ========================================================================
+ * DotNav V1 fixed-viewport layout
+ * ===================================================================== */
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body.dotnav-mobile {
+    min-height: 100dvh;
+    height: 100dvh;
+}
+
+.dotnav-shell.dotnav-v1 {
+    width: 100%;
+    max-width: 680px;
+    min-height: 0;
+    height: 100dvh;
+    margin: 0 auto;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: @dotnav-bg;
+    box-sizing: border-box;
+}
+
+.dotnav-v1-header {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: @dotnav-card;
+    border-bottom: 1px solid @dotnav-border;
+    box-sizing: border-box;
+}
+
+.dotnav-v1-brand {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dotnav-v1-brand img {
+    width: 27px;
+    height: 32px;
+    margin: 0;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.dotnav-v1-brand-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: @dotnav-text;
+    font-size: 16px;
+    line-height: 1;
+    font-weight: 700;
+}
+
+.dotnav-v1-header-status {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dotnav-v1-sheet-status {
+    min-width: 42px;
+    padding: 4px 6px;
+    border: 1px solid @dotnav-border;
+    border-radius: 8px;
+    background: @dotnav-soft;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.dotnav-v1-sheet-status .dotnav-v1-small-label {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.dotnav-v1-sheet-status strong {
+    display: block;
+    min-height: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: @dotnav-text;
+    font-size: 11px;
+    line-height: 1.1;
+}
+
+
+.dotnav-v1-feedback-button {
+    min-width: 58px;
+    height: 34px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid @dotnav-border;
+    border-radius: 8px;
+    background: @dotnav-soft;
+    color: @dotnav-blue;
+    box-sizing: border-box;
+    font-family: @sans;
+    font-size: 8px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dotnav-v1-feedback-button:active {
+    transform: translateY(1px);
+}
+
+.dotnav-v1-tools-button {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 9px;
+    background: @dotnav-soft;
+    color: @dotnav-blue;
+    font-family: @sans;
+    font-size: 16px;
+    line-height: 1;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.dotnav-v1-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    padding: 6px 8px 7px;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: 6px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.dotnav-v1-section-title,
+.dotnav-v1-small-label,
+.dotnav-tools-section-title {
+    color: @dotnav-muted;
+    font-size: 8px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.dotnav-v1-section-title {
+    margin-bottom: 5px;
+}
+
+.dotnav-v1-guidance-row {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1.45fr) minmax(82px, 0.9fr);
+    gap: 5px;
+}
+
+.dotnav-v1-compass-card,
+.dotnav-v1-current-card,
+.dotnav-v1-next-card {
+    min-width: 0;
+    height: 176px;
+    padding: 7px;
+    border: 1px solid @dotnav-border;
+    border-radius: 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.dotnav-v1-compass-card {
+    position: relative;
+    background: @dotnav-card;
+    text-align: center;
+}
+
+.dotnav-v1-current-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: @dotnav-green;
+    color: white;
+}
+
+.dotnav-v1-next-card {
+    display: flex;
+    flex-direction: column;
+    background: @dotnav-soft;
+    color: @dotnav-text;
+}
+
+/*
+ * NEXT uses the same semantic family as CURRENT, but deliberately muted.
+ * CURRENT remains the dominant card.
+ */
+.dotnav-v1-next-card.is-neutral {
+    background: @dotnav-soft;
+}
+
+.dotnav-v1-next-card.is-moving {
+    background: mix(#ffffff, @dotnav-green, 70%);
+}
+
+.dotnav-v1-next-card.is-mark-time {
+    background: mix(#ffffff, @dotnav-amber, 68%);
+}
+
+.dotnav-v1-next-card.is-stop {
+    background: mix(#ffffff, @dotnav-red, 72%);
+}
+
+.dotnav-v1-current-card.is-neutral {
+    background: @dotnav-blue-dark;
+    color: white;
+}
+
+.dotnav-v1-current-card.is-moving {
+    background: @dotnav-green;
+    color: white;
+}
+
+.dotnav-v1-current-card.is-mark-time {
+    background: @dotnav-amber;
+    color: @dotnav-text;
+}
+
+.dotnav-v1-current-card.is-stop {
+    background: @dotnav-red;
+    color: white;
+}
+
+.dotnav-v1-compass-card .dotnav-compass-dial {
+    margin-top: -1px;
+    margin-bottom: -2px;
+}
+
+.dotnav-v1-compass-status {
+    display: none;
+}
+
+.dotnav-v1-compass-status .js-dotnav-phone-heading {
+    min-height: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: @dotnav-text;
+    font-size: 8px;
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+.dotnav-v1-compass-readout {
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 8px;
+    line-height: 1;
+    font-weight: 700;
+}
+
+.dotnav-v1-compass-readout span {
+    max-width: 34%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dotnav-v1-compass-action,
+.dotnav-v1-recalibrate {
+    width: 100%;
+    min-height: 34px;
+    margin-top: 8px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 9px;
+    background: @dotnav-blue;
+    color: white;
+    font-family: @sans;
+    font-size: 10px;
+    line-height: 1.1;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.dotnav-v1-recalibrate {
+    background: @dotnav-soft;
+    border: 1px solid @dotnav-border;
+    color: @dotnav-blue;
+}
+
+.dotnav-v1-turn {
+    min-height: 10px;
+    margin-top: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: @dotnav-text;
+    font-size: 8px;
+    line-height: 1.1;
+    font-weight: 700;
+}
+
+.dotnav-v1-current-card .dotnav-v1-section-title {
+    color: inherit;
+    opacity: 0.66;
+}
+
+.dotnav-v1-current-card .dotnav-step-type {
+    margin: 0 0 3px;
+    font-size: 16px;
+    line-height: 1.02;
+}
+
+.dotnav-v1-current-card .dotnav-guidance-mode {
+    margin: 0 0 6px;
+    font-size: 8px;
+    line-height: 1;
+}
+
+.dotnav-v1-current-move {
+    min-width: 0;
+}
+
+.dotnav-v1-current-move .dotnav-v1-small-label {
+    color: inherit;
+    opacity: 0.68;
+}
+
+.dotnav-v1-current-card .dotnav-guidance-value {
+    display: block;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: inherit;
+    font-size: 14px;
+    line-height: 1.05;
+    opacity: 0.82;
+}
+
+.dotnav-v1-current-card .dotnav-countdown {
+    position: absolute;
+    top: 31px;
+    right: 7px;
+    min-width: 0;
+    font-size: 30px;
+    line-height: 1;
+}
+
+.dotnav-v1-current-card .dotnav-path-type {
+    margin-top: 5px;
+    font-size: 7px;
+}
+
+.dotnav-v1-current-path {
+    min-width: 0;
+    margin-top: 5px;
+    margin-bottom: 7px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.28);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dotnav-v1-current-path-title,
+.dotnav-v1-current-path-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dotnav-v1-current-path-title {
+    font-size: 14px;
+    line-height: 1.08;
+    font-weight: 800;
+}
+
+.dotnav-v1-current-path-text {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.12;
+    font-weight: 650;
+    opacity: 0.92;
+}
+
+.dotnav-v1-mini-info {
+    min-width: 0;
+    margin-top: auto;
+    padding-top: 5px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+}
+
+.dotnav-v1-mini-info > div {
+    min-width: 0;
+}
+
+.dotnav-v1-mini-info .dotnav-v1-small-label {
+    display: block;
+    color: inherit;
+    opacity: 0.66;
+}
+
+.dotnav-v1-mini-info strong {
+    display: block;
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: inherit;
+    font-size: 9px;
+    line-height: 1.1;
+}
+
+.dotnav-v1-current-card.is-mark-time .dotnav-v1-current-path {
+    border-top-color: rgba(8, 47, 91, 0.20);
+}
+
+.dotnav-v1-next-card .dotnav-next-mode {
+    margin: 1px 0 0;
+    font-size: 8px;
+    line-height: 1.1;
+}
+
+.dotnav-v1-next-card .dotnav-next-primary {
+    margin-top: 7px;
+    font-size: 15px;
+    line-height: 1.08;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.dotnav-v1-next-card .dotnav-next-secondary {
+    margin-top: 5px;
+    min-height: 0;
+    font-size: 8px;
+    line-height: 1.15;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.dotnav-v1-next-card .dotnav-next-timing {
+    margin-top: auto;
+    min-height: 0;
+    padding-top: 5px;
+    font-size: 8px;
+    line-height: 1.1;
+}
+
+.dotnav-v1-status-row {
+    min-height: 39px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+
+.dotnav-v1-status-box {
+    min-width: 0;
+    padding: 5px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border: 1px solid @dotnav-border;
+    border-radius: 10px;
+    background: @dotnav-card;
+    box-sizing: border-box;
+}
+
+.dotnav-v1-status-box strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: @dotnav-text;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.dotnav-v1-map-card {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid @dotnav-border;
+    border-radius: 12px;
+    background: #269c2e;
+    box-sizing: border-box;
+}
+
+.dotnav-v1-map-card .graph-container {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.dotnav-v1-map-card .graph-container .graph {
+    width: 100%;
+    height: 100% !important;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.dotnav-v1-map-card .graph-container .graph svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.dotnav-v1-zoom-toggle {
+    position: absolute;
+    z-index: 20;
+    top: 7px;
+    right: 7px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid rgba(8, 47, 91, 0.16);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 2px 8px rgba(8, 47, 91, 0.10);
+}
+
+.dotnav-v1-zoom-mode {
+    min-width: 39px;
+    height: 26px;
+    padding: 0 7px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: @dotnav-blue;
+    font-family: @sans;
+    font-size: 7px;
+    line-height: 26px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-align: center;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.dotnav-v1-zoom-mode.is-active {
+    background: @dotnav-blue;
+    color: #ffffff;
+}
+
+.dotnav-v1-zoom-mode:active {
+    transform: translateY(1px);
+}
+
+.dotnav-v1-controls.controls-container,
+.dotnav-main .dotnav-v1-controls.controls-container {
+    flex: 0 0 auto;
+    width: 100%;
+    margin: 0;
+    padding: 5px;
+    border-radius: 11px;
+    box-sizing: border-box;
+}
+
+.dotnav-v1-controls .dotnav-buttons,
+.dotnav-main .dotnav-v1-controls .dotnav-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1.12fr 1fr 0.92fr 0.92fr;
+    gap: 4px;
+}
+
+.dotnav-v1-controls .dotnav-buttons .control-button,
+.dotnav-main .dotnav-v1-controls .dotnav-buttons .control-button {
+    width: 100%;
+    height: 47px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border-radius: 9px;
+}
+
+.dotnav-v1-controls .dotnav-buttons .control-button:before {
+    height: 27px;
+}
+
+.dotnav-v1-controls .dotnav-buttons .control-button span:before {
+    font-size: 17px;
+}
+
+.dotnav-v1-controls .dotnav-button-label {
+    margin-top: -4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 7px;
+    line-height: 1;
+}
+
+.dotnav-tools-backdrop {
+    position: fixed;
+    z-index: 90;
+    inset: 0;
+    display: none;
+    background: rgba(3, 24, 44, 0.42);
+}
+
+.dotnav-tools-backdrop.is-open {
+    display: block;
+}
+
+.dotnav-tools-sheet {
+    position: fixed;
+    z-index: 100;
+    left: 50%;
+    bottom: 0;
+    width: min(680px, 100%);
+    max-height: 84dvh;
+    padding: 7px 12px calc(14px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: @dotnav-card;
+    border: 1px solid @dotnav-border;
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -12px 36px rgba(8, 47, 91, 0.18);
+    box-sizing: border-box;
+    transform: translate(-50%, 105%);
+    transition: transform 180ms ease;
+}
+
+.dotnav-tools-sheet.is-open {
+    transform: translate(-50%, 0);
+}
+
+.dotnav-tools-handle {
+    width: 38px;
+    height: 4px;
+    margin: 0 auto 7px;
+    border-radius: 999px;
+    background: #c8d3de;
+}
+
+.dotnav-tools-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid @dotnav-border;
+}
+
+.dotnav-tools-title {
+    color: @dotnav-text;
+    font-size: 17px;
+    line-height: 1.1;
+    font-weight: 700;
+}
+
+.dotnav-tools-subtitle {
+    margin-top: 3px;
+    color: @dotnav-muted;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.dotnav-tools-close-button {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 9px;
+    background: @dotnav-soft;
+    color: @dotnav-blue;
+    font-family: @sans;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.dotnav-tools-section {
+    margin-top: 10px;
+}
+
+.dotnav-tools-section-title {
+    margin-bottom: 6px;
+}
+
+.dotnav-tools-current-dot {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dotnav-tools-current-dot strong {
+    display: block;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: @dotnav-text;
+    font-size: 14px;
+}
+
+.dotnav-tempo-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+}
+
+.dotnav-tempo-button {
+    min-height: 37px;
+    padding: 0 6px;
+    border: 1px solid #bfcfdf;
+    border-radius: 9px;
+    background: white;
+    color: @dotnav-text;
+    font-family: @sans;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.dotnav-tempo-button.is-active {
+    border-color: @dotnav-blue;
+    background: @dotnav-blue;
+    color: white;
+}
+
+.dotnav-tools-action,
+.dotnav-tools-sheet .dotnav-load-music {
+    width: 100%;
+    min-height: 40px;
+    margin: 0 0 6px;
+    padding: 9px 11px;
+    border: 1px solid @dotnav-border;
+    border-radius: 10px;
+    background: @dotnav-blue;
+    color: white;
+    font-family: @sans;
+    font-size: 12px;
+    line-height: 1.2;
+    font-weight: 700;
+    text-align: center;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.dotnav-tools-sheet .dotnav-load-music {
+    background: white;
+    color: @dotnav-blue;
+}
+
+.dotnav-tools-action-secondary {
+    background: @dotnav-soft;
+    color: @dotnav-text;
+}
+
+.dotnav-tools-advanced .dotnav-details-card,
+.dotnav-tools-advanced .dotnav-continuity-card {
+    margin-top: 6px;
+}
+
+.dotnav-tools-advanced .dotnav-continuity-card {
+    padding: 9px;
+}
+
+.dotnav-tools-advanced .js-dotnav-continuity {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+@media (max-width: 390px) {
+    .dotnav-v1-header {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    .dotnav-v1-brand-text {
+        font-size: 14px;
+    }
+
+    .dotnav-v1-sheet-status {
+        min-width: 38px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .dotnav-v1-main {
+        padding-left: 6px;
+        padding-right: 6px;
+        gap: 5px;
+    }
+
+    .dotnav-v1-guidance-row {
+        grid-template-columns: 114px minmax(0, 1.25fr) minmax(76px, 0.78fr);
+        gap: 4px;
+    }
+
+    .dotnav-v1-compass-card,
+    .dotnav-v1-current-card,
+    .dotnav-v1-next-card {
+        height: 172px;
+        padding: 6px;
+    }
+
+    .dotnav-v1-current-card .dotnav-step-type {
+        font-size: 14px;
+    }
+
+    .dotnav-v1-current-card .dotnav-guidance-value {
+        font-size: 11px;
+    }
+
+    .dotnav-v1-current-path-title {
+        font-size: 8px;
+    }
+
+    .dotnav-v1-current-path-text {
+        font-size: 7px;
+    }
+
+    .dotnav-v1-next-card .dotnav-next-primary {
+        font-size: 13px;
+    }
+
+    .dotnav-v1-controls .dotnav-buttons .control-button,
+    .dotnav-main .dotnav-v1-controls .dotnav-buttons .control-button {
+        height: 44px;
+    }
+
+    .dotnav-v1-controls .dotnav-button-label {
+        font-size: 6px;
+    }
+}
+
+@media (max-height: 700px) {
+    .dotnav-v1-compass-card,
+    .dotnav-v1-current-card,
+    .dotnav-v1-next-card {
+        height: 160px;
+    }
+
+    .dotnav-v1-compass-card .dotnav-compass-dial {
+        transform: scale(0.88);
+        transform-origin: top center;
+        margin-bottom: -15px;
+    }
+
+    .dotnav-v1-current-path {
+        margin-top: 4px;
+        padding-top: 4px;
+    }
+
+    .dotnav-v1-controls .dotnav-buttons .control-button,
+    .dotnav-main .dotnav-v1-controls .dotnav-buttons .control-button {
+        height: 42px;
+    }
+}
+
+/* ========================================================================
+ * DotNav V1 landscape
+ *
+ * Same runtime logic as portrait. The fixed viewport is rearranged into
+ * two columns so the map always remains visible without page scrolling.
+ * ===================================================================== */
+
+@media (orientation: landscape) and (max-height: 540px) {
+
+    .dotnav-shell.dotnav-v1 {
+        max-width: none;
+        padding-top: env(safe-area-inset-top);
+        padding-right: env(safe-area-inset-right);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+    }
+
+    .dotnav-v1-header {
+        min-height: 36px;
+        padding: 3px 7px;
+    }
+
+    .dotnav-v1-brand {
+        gap: 5px;
+    }
+
+    .dotnav-v1-brand img {
+        width: 22px;
+        height: 26px;
+    }
+
+    .dotnav-v1-brand-text {
+        font-size: 13px;
+    }
+
+    .dotnav-v1-sheet-status {
+        min-width: 38px;
+        padding: 3px 5px;
+    }
+
+    .dotnav-v1-feedback-button {
+        min-width: 52px;
+        height: 30px;
+        padding: 0 6px;
+        font-size: 7px;
+    }
+
+    .dotnav-v1-sheet-status .dotnav-v1-small-label {
+        margin-bottom: 1px;
+    }
+
+    .dotnav-v1-sheet-status strong {
+        font-size: 10px;
+    }
+
+    .dotnav-v1-tools-button {
+        width: 30px;
+        height: 30px;
+    }
+
+    .dotnav-v1-main {
+        padding: 5px 7px 6px;
+        grid-template-columns:
+            minmax(300px, 0.82fr)
+            minmax(0, 1.18fr);
+        grid-template-rows:
+            minmax(0, 1fr)
+            auto;
+        column-gap: 10px;
+        row-gap: 5px;
+    }
+
+    /*
+     * Left upper panel.
+     */
+    .dotnav-v1-guidance-row {
+        grid-column: 1;
+        grid-row: 1;
+        min-height: 0;
+        height: 100%;
+        grid-template-columns:
+            120px
+            minmax(112px, 1.2fr)
+            minmax(76px, 0.78fr);
+        gap: 4px;
+        align-items: stretch;
+        overflow: hidden;
+    }
+
+    .dotnav-v1-compass-card,
+    .dotnav-v1-current-card,
+    .dotnav-v1-next-card {
+        height: 100%;
+        min-height: 0;
+        padding: 6px;
+        border-radius: 10px;
+    }
+
+    .dotnav-v1-compass-card {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+
+    .dotnav-v1-compass-card .dotnav-compass-dial {
+        transform: none;
+        margin-top: -1px;
+        margin-bottom: -2px;
+    }
+
+    .dotnav-v1-compass-action,
+    .dotnav-v1-recalibrate {
+        min-height: 28px;
+        margin-top: 6px;
+        padding: 4px 6px;
+        font-size: 8px;
+    }
+
+    .dotnav-v1-compass-status .js-dotnav-phone-heading,
+    .dotnav-v1-compass-readout,
+    .dotnav-v1-turn {
+        font-size: 7px;
+    }
+
+    .dotnav-v1-current-card .dotnav-step-type {
+        font-size: 14px;
+    }
+
+    .dotnav-v1-current-card .dotnav-guidance-mode {
+        margin-bottom: 4px;
+        font-size: 7px;
+    }
+
+    .dotnav-v1-current-card .dotnav-guidance-value {
+        font-size: 19px;
+    }
+
+    .dotnav-v1-current-card .dotnav-countdown {
+        top: 27px;
+        right: 6px;
+        font-size: 25px;
+    }
+
+    .dotnav-v1-current-path {
+        margin-top: 4px;
+        padding-top: 4px;
+    }
+
+    .dotnav-v1-current-path-title {
+        font-size: 11px;
+    }
+
+    .dotnav-v1-current-path-text {
+        font-size: 9px;
+    }
+
+    .dotnav-v1-mini-info strong,
+    .dotnav-v1-next-card .dotnav-next-secondary,
+    .dotnav-v1-next-card .dotnav-next-timing {
+        font-size: 7px;
+    }
+
+    .dotnav-v1-next-card .dotnav-next-primary {
+        margin-top: 5px;
+        font-size: 12px;
+    }
+
+    /*
+     * Right upper panel: map gets the full remaining height.
+     */
+    .dotnav-v1-map-card {
+        grid-column: 2;
+        grid-row: 1;
+        min-height: 0;
+        height: 100%;
+    }
+
+    .dotnav-v1-zoom-toggle {
+        top: 5px;
+        right: 5px;
+        padding: 2px;
+    }
+
+    .dotnav-v1-zoom-mode {
+        min-width: 37px;
+        height: 23px;
+        padding: 0 6px;
+        font-size: 6px;
+        line-height: 23px;
+    }
+
+    /*
+     * Bottom row stays visible at all times:
+     * status under guidance, playback under map.
+     */
+    .dotnav-v1-status-row {
+        grid-column: 1;
+        grid-row: 2;
+        min-height: 36px;
+        gap: 4px;
+    }
+
+    .dotnav-v1-status-box {
+        min-height: 36px;
+        padding: 4px 8px;
+    }
+
+    .dotnav-v1-status-box strong {
+        font-size: 12px;
+    }
+
+    .dotnav-v1-controls.controls-container,
+    .dotnav-main .dotnav-v1-controls.controls-container {
+        grid-column: 2;
+        grid-row: 2;
+        padding: 4px;
+    }
+
+    .dotnav-v1-controls .dotnav-buttons,
+    .dotnav-main .dotnav-v1-controls .dotnav-buttons {
+        gap: 3px;
+    }
+
+    .dotnav-v1-controls .dotnav-buttons .control-button,
+    .dotnav-main .dotnav-v1-controls .dotnav-buttons .control-button {
+        height: 38px;
+        border-radius: 8px;
+    }
+
+    .dotnav-v1-controls .dotnav-buttons .control-button:before {
+        height: 22px;
+    }
+
+    .dotnav-v1-controls .dotnav-buttons .control-button span:before {
+        font-size: 14px;
+    }
+
+    .dotnav-v1-controls .dotnav-button-label {
+        margin-top: -3px;
+        font-size: 6px;
+    }
+
+
+
+    .dotnav-v1-map-card .dotnav-nearby-dot-label {
+        letter-spacing: -0.02em;
+    }
+
+    /*
+     * Tools remains independently scrollable even though the page itself
+     * intentionally never scrolls.
+     */
+    .dotnav-tools-sheet {
+        width: min(760px, 100%);
+        max-height: 92dvh;
+        padding-right: calc(12px + env(safe-area-inset-right));
+        padding-left: calc(12px + env(safe-area-inset-left));
+    }
+}
+
+
+
+.dotnav-v1-current-move {
+    opacity: 0.82;
+}
+
+.dotnav-v1-current-move .dotnav-v1-small-label {
+    font-size: 7px;
 }

@@ -33,13 +33,13 @@
     <link
         rel="stylesheet"
         type="text/css"
-        href="build/css/mobile.css?dotnav=6"
+        href="build/css/mobile.css?dotnav=16"
     >
 
     <link
         rel="stylesheet"
         type="text/css"
-        href="build/css/graph.css?dotnav=6"
+        href="build/css/graph.css?dotnav=7"
     >
 
     <link
@@ -47,6 +47,7 @@
         type="text/css"
         href="css/vendor/chosen.min.css"
     >
+
 
     <script
         type="text/javascript"
@@ -75,72 +76,21 @@
 
     <script
         type="text/javascript"
-        src="build/js/mobile.js?dotnav=24">
+        src="build/js/mobile.js?dotnav=43">
     </script>
 
     <script
         type="text/javascript"
         src="build/js/application.js?dotnav=15">
     </script>
-
-
-    <style>
-        .dotnav-tempo-control {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #dbe5ef;
-            border-radius: 12px;
-            background: #edf3f8;
-        }
-
-        .dotnav-tempo-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .dotnav-tempo-title {
-            color: #64768a;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-        }
-
-        .dotnav-tempo-status {
-            color: #082f5b;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .dotnav-tempo-buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-        }
-
-        .dotnav-tempo-button {
-            min-height: 38px;
-            border: 1px solid #bfcfdf;
-            border-radius: 9px;
-            background: #ffffff;
-            color: #082f5b;
-            font-family: "Open Sans", sans-serif;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .dotnav-tempo-button.is-active {
-            border-color: #0b4b88;
-            background: #0b4b88;
-            color: #ffffff;
-        }
-    </style>
-
 </head>
 
+
 <body class="dotnav-mobile">
+
+    <!-- =========================================================
+         LOADING
+    ========================================================== -->
 
     <div class="loading">
         <div class="wrapper">
@@ -150,437 +100,38 @@
     </div>
 
 
-    <div class="container dotnav-shell">
+    <!-- =========================================================
+         DOTNAV APP
+    ========================================================== -->
 
-        <header class="dotnav-header">
+    <div class="container dotnav-shell dotnav-v1">
 
-            <div class="dotnav-brand">
+
+        <!-- =====================================================
+             COMPACT HEADER
+        ====================================================== -->
+
+        <header class="dotnav-v1-header">
+
+            <div class="dotnav-v1-brand">
 
                 <img
                     src="img/calchart-viewer-highstepper.png"
                     alt="Calchart Viewer"
                 >
 
-                <div>
-                    <h1>Calchart Viewer</h1>
-
-                    <div class="dotnav-subtitle">
-                        DotNav
-                    </div>
+                <div class="dotnav-v1-brand-text">
+                    CalChart DotNav
                 </div>
 
             </div>
 
 
-            <div class="dotnav-selector-grid">
+            <div class="dotnav-v1-header-status">
 
-                <div class="dotnav-select-card">
+                <div class="dotnav-v1-sheet-status">
 
-                    <label>
-                        Show
-                    </label>
-
-                    <select
-                        class="js-select-show select-show"
-                        data-placeholder="None">
-                    </select>
-
-                </div>
-
-
-                <div class="dotnav-select-card">
-
-                    <label>
-                        Field
-                    </label>
-
-                    <select class="js-dotnav-field">
-
-                        <option value="">
-                            Select field
-                        </option>
-
-                        <option value="maxwell">
-                            Maxwell Family Field
-                        </option>
-
-                        <option value="memorial">
-                            California Memorial Stadium
-                        </option>
-
-                        <option value="manual">
-                            Manual / Other
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="dotnav-select-card">
-
-                    <label>
-                        Dot
-                    </label>
-
-                    <select
-                        class="js-dot-labels"
-                        data-placeholder="None">
-
-                        <option></option>
-
-                    </select>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    class="
-                        dotnav-compass-button
-                        js-dotnav-enable-compass
-                    "
-                >
-                    Enable Compass
-                </button>
-
-
-                <button
-                    type="button"
-                    class="
-                        dotnav-compass-button
-                        js-dotnav-set-east
-                    "
-                    style="
-                        display: none;
-                        grid-column: 1 / -1;
-                    "
-                >
-                    Set Current Direction as East
-                </button>
-
-            </div>
-
-        </header>
-
-
-        <main class="main dotnav-main dotnav-debug">
-
-            <section class="dotnav-view-card">
-
-                <div class="dotnav-view-header">
-
-                    <div>
-
-                        <div class="dotnav-view-title">
-                            Top-down
-                        </div>
-
-                        <div class="dotnav-view-subtitle">
-                            Heading-up · phone forward = screen up
-                        </div>
-
-                    </div>
-
-
-                    <div class="dotnav-live-pill">
-                        LIVE
-                    </div>
-
-                </div>
-
-
-                <div class="dotnav-navigation-status">
-
-                    <div class="dotnav-compass-status">
-
-                        <div class="dotnav-small-label">
-                            PHONE / TURN
-                        </div>
-
-                        <div class="js-dotnav-phone-heading">
-                            Compass off
-                        </div>
-
-                    </div>
-
-
-                    <div class="dotnav-visual-compass">
-
-                        <div class="dotnav-compass-dial">
-
-                            <!--
-                                Rotating field compass rose.
-
-                                BLUE:
-                                    Phone/self direction.
-                                    Fixed screen-up.
-
-                                RED:
-                                    Current required DotNav target.
-
-                                YELLOW:
-                                    Next movement target.
-                            -->
-                            <div
-                                class="
-                                    dotnav-compass-rose
-                                    js-dotnav-compass-rose
-                                "
-                            >
-
-                                <div
-                                    class="
-                                        dotnav-compass-axis
-                                        dotnav-compass-axis-ns
-                                    "
-                                >
-                                </div>
-
-                                <div
-                                    class="
-                                        dotnav-compass-axis
-                                        dotnav-compass-axis-ew
-                                    "
-                                >
-                                </div>
-
-
-                                <span
-                                    class="
-                                        dotnav-compass-cardinal
-                                        dotnav-compass-n
-                                    "
-                                >
-                                    N
-                                </span>
-
-                                <span
-                                    class="
-                                        dotnav-compass-cardinal
-                                        dotnav-compass-e
-                                    "
-                                >
-                                    E
-                                </span>
-
-                                <span
-                                    class="
-                                        dotnav-compass-cardinal
-                                        dotnav-compass-s
-                                    "
-                                >
-                                    S
-                                </span>
-
-                                <span
-                                    class="
-                                        dotnav-compass-cardinal
-                                        dotnav-compass-w
-                                    "
-                                >
-                                    W
-                                </span>
-
-
-                                <!--
-                                    CURRENT TARGET
-
-                                    Red marker.
-
-                                    This represents the direction
-                                    the marcher should be following
-                                    right now.
-                                -->
-                                <div
-                                    class="
-                                        dotnav-compass-current-target-rotator
-                                        js-dotnav-compass-current-target-marker
-                                    "
-                                >
-
-                                    <div
-                                        class="
-                                            dotnav-compass-current-target-dot
-                                        "
-                                    >
-                                    </div>
-
-                                </div>
-
-
-                                <!--
-                                    NEXT TARGET
-
-                                    Yellow marker.
-
-                                    This previews the heading required
-                                    by the next MovementCommand.
-                                -->
-                                <div
-                                    class="
-                                        dotnav-compass-next-target-rotator
-                                        js-dotnav-compass-next-target-marker
-                                    "
-                                >
-
-                                    <div
-                                        class="
-                                            dotnav-compass-next-target-dot
-                                        "
-                                    >
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-
-                            <!--
-                                PHONE / SELF
-
-                                Blue marker remains fixed and
-                                always points screen-up.
-                            -->
-                            <div
-                                class="
-                                    dotnav-compass-heading-marker
-                                    js-dotnav-compass-heading-marker
-                                "
-                            >
-
-                                <div
-                                    class="
-                                        dotnav-compass-heading-line
-                                    "
-                                >
-                                </div>
-
-                                <div
-                                    class="
-                                        dotnav-compass-heading-arrow
-                                    "
-                                >
-                                </div>
-
-                            </div>
-
-
-                            <div class="dotnav-compass-center"></div>
-
-                        </div>
-
-
-                        <div class="dotnav-compass-readout">
-
-                            <!--
-                                Actual phone/self heading.
-                            -->
-                            <div class="dotnav-compass-value-group">
-
-                                <span class="dotnav-info-label">
-                                    PHONE
-                                </span>
-
-                                <strong
-                                    class="
-                                        js-dotnav-compass-current
-                                    "
-                                >
-                                    —
-                                </strong>
-
-                            </div>
-
-
-                            <!--
-                                Current required heading.
-                            -->
-                            <div class="dotnav-compass-value-group">
-
-                                <span class="dotnav-info-label">
-                                    CURRENT TARGET
-                                </span>
-
-                                <strong
-                                    class="
-                                        js-dotnav-compass-target
-                                    "
-                                >
-                                    —
-                                </strong>
-
-                            </div>
-
-
-                            <!--
-                                Next movement heading.
-                            -->
-                            <div class="dotnav-compass-value-group">
-
-                                <span class="dotnav-info-label">
-                                    NEXT TARGET
-                                </span>
-
-                                <strong
-                                    class="
-                                        js-dotnav-compass-next-target
-                                    "
-                                >
-                                    —
-                                </strong>
-
-                            </div>
-
-
-                            <div
-                                class="
-                                    dotnav-compass-turn
-                                    js-dotnav-compass-turn
-                                "
-                            >
-                                TURN —
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="graph-container">
-
-                    <div
-                        class="
-                            graph
-                            js-grapher-draw-target
-                        ">
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <section class="dotnav-status-strip">
-
-                <div>
-
-                    <span class="dotnav-status-label">
-                        DOT
-                    </span>
-
-                    <strong class="js-dotnav-dot">
-                        None
-                    </strong>
-
-                </div>
-
-
-                <div>
-
-                    <span class="dotnav-status-label">
+                    <span class="dotnav-v1-small-label">
                         SS
                     </span>
 
@@ -591,9 +142,471 @@
                 </div>
 
 
-                <div>
+                <a
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSdCseeA1n7Z93Et9fa4EYZhZTiuh1LYRb2kOcbWuhSyFFw66w/viewform"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="dotnav-v1-feedback-button"
+                    aria-label="Open DotNav feedback form"
+                >
+                    FEEDBACK
+                </a>
 
-                    <span class="dotnav-status-label">
+
+                <button
+                    type="button"
+                    class="
+                        dotnav-v1-tools-button
+                        js-dotnav-tools-open
+                    "
+                    aria-label="Open tools"
+                >
+                    •••
+                </button>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =====================================================
+             MAIN OPERATIONAL AREA
+        ====================================================== -->
+
+        <main class="main dotnav-main dotnav-debug dotnav-v1-main">
+
+
+            <!-- =================================================
+                 COMPASS + CURRENT + NEXT
+            ================================================== -->
+
+            <section class="dotnav-v1-guidance-row">
+
+
+                <!-- =============================================
+                     COMPASS
+                ============================================== -->
+
+                <div class="dotnav-v1-compass-card">
+
+                    <div class="dotnav-v1-section-title">
+                        COMPASS
+                    </div>
+
+
+                    <div class="dotnav-compass-dial">
+
+                        <!--
+                            Rotating field reference frame.
+                        -->
+
+                        <div
+                            class="
+                                dotnav-compass-rose
+                                js-dotnav-compass-rose
+                            "
+                        >
+
+                            <div
+                                class="
+                                    dotnav-compass-axis
+                                    dotnav-compass-axis-ns
+                                "
+                            >
+                            </div>
+
+                            <div
+                                class="
+                                    dotnav-compass-axis
+                                    dotnav-compass-axis-ew
+                                "
+                            >
+                            </div>
+
+
+                            <span
+                                class="
+                                    dotnav-compass-cardinal
+                                    dotnav-compass-n
+                                "
+                            >
+                                N
+                            </span>
+
+                            <span
+                                class="
+                                    dotnav-compass-cardinal
+                                    dotnav-compass-e
+                                "
+                            >
+                                E
+                            </span>
+
+                            <span
+                                class="
+                                    dotnav-compass-cardinal
+                                    dotnav-compass-s
+                                "
+                            >
+                                S
+                            </span>
+
+                            <span
+                                class="
+                                    dotnav-compass-cardinal
+                                    dotnav-compass-w
+                                "
+                            >
+                                W
+                            </span>
+
+
+                            <!-- CURRENT TARGET -->
+
+                            <div
+                                class="
+                                    dotnav-compass-current-target-rotator
+                                    js-dotnav-compass-current-target-marker
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        dotnav-compass-current-target-dot
+                                    "
+                                >
+                                </div>
+
+                            </div>
+
+
+                            <!-- NEXT TARGET -->
+
+                            <div
+                                class="
+                                    dotnav-compass-next-target-rotator
+                                    js-dotnav-compass-next-target-marker
+                                "
+                            >
+
+                                <div
+                                    class="
+                                        dotnav-compass-next-target-dot
+                                    "
+                                >
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PHONE / SELF -->
+
+                        <div
+                            class="
+                                dotnav-compass-heading-marker
+                                js-dotnav-compass-heading-marker
+                            "
+                        >
+
+                            <div
+                                class="
+                                    dotnav-compass-heading-line
+                                "
+                            >
+                            </div>
+
+                            <div
+                                class="
+                                    dotnav-compass-heading-arrow
+                                "
+                            >
+                            </div>
+
+                        </div>
+
+
+                        <div class="dotnav-compass-center"></div>
+
+                    </div>
+
+
+                    <!--
+                        Compact heading status.
+                    -->
+
+                    <div class="dotnav-v1-compass-status">
+
+                        <div class="js-dotnav-phone-heading">
+                            Compass off
+                        </div>
+
+                        <div class="dotnav-v1-compass-readout">
+
+                            <span class="js-dotnav-compass-current">
+                                —
+                            </span>
+
+                            <span class="js-dotnav-compass-target">
+                                —
+                            </span>
+
+                            <span class="js-dotnav-compass-next-target">
+                                —
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!--
+                        Initial permission / activation.
+                    -->
+
+                    <button
+                        type="button"
+                        class="
+                            dotnav-v1-compass-action
+                            js-dotnav-enable-compass
+                        "
+                    >
+                        Enable Compass
+                    </button>
+
+
+                    <!--
+                        Manual field-frame correction.
+
+                        JS currently controls visibility.
+                    -->
+
+                    <button
+                        type="button"
+                        class="
+                            dotnav-v1-recalibrate
+                            js-dotnav-set-east
+                        "
+                        style="display: none;"
+                    >
+                        Recalibrate
+                    </button>
+
+
+                    <!--
+                        Keep old TURN hook alive.
+                    -->
+
+                    <div
+                        class="
+                            dotnav-v1-turn
+                            js-dotnav-compass-turn
+                        "
+                    >
+                        TURN —
+                    </div>
+
+                </div>
+
+
+
+                <!-- =============================================
+                     CURRENT
+                ============================================== -->
+
+                <div class="dotnav-v1-current-card dotnav-guidance-primary is-neutral">
+
+                    <div class="dotnav-v1-section-title">
+                        CURRENT
+                    </div>
+
+
+                    <div
+                        class="
+                            dotnav-step-type
+                            js-dotnav-step-type
+                        "
+                    >
+                        —
+                    </div>
+
+
+                    <div
+                        class="
+                            dotnav-guidance-mode
+                            js-dotnav-mode
+                        "
+                    >
+                        CURRENT
+                    </div>
+
+
+                    <!--
+                        Current stuntsheet path summary.
+                    -->
+
+                    <div class="dotnav-v1-current-path">
+
+                        <div
+                            class="
+                                dotnav-v1-current-path-title
+                                js-dotnav-current-sheet-title
+                            "
+                        >
+                            —
+                        </div>
+
+                        <div
+                            class="
+                                dotnav-v1-current-path-text
+                                js-dotnav-current-sheet-path
+                            "
+                        >
+                            —
+                        </div>
+
+                    </div>
+
+
+                    <div class="dotnav-v1-current-move">
+
+                        <div class="dotnav-v1-small-label">
+                            MOVE
+                        </div>
+
+                        <strong
+                            class="
+                                dotnav-guidance-value
+                                js-dotnav-travel
+                            "
+                        >
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            dotnav-countdown
+                            js-dotnav-countdown
+                        "
+                    >
+                    </div>
+
+
+                    <div
+                        class="
+                            dotnav-path-type
+                            js-dotnav-path-type
+                        "
+                    >
+                    </div>
+
+
+                    <!--
+                        Existing current movement details.
+                    -->
+
+                    <div class="dotnav-v1-mini-info">
+
+                        <div>
+
+                            <span class="dotnav-v1-small-label">
+                                ORIENT
+                            </span>
+
+                            <strong class="js-dotnav-orient">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span class="dotnav-v1-small-label">
+                                TARGET
+                            </span>
+
+                            <strong class="js-dotnav-target">
+                                —
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =============================================
+                     NEXT
+                ============================================== -->
+
+                <div class="dotnav-v1-next-card is-neutral">
+
+                    <div class="dotnav-v1-section-title">
+                        NEXT
+                    </div>
+
+
+                    <div
+                        class="
+                            dotnav-next-mode
+                            js-dotnav-next-mode
+                        "
+                    >
+                        —
+                    </div>
+
+
+                    <div
+                        class="
+                            dotnav-next-primary
+                            js-dotnav-next-primary
+                        "
+                    >
+                        —
+                    </div>
+
+
+                    <div
+                        class="
+                            dotnav-next-secondary
+                            js-dotnav-next-secondary
+                        "
+                    >
+                    </div>
+
+
+                    <div
+                        class="
+                            dotnav-next-timing
+                            js-dotnav-next-timing
+                        "
+                    >
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 BEAT + SPEED
+            ================================================== -->
+
+            <section class="dotnav-v1-status-row">
+
+
+                <div class="dotnav-v1-status-box">
+
+                    <span class="dotnav-v1-small-label">
                         BEAT
                     </span>
 
@@ -613,411 +626,97 @@
 
                 </div>
 
+
+                <div class="dotnav-v1-status-box">
+
+                    <span class="dotnav-v1-small-label">
+                        SPEED
+                    </span>
+
+                    <strong class="js-dotnav-tempo-status">
+                        100%
+                    </strong>
+
+                </div>
+
             </section>
 
 
-            <!--
-                CURRENT + NEXT
 
-                Current remains primary.
-                Next previews the next MovementCommand.
-            -->
-            <section class="dotnav-guidance-card">
+            <!-- =================================================
+                 FIELD MAP
+            ================================================== -->
 
-                <div class="dotnav-card-eyebrow">
-                    GUIDANCE
+            <section class="dotnav-v1-map-card">
+
+                <div class="graph-container">
+
+                    <div
+                        class="
+                            graph
+                            js-grapher-draw-target
+                        "
+                    >
+                    </div>
+
                 </div>
 
-                <!--
-                    Current-stuntsheet overview.
 
-                    The map shows only this stuntsheet:
-                    passed route = pink/faded
-                    remaining route = red
-                -->
                 <div
-                    class="
-                        dotnav-next-guidance
-                        dotnav-sheet-path-preview
-                    "
+                    class="dotnav-v1-zoom-toggle"
+                    role="group"
+                    aria-label="Map zoom"
                 >
-
-                    <div class="dotnav-next-label">
-                        CURRENT STUNTSHEET PATH
-                    </div>
-
-                    <div
+                    <button
+                        type="button"
                         class="
-                            dotnav-next-primary
-                            js-dotnav-current-sheet-title
+                            dotnav-v1-zoom-mode
+                            js-dotnav-zoom-mode
+                            is-active
                         "
+                        data-zoom-mode="normal"
+                        aria-pressed="true"
                     >
-                        —
-                    </div>
+                        NORMAL
+                    </button>
 
-                    <div
+                    <button
+                        type="button"
                         class="
-                            dotnav-next-secondary
-                            js-dotnav-current-sheet-path
+                            dotnav-v1-zoom-mode
+                            js-dotnav-zoom-mode
                         "
+                        data-zoom-mode="4yl"
+                        aria-pressed="false"
                     >
-                        —
-                    </div>
+                        4 YL
+                    </button>
 
+                    <button
+                        type="button"
+                        class="
+                            dotnav-v1-zoom-mode
+                            js-dotnav-zoom-mode
+                        "
+                        data-zoom-mode="2yl"
+                        aria-pressed="false"
+                    >
+                        2 YL
+                    </button>
                 </div>
 
-
-                <div class="dotnav-guidance-top">
-
-                    <!-- CURRENT -->
-                    <div
-                        class="
-                            dotnav-guidance-primary
-                            is-neutral
-                        "
-                    >
-
-                        <div class="dotnav-guidance-section-label">
-                            CURRENT
-                        </div>
-
-
-                        <!--
-                            Actual Cal Band step / action.
-
-                            Examples:
-
-                            FMHS
-                            FMMM
-                            FMSH
-                            GVFW
-                            MTHS
-                            MTMM
-                            HUP VAMP
-                            STAND & PLAY
-                            CLOSE
-                        -->
-                        <div
-                            class="
-                                dotnav-step-type
-                                js-dotnav-step-type
-                            "
-                        >
-                            —
-                        </div>
-
-
-                        <!--
-                            Geometric / operational state.
-
-                            Examples:
-
-                            MOVING
-                            MARK TIME
-                            HOLD
-                        -->
-                        <div
-                            class="
-                                dotnav-guidance-mode
-                                js-dotnav-mode
-                            "
-                        >
-                            CURRENT
-                        </div>
-
-
-                        <div class="dotnav-guidance-main">
-
-                            <div>
-
-                                <div class="dotnav-guidance-label">
-                                    MOVE
-                                </div>
-
-                                <div
-                                    class="
-                                        dotnav-guidance-value
-                                        js-dotnav-travel
-                                    "
-                                >
-                                    —
-                                </div>
-
-                            </div>
-
-
-                            <div
-                                class="
-                                    dotnav-countdown
-                                    js-dotnav-countdown
-                                "
-                            >
-                            </div>
-
-                        </div>
-
-
-                        <!--
-                            Optional geometry tag.
-
-                            Examples:
-
-                            EVEN
-                            ARC
-
-                            This is intentionally separate from
-                            the step technique.
-                        -->
-                        <div
-                            class="
-                                dotnav-path-type
-                                js-dotnav-path-type
-                            "
-                        >
-                        </div>
-
-                    </div>
-
-
-                    <!-- NEXT -->
-                    <div class="dotnav-next-guidance">
-
-                        <div class="dotnav-next-label">
-                            NEXT
-                        </div>
-
-
-                        <!--
-                            Next step/action type.
-                        -->
-                        <div
-                            class="
-                                dotnav-next-mode
-                                js-dotnav-next-mode
-                            "
-                        >
-                            —
-                        </div>
-
-
-                        <!--
-                            Next movement heading and step count.
-                        -->
-                        <div
-                            class="
-                                dotnav-next-primary
-                                js-dotnav-next-primary
-                            "
-                        >
-                            —
-                        </div>
-
-
-                        <!--
-                            Example:
-                            FACE W 270°
-                        -->
-                        <div
-                            class="
-                                dotnav-next-secondary
-                                js-dotnav-next-secondary
-                            "
-                        >
-                        </div>
-
-
-                        <!--
-                            Example:
-                            IN 6 BEATS
-                        -->
-                        <div
-                            class="
-                                dotnav-next-timing
-                                js-dotnav-next-timing
-                            "
-                        >
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!--
-                    Current movement details.
-                -->
-                <div class="dotnav-guidance-secondary">
-
-                    <div>
-
-                        <span class="dotnav-info-label">
-                            ORIENT
-                        </span>
-
-                        <strong class="js-dotnav-orient">
-                            —
-                        </strong>
-
-                    </div>
-
-
-                    <div>
-
-                        <span class="dotnav-info-label">
-                            TARGET
-                        </span>
-
-                        <strong class="js-dotnav-target">
-                            —
-                        </strong>
-
-                    </div>
-
-                </div>
 
             </section>
 
 
-            <section class="dotnav-details-card">
 
-                <div class="dotnav-detail">
+            <!-- =================================================
+                 PLAYBACK
+            ================================================== -->
 
-                    <span class="dotnav-info-label">
-                        Local Beat
-                    </span>
-
-                    <strong class="js-dotnav-local-beat">
-                        0
-                    </strong>
-
-                </div>
-
-
-                <div class="dotnav-detail">
-
-                    <span class="dotnav-info-label">
-                        Movement
-                    </span>
-
-                    <strong class="js-dotnav-movement">
-                        None
-                    </strong>
-
-                </div>
-
-
-                <div class="dotnav-detail dotnav-hidden-state">
-
-                    <span class="js-dotnav-sheet">
-                        None
-                    </span>
-
-                    <span class="js-dotnav-beat">
-                        0
-                    </span>
-
-                </div>
-
-            </section>
-
-
-            <section class="dotnav-continuity-card">
-
-                <div class="dotnav-continuity-header">
-                    Raw continuity
-                </div>
-
-                <div class="js-dotnav-continuity">
-                    None
-                </div>
-
-            </section>
-
-
-            <section class="controls-container">
-
-                <div class="dotnav-tempo-control">
-
-                    <div class="dotnav-tempo-header">
-                        <div class="dotnav-tempo-title">
-                            TEMPO SCALE
-                        </div>
-
-                        <div
-                            class="
-                                dotnav-tempo-status
-                                js-dotnav-tempo-status
-                            "
-                        >
-                            100% practice speed
-                        </div>
-                    </div>
-
-                    <div class="dotnav-tempo-buttons">
-                        <button
-                            type="button"
-                            class="
-                                dotnav-tempo-button
-                                js-dotnav-tempo
-                            "
-                            data-tempo="0.5"
-                        >
-                            50%
-                        </button>
-
-                        <button
-                            type="button"
-                            class="
-                                dotnav-tempo-button
-                                js-dotnav-tempo
-                            "
-                            data-tempo="0.75"
-                        >
-                            75%
-                        </button>
-
-                        <button
-                            type="button"
-                            class="
-                                dotnav-tempo-button
-                                js-dotnav-tempo
-                            "
-                            data-tempo="0.9"
-                        >
-                            90%
-                        </button>
-
-                        <button
-                            type="button"
-                            class="
-                                dotnav-tempo-button
-                                js-dotnav-tempo
-                                is-active
-                            "
-                            data-tempo="1"
-                        >
-                            100%
-                        </button>
-                    </div>
-
-                </div>
-
+            <section class="controls-container dotnav-v1-controls">
 
                 <div class="buttons dotnav-buttons">
-
-                    <div
-                        class="
-                            control-button
-                            prev-stuntsheet
-                            js-prev-stuntsheet
-                        "
-                    >
-                        <span></span>
-
-                        <div class="dotnav-button-label">
-                            Prev Sheet
-                        </div>
-                    </div>
 
 
                     <div
@@ -1027,11 +726,13 @@
                             js-prev-beat
                         "
                     >
+
                         <span></span>
 
                         <div class="dotnav-button-label">
                             Prev Beat
                         </div>
+
                     </div>
 
 
@@ -1043,11 +744,13 @@
                             disabled
                         "
                     >
+
                         <span></span>
 
                         <div class="dotnav-button-label">
                             Play
                         </div>
+
                     </div>
 
 
@@ -1058,11 +761,30 @@
                             js-next-beat
                         "
                     >
+
                         <span></span>
 
                         <div class="dotnav-button-label">
                             Next Beat
                         </div>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            control-button
+                            prev-stuntsheet
+                            js-prev-stuntsheet
+                        "
+                    >
+
+                        <span></span>
+
+                        <div class="dotnav-button-label">
+                            Prev SS
+                        </div>
+
                     </div>
 
 
@@ -1073,14 +795,280 @@
                             js-next-stuntsheet
                         "
                     >
+
                         <span></span>
 
                         <div class="dotnav-button-label">
-                            Next Sheet
+                            Next SS
                         </div>
+
                     </div>
 
                 </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 HIDDEN LEGACY STATE
+                 Keep these hooks alive for existing JS.
+            ================================================== -->
+
+            <section class="dotnav-hidden-state">
+
+                <span class="js-dotnav-dot">
+                    None
+                </span>
+
+                <span class="js-dotnav-local-beat">
+                    0
+                </span>
+
+                <span class="js-dotnav-movement">
+                    None
+                </span>
+
+                <span class="js-dotnav-sheet">
+                    None
+                </span>
+
+                <span class="js-dotnav-beat">
+                    0
+                </span>
+
+            </section>
+
+        </main>
+
+
+
+        <!-- =====================================================
+             TOOLS BACKDROP
+        ====================================================== -->
+
+        <div
+            class="
+                dotnav-tools-backdrop
+                js-dotnav-tools-close
+            "
+        >
+        </div>
+
+
+
+        <!-- =====================================================
+             TOOLS / UTILITIES BOTTOM SHEET
+        ====================================================== -->
+
+        <aside
+            class="
+                dotnav-tools-sheet
+                js-dotnav-tools-sheet
+            "
+        >
+
+            <div class="dotnav-tools-handle"></div>
+
+
+            <div class="dotnav-tools-header">
+
+                <div>
+
+                    <div class="dotnav-tools-title">
+                        Tools & Utilities
+                    </div>
+
+                    <div class="dotnav-tools-subtitle">
+                        Setup, practice, and continuity
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="
+                        dotnav-tools-close-button
+                        js-dotnav-tools-close
+                    "
+                    aria-label="Close tools"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 SHOW / FIELD / DOT
+            ================================================== -->
+
+            <div class="dotnav-tools-section">
+
+                <div class="dotnav-tools-section-title">
+                    SETUP
+                </div>
+
+
+                <div class="dotnav-selector-grid">
+
+
+                    <div class="dotnav-select-card">
+
+                        <label>
+                            Show
+                        </label>
+
+                        <select
+                            class="js-select-show select-show"
+                            data-placeholder="None"
+                        >
+                        </select>
+
+                    </div>
+
+
+                    <div class="dotnav-select-card">
+
+                        <label>
+                            Field
+                        </label>
+
+                        <select class="js-dotnav-field">
+
+                            <option value="">
+                                Select field
+                            </option>
+
+                            <option value="maxwell">
+                                Maxwell Family Field
+                            </option>
+
+                            <option value="memorial">
+                                California Memorial Stadium
+                            </option>
+
+                            <option value="manual">
+                                Manual / Other
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="dotnav-select-card">
+
+                        <label>
+                            Dot
+                        </label>
+
+                        <select
+                            class="js-dot-labels"
+                            data-placeholder="None"
+                        >
+                            <option></option>
+                        </select>
+
+                    </div>
+
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 TEMPO
+            ================================================== -->
+
+            <div class="dotnav-tools-section">
+
+                <div class="dotnav-tools-section-title">
+                    PRACTICE SPEED
+                </div>
+
+
+                <div class="dotnav-tempo-buttons">
+
+                    <button
+                        type="button"
+                        class="
+                            dotnav-tempo-button
+                            js-dotnav-tempo
+                        "
+                        data-tempo="0.5"
+                    >
+                        50%
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="
+                            dotnav-tempo-button
+                            js-dotnav-tempo
+                        "
+                        data-tempo="0.75"
+                    >
+                        75%
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="
+                            dotnav-tempo-button
+                            js-dotnav-tempo
+                        "
+                        data-tempo="0.9"
+                    >
+                        90%
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="
+                            dotnav-tempo-button
+                            js-dotnav-tempo
+                            is-active
+                        "
+                        data-tempo="1"
+                    >
+                        100%
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 UTILITIES
+            ================================================== -->
+
+            <div class="dotnav-tools-section">
+
+                <div class="dotnav-tools-section-title">
+                    UTILITIES
+                </div>
+
+
+                <button
+                    type="button"
+                    class="
+                        dotnav-tools-action
+                        js-generate-continuity
+                    "
+                >
+                    Generate Continuity
+                </button>
 
 
                 <div
@@ -1096,11 +1084,155 @@
 
                 </div>
 
-            </section>
 
-        </main>
+            </div>
+
+
+
+            <!-- =================================================
+                 ADVANCED / RAW DATA
+            ================================================== -->
+
+            <div class="dotnav-tools-section dotnav-tools-advanced">
+
+                <div class="dotnav-tools-section-title">
+                    ADVANCED
+                </div>
+
+
+                <div class="dotnav-details-card">
+
+                    <div class="dotnav-detail">
+
+                        <span class="dotnav-info-label">
+                            Local Beat
+                        </span>
+
+                        <strong class="js-dotnav-local-beat">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="dotnav-detail">
+
+                        <span class="dotnav-info-label">
+                            Movement
+                        </span>
+
+                        <strong class="js-dotnav-movement">
+                            None
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="dotnav-continuity-card">
+
+                    <div class="dotnav-continuity-header">
+                        Raw continuity
+                    </div>
+
+                    <div class="js-dotnav-continuity">
+                        None
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 RESOURCES
+            ================================================== -->
+
+            <div class="dotnav-tools-section">
+
+                <div class="dotnav-tools-section-title">
+                    RESOURCES
+                </div>
+
+
+                <a
+                    href="https://drive.google.com/drive/folders/16DXbOyemglKZFoJ_Dyk_lFN0R7S5FECp?usp=drive_link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="
+                        dotnav-tools-action
+                        dotnav-tools-action-secondary
+                    "
+                    style="
+                        display: block;
+                        text-decoration: none;
+                    "
+                >
+                    Cal Band Packet
+                </a>
+
+
+                <a
+                    href="https://docs.google.com/spreadsheets/d/1kFPNFJh5J-KDDEmPRxN3iZs1HTPH3VSmRFxjvgv0n2Y/edit?gid=0#gid=0"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="
+                        dotnav-tools-action
+                        dotnav-tools-action-secondary
+                    "
+                    style="
+                        display: block;
+                        text-decoration: none;
+                    "
+                >
+                    Blocklist
+                </a>
+
+            </div>
+
+        </aside>
 
     </div>
+
+
+    <script type="text/javascript">
+        $(function() {
+            var $sheet = $(".js-dotnav-tools-sheet");
+            var $backdrop = $(".dotnav-tools-backdrop");
+            var $openButton = $(".js-dotnav-tools-open");
+
+            function openDotNavTools() {
+                $sheet.addClass("is-open");
+                $backdrop.addClass("is-open");
+                $openButton.attr("aria-expanded", "true");
+            }
+
+            function closeDotNavTools() {
+                $sheet.removeClass("is-open");
+                $backdrop.removeClass("is-open");
+                $openButton.attr("aria-expanded", "false");
+            }
+
+            $openButton
+                .attr("aria-expanded", "false")
+                .click(function(event) {
+                    event.preventDefault();
+                    openDotNavTools();
+                });
+
+            $(".js-dotnav-tools-close").click(function(event) {
+                event.preventDefault();
+                closeDotNavTools();
+            });
+
+            $(document).keydown(function(event) {
+                if (event.key === "Escape") {
+                    closeDotNavTools();
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>
