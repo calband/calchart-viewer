@@ -4,6 +4,7 @@
 
 var Grapher = require("./Grapher");
 var ShowUtils = require("./utils/ShowUtils");
+var ShowServer = require("./utils/ShowServer");
 var TimedBeatsUtils = require("./utils/TimedBeatsUtils");
 var MusicAnimator = require("./player/MusicAnimator");
 var MusicPlayerFactory = require("./player/MusicPlayerFactory");
@@ -64,32 +65,20 @@ ApplicationController.prototype.setShow = function (show) {
  * @return {Promise} the jQuery AJAX promise object
  */
 ApplicationController.prototype.getShows = function() {
-    return $.ajax({
-        url: "https://calchart-server.herokuapp.com/list/",
-        dataType: "json",
-        xhr: function() {
-            var xhr = $.ajaxSettings.xhr();
-            // update loading bar
-            xhr.onprogress = function(evt) {
-                if (evt.lengthComputable) {
-                    var percentComplete = evt.loaded / evt.total;
-                    $(".loading .progress-bar").css({
-                        width: percentComplete * 35 + "%",
-                    });
-                }
-            };
-            return xhr;
-        },
-        success: function(data) {
-            $("<option>").appendTo(".js-select-show");
-            data.shows.forEach(function(show) {
-                $("<option>")
-                    .attr("value", show.slug)
-                    .text(show.name)
-                    .appendTo(".js-select-show");
-            });
-            $(".js-select-show").trigger("chosen:updated");
-        },
+    var _this = this;
+    return ShowServer.list().done(function(data) {
+        var select = $(".js-select-show");
+        select.empty();
+        $("<option>").appendTo(select);
+        data.shows.forEach(function(show) {
+            $("<option>").attr("value", show.slug).text(show.name).appendTo(select);
+        });
+        select.trigger("chosen:updated");
+        $(".loading .progress-bar").css("width", "35%");
+    }).fail(function(xhr, status, error) {
+        _this._logLoadError("show lists", error);
+        _this.displayFileInputError("Neither show server is available. You can still load local files.");
+        $(".loading").remove();
     });
 };
 
@@ -107,8 +96,20 @@ ApplicationController.prototype.autoloadShow = function(show, dot) {
 
     var _this = this;
     // load all show data
-    $.ajax({
-        url: "https://calchart-server.herokuapp.com/get/" + show + "/",
+    ShowServer.loadShow(show, {
+        validate: function(data) {
+            if (!data || !data.viewer || !data.beats ||
+                !(data.audio === null || typeof data.audio === "string")) {
+                throw new Error("Incomplete show response.");
+            }
+            ShowUtils.fromJSON(data.viewer);
+            TimedBeatsUtils.fromJSON(typeof data.beats === "string" ? JSON.parse(data.beats) : data.beats);
+        },
+        error: function(xhr, status, error) {
+            _this._logLoadError("show '" + show + "' from both servers", error || status);
+            _this.displayFileInputError("Could not load this show from either server.");
+            $(".loading").remove();
+        },
         dataType: "json",
         xhr: function() {
             var xhr = $.ajaxSettings.xhr();

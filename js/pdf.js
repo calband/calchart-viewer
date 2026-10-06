@@ -1,5 +1,6 @@
 var PDFGenerator = require("./pdf/PDFGenerator");
 var ShowUtils = require("./viewer/utils/ShowUtils");
+var ShowServer = require("./viewer/utils/ShowServer");
 var JSUtils = require("./viewer/utils/JSUtils");
 
 var options = JSUtils.getAllURLParams();
@@ -101,9 +102,8 @@ $(document).ready(function() {
     var url = "index.html?show=" + options.show + "&dot=" + backDot;
     $(".back-link").attr("href", url);
 
-    $.ajax({
-        url: "https://calchart-server.herokuapp.com/viewer/" + options.show + "/",
-        dataType: "text",
+    ShowServer.loadViewer(options.show, {
+        validate: function(data) { ShowUtils.fromJSON(data); },
         xhr: function() {
             var xhr = $.ajaxSettings.xhr();
             // update progress bar
@@ -119,7 +119,7 @@ $(document).ready(function() {
         },
         success: function(data) {
             $(".js-pdf-loading .progress-bar").css("width", "50%");
-            var show = ShowUtils.fromJSONString(data);
+            var show = ShowUtils.fromJSON(data);
 
             $(".dot-labels").data("labels", show.getDotLabels());
             $(".js-choose-dots").prop("disabled", false);
