@@ -3650,3 +3650,17 @@ body.dotnav-mobile {
 .dotnav-v1-current-move .dotnav-v1-small-label {
     font-size: 7px;
 }
+
+/* Fixed field overview; only active in Static mode. */
+.dotnav-static-note { display: none; }
+.dotnav-static-view .dotnav-v1-compass-card > :not(.dotnav-v1-section-title):not(.dotnav-static-note) {
+    display: none !important;
+}
+.dotnav-static-view .dotnav-static-note {
+    display: block;
+    margin: 8px 0;
+    font-size: 11px;
+    line-height: 1.55;
+    color: @dotnav-blue;
+}
+.dotnav-v1-zoom-toggle { max-width: calc(100% - 14px); flex-wrap: wrap; }

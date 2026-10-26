@@ -61,7 +61,10 @@ $(document).ready(function() {
     }
 
     function setZoomMode(mode) {
-        if (mode === "2yl") {
+        if (mode === "static") {
+            zoomMode = "static";
+            navigationScale = 1;
+        } else if (mode === "2yl") {
             zoomMode = "2yl";
             navigationScale = NAVIGATION_SCALE_TWO_YARD_LINES;
         } else if (mode === "4yl") {
@@ -73,17 +76,10 @@ $(document).ready(function() {
         }
 
         updateZoomModeUI();
-
+        $("body").toggleClass("dotnav-static-view", zoomMode === "static");
         var svg = $(".js-grapher-draw-target svg");
-
-        if (svg.length !== 0) {
-            svg.find(".dotnav-route").remove();
-            drawMovementRoute();
-        }
-
-        if (lastFieldHeading !== null) {
-            applyHeadingUpView(lastFieldHeading);
-        }
+        svg.find(".dotnav-route, .dotnav-pacing-grid").remove();
+        refreshDotNavField();
     }
 
     $(document).on("click", ".js-dotnav-zoom-mode", function(event) {
@@ -1014,6 +1010,7 @@ $(document).ready(function() {
     }
 
     function drawPacingGrid() {
+        if (zoomMode === "static") return;
         var svg = $(".js-grapher-draw-target svg");
 
         if (
@@ -1365,6 +1362,7 @@ $(document).ready(function() {
     }
 
     function drawMovementRoute() {
+        if (zoomMode === "static") return;
         var svg = $(".js-grapher-draw-target svg");
 
         if (
@@ -2503,7 +2501,107 @@ $(document).ready(function() {
      * Heading-up field
      * ------------------------------------------------------------ */
 
+    function drawYardLabels(svg, geometry, navigationMatrix) {
+        if (!geometry) return;
+        var group = svg.find(".dotnav-yard-labels").get(0);
+        var ns = "http://www.w3.org/2000/svg";
+        if (!group) {
+            group = document.createElementNS(ns, "g");
+            group.setAttribute("class", "dotnav-yard-labels");
+            group.setAttribute("pointer-events", "none");
+            group.setAttribute("aria-hidden", "true");
+            for (var yard = 10; yard <= 90; yard += 10) {
+                for (var side = 0; side < 2; side++) {
+                    var text = document.createElementNS(ns, "text");
+                    text.setAttribute("data-yard", yard);
+                    text.setAttribute("data-side", side);
+                    text.setAttribute("text-anchor", "middle");
+                    text.setAttribute("dominant-baseline", "central");
+                    text.setAttribute("font-family", "Arial, sans-serif");
+                    text.setAttribute("font-weight", "700");
+                    text.setAttribute("fill", "white");
+                    text.setAttribute("stroke", "#196e22");
+                    text.setAttribute("stroke-width", "0.6");
+                    text.setAttribute("paint-order", "stroke");
+                    text.textContent = String(Math.min(yard, 100 - yard));
+                    group.appendChild(text);
+                }
+            }
+            svg[0].appendChild(group);
+        }
+        $(group).children("text").each(function() {
+            var yard = Number(this.getAttribute("data-yard"));
+            var side = Number(this.getAttribute("data-side"));
+            var x = geometry.xScale(yard * FIELD_STEPS_HORIZONTAL / 100);
+            var y = zoomMode === "static" ?
+                (side === 0 ? geometry.yScale(0) - 6 : geometry.yScale(FIELD_STEPS_VERTICAL) + 8) :
+                geometry.yScale(side === 0 ? 12 : FIELD_STEPS_VERTICAL - 12);
+            this.setAttribute("x", x);
+            this.setAttribute("y", y);
+            this.setAttribute("font-size", zoomMode === "static" ? "8" : "10");
+            // Undo only rotation and zoom around the label's anchor. The
+            // anchor still follows its yard line while the digits stay upright.
+            if (navigationMatrix) {
+                var m = navigationMatrix;
+                var determinant = m.a * m.d - m.b * m.c;
+                var a = m.d / determinant;
+                var b = -m.b / determinant;
+                var c = -m.c / determinant;
+                var d = m.a / determinant;
+                this.setAttribute("transform", "matrix(" + a + " " + b + " " + c + " " + d + " " +
+                    (x - a * x - c * y) + " " + (y - b * x - d * y) + ")");
+            } else {
+                this.removeAttribute("transform");
+            }
+        });
+    }
+
+    // Fit the field to the visible card using screen coordinates. This also
+    // handles Safari layouts where the SVG canvas is taller than the card.
+    function applyStaticView() {
+        var svg = $(".js-grapher-draw-target svg");
+        if (!svg.length) return;
+        var geometry = getFieldGeometry(svg);
+        var node = svg[0];
+        var viewport = $(".dotnav-v1-map-card").get(0);
+        if (!geometry || !viewport || geometry.svgWidth <= FIELD_PADDING * 2) return;
+        var rect = viewport.getBoundingClientRect();
+        var svgRect = node.getBoundingClientRect();
+        var left = Math.max(rect.left, svgRect.left) + 8;
+        var right = Math.min(rect.right, svgRect.right) - 8;
+        var top = Math.max(rect.top, svgRect.top) + 8;
+        var bottom = Math.min(rect.bottom, svgRect.bottom) - 8;
+        var controls = $(".dotnav-v1-zoom-toggle").get(0);
+        if (controls) top = Math.max(top, controls.getBoundingClientRect().bottom + 8);
+        if (right <= left || bottom <= top) return;
+        var ctm = node.getScreenCTM();
+        if (!ctm) return;
+        drawYardLabels(svg, geometry);
+        var inverse = ctm.inverse();
+        function toSvg(x, y) {
+            var point = node.createSVGPoint();
+            point.x = x;
+            point.y = y;
+            return point.matrixTransform(inverse);
+        }
+        var corner = toSvg(left, top);
+        var opposite = toSvg(right, bottom);
+        var fieldTop = geometry.yScale(0) - 12;
+        var fieldHeight = geometry.yScale(FIELD_STEPS_VERTICAL) - geometry.yScale(0) + 24;
+        var scale = Math.min(
+            (opposite.x - corner.x) / geometry.svgWidth,
+            (opposite.y - corner.y) / fieldHeight
+        );
+        if (!isFinite(scale) || scale <= 0) return;
+        var x = (corner.x + opposite.x) / 2 - scale * geometry.svgWidth / 2;
+        var y = (corner.y + opposite.y) / 2 - scale * (fieldTop + fieldHeight / 2);
+        svg.children("g").not(".dotnav-nearby-labels")
+            .attr("transform", "matrix(" + scale + " 0 0 " + scale + " " + x + " " + y + ")");
+        clearNearbyDotLabels();
+    }
+
     function applyHeadingUpView(fieldHeading) {
+        if (zoomMode === "static") { applyStaticView(); return; }
         var svg = $(".js-grapher-draw-target svg");
 
         if (svg.length === 0) {
@@ -2637,6 +2735,7 @@ $(document).ready(function() {
             ")"
         );
 
+        drawYardLabels(svg, getFieldGeometry(svg), { a: a, b: b, c: c, d: d });
         svg.children("g")
             .not(".dotnav-nearby-labels")
             .attr("transform", matrix);
@@ -2658,12 +2757,15 @@ $(document).ready(function() {
     }
 
     function resetHeadingUpView() {
+        if (zoomMode === "static") { applyStaticView(); return; }
         $(".js-grapher-draw-target svg")
             .children("g")
             .not(".dotnav-nearby-labels")
             .attr("transform", null);
 
         clearNearbyDotLabels();
+        var svg = $(".js-grapher-draw-target svg");
+        drawYardLabels(svg, getFieldGeometry(svg));
     }
 
     /* ------------------------------------------------------------
@@ -2671,14 +2773,17 @@ $(document).ready(function() {
      * ------------------------------------------------------------ */
 
     function refreshDotNavField() {
+        if (zoomMode === "static") {
+            applyStaticView();
+            updateMovementGuidance();
+            return;
+        }
         drawPacingGrid();
         drawMovementRoute();
         updateMovementGuidance();
         updateVisualCompass(lastFieldHeading);
-
-        if (lastFieldHeading !== null) {
-            applyHeadingUpView(lastFieldHeading);
-        }
+        if (lastFieldHeading !== null) applyHeadingUpView(lastFieldHeading);
+        else resetHeadingUpView();
     }
 
     var graphElement = $(".js-grapher-draw-target").get(0);
@@ -2772,9 +2877,8 @@ $(document).ready(function() {
              * remains anchored correctly after the visible map rectangle
              * changes size.
              */
-            if (lastFieldHeading !== null) {
-                applyHeadingUpView(lastFieldHeading);
-            }
+            if (zoomMode === "static") applyStaticView();
+            else if (lastFieldHeading !== null) applyHeadingUpView(lastFieldHeading);
         }, 140);
     });
 

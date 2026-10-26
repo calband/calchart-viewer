@@ -33,7 +33,7 @@
     <link
         rel="stylesheet"
         type="text/css"
-        href="build/css/mobile.css?dotnav=16"
+        href="build/css/mobile.css?static=5"
     >
 
     <link
@@ -76,7 +76,7 @@
 
     <script
         type="text/javascript"
-        src="build/js/mobile.js?dotnav=43">
+        src="build/js/mobile.js?static=5">
     </script>
 
     <script
@@ -193,6 +193,7 @@
                     <div class="dotnav-v1-section-title">
                         COMPASS
                     </div>
+                    <p class="dotnav-static-note">STATIC VIEW<br>Full field<br>No compass needed<br>Use SS buttons below</p>
 
 
                     <div class="dotnav-compass-dial">
@@ -665,8 +666,15 @@
                 <div
                     class="dotnav-v1-zoom-toggle"
                     role="group"
-                    aria-label="Map zoom"
+                    aria-label="Map view"
                 >
+                    <button type="button"
+                        class="dotnav-v1-zoom-mode js-dotnav-zoom-mode"
+                        data-zoom-mode="static" aria-pressed="false"
+                        title="Full field view; no compass needed">
+                        STATIC
+                    </button>
+
                     <button
                         type="button"
                         class="
