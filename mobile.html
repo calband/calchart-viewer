@@ -33,7 +33,7 @@
     <link
         rel="stylesheet"
         type="text/css"
-        href="build/css/mobile.css?static=5"
+        href="build/css/mobile.css?static=8"
     >
 
     <link
@@ -76,7 +76,7 @@
 
     <script
         type="text/javascript"
-        src="build/js/mobile.js?static=5">
+        src="build/js/mobile.js?static=8">
     </script>
 
     <script
@@ -628,16 +628,17 @@
                 </div>
 
 
-                <div class="dotnav-v1-status-box">
-
-                    <span class="dotnav-v1-small-label">
-                        SPEED
-                    </span>
-
-                    <strong class="js-dotnav-tempo-status">
-                        100%
-                    </strong>
-
+                <div class="dotnav-v1-status-box dotnav-v1-dot-speed">
+                    <button type="button" class="dotnav-quick-dot js-dotnav-quick-dot"
+                        aria-haspopup="dialog" aria-controls="dotnav-dot-picker"
+                        aria-expanded="false" aria-label="Select dot" disabled>
+                        <span class="dotnav-v1-small-label">DOT</span>
+                        <strong><span class="js-dotnav-quick-dot-value">Select</span> <span aria-hidden="true">▾</span></strong>
+                    </button>
+                    <div class="dotnav-speed-status">
+                        <span class="dotnav-v1-small-label">SPEED</span>
+                        <strong class="js-dotnav-tempo-status">100%</strong>
+                    </div>
                 </div>
 
             </section>
@@ -1203,6 +1204,21 @@
 
     </div>
 
+
+    <div class="dotnav-dot-picker js-dotnav-dot-picker">
+        <section id="dotnav-dot-picker" class="dotnav-dot-picker-panel"
+            role="dialog" aria-modal="true" aria-labelledby="dotnav-dot-picker-title">
+            <div class="dotnav-dot-picker-header">
+                <strong id="dotnav-dot-picker-title">Select your dot</strong>
+                <button type="button" class="js-dotnav-dot-picker-close" aria-label="Close dot selection">×</button>
+            </div>
+            <input type="search" class="dotnav-dot-search js-dotnav-dot-search"
+                placeholder="Search dot (e.g. H3)" aria-label="Search dots"
+                autocomplete="off" autocapitalize="characters" spellcheck="false">
+            <div class="dotnav-dot-options js-dotnav-dot-options" role="group" aria-label="Dots"></div>
+            <p class="dotnav-dot-empty js-dotnav-dot-empty" role="status" hidden>No matching dots.</p>
+        </section>
+    </div>
 
     <script type="text/javascript">
         $(function() {

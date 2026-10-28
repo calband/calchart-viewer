@@ -46,6 +46,98 @@ $(document).ready(function() {
     var FIELD_PADDING = 10;
     var FIELD_ASPECT_RATIO = 0.5333;
 
+    /* One authoritative dot selector, shared by Tools and the quick picker. */
+    var dotSelector = $(".js-dot-labels");
+    var quickDotButton = $(".js-dotnav-quick-dot");
+    var dotPicker = $(".js-dotnav-dot-picker");
+    var dotSearch = $(".js-dotnav-dot-search");
+    var dotOptions = $(".js-dotnav-dot-options");
+
+    function updateQuickDot() {
+        var dot = dotSelector.val() || "";
+        var hasDots = dotSelector.find("option").toArray().some(function(option) {
+            return option.value !== "" && !option.disabled;
+        });
+        $(".js-dotnav-quick-dot-value").text(dot || "Select");
+        quickDotButton.prop("disabled", !hasDots)
+            .attr("aria-label", dot ? "Change dot, currently " + dot : "Select dot")
+            .attr("title", dot ? "Change dot: " + dot : "Select dot");
+    }
+
+    function closeDotPicker() {
+        if (!dotPicker.hasClass("is-open")) return;
+        dotPicker.removeClass("is-open");
+        quickDotButton.attr("aria-expanded", "false").focus();
+    }
+
+    function renderDotOptions() {
+        var query = String(dotSearch.val() || "").trim().toUpperCase();
+        var selected = dotSelector.val() || "";
+        var matches = 0;
+        dotOptions.empty();
+        function addOption(value, label) {
+            $("<button>", { type: "button", "class": "dotnav-dot-option" })
+                .text(label).data("dot", value)
+                .toggleClass("is-clear", value === "")
+                .attr("aria-pressed", value === selected ? "true" : "false")
+                .appendTo(dotOptions);
+        }
+        if (!query) addOption("", "No dot · full field");
+        dotSelector.find("option").each(function() {
+            if (!this.value || this.disabled) return;
+            var label = this.textContent || this.value;
+            if (label.toUpperCase().indexOf(query) === -1) return;
+            matches++;
+            addOption(this.value, label);
+        });
+        $(".js-dotnav-dot-empty").prop("hidden", matches !== 0);
+    }
+
+    quickDotButton.on("click", function() {
+        dotSearch.val("");
+        renderDotOptions();
+        dotPicker.addClass("is-open");
+        quickDotButton.attr("aria-expanded", "true");
+        dotSearch.focus();
+    });
+    dotSearch.on("input", renderDotOptions);
+    dotOptions.on("click", ".dotnav-dot-option", function() {
+        dotSelector.val($(this).data("dot")).trigger("chosen:updated").trigger("change");
+    });
+    dotSelector.on("change.dotnavQuickDot chosen:updated.dotnavQuickDot", function() {
+        updateQuickDot();
+        closeDotPicker();
+    });
+    $(".js-dotnav-dot-picker-close").on("click", closeDotPicker);
+    dotPicker.on("click", function(event) {
+        if (event.target === this) closeDotPicker();
+    }).on("keydown", function(event) {
+        // Keep typing, space and arrow keys out of the legacy player shortcuts.
+        event.stopPropagation();
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closeDotPicker();
+        } else if (event.key === "Tab") {
+            var focusable = dotPicker.find("button:visible, input:visible");
+            var first = focusable.get(0);
+            var last = focusable.get(focusable.length - 1);
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                $(last).focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                $(first).focus();
+            }
+        }
+    });
+    if (dotSelector.length && typeof window.MutationObserver !== "undefined") {
+        new window.MutationObserver(function() {
+            updateQuickDot();
+            closeDotPicker();
+        }).observe(dotSelector[0], { childList: true });
+    }
+    updateQuickDot();
+
     /* ------------------------------------------------------------
      * Map zoom mode
      * ------------------------------------------------------------ */
@@ -2600,7 +2692,7 @@ $(document).ready(function() {
         clearNearbyDotLabels();
     }
 
-    function applyHeadingUpView(fieldHeading) {
+    function applyHeadingUpView(fieldHeading, fixedPreview) {
         if (zoomMode === "static") { applyStaticView(); return; }
         var svg = $(".js-grapher-draw-target svg");
 
@@ -2644,7 +2736,30 @@ $(document).ready(function() {
         var screenX = svgWidth / 2;
         var screenY = svgHeight * 0.6;
 
-        if (isLandscapeNavigationView() && svgNode && containerNode) {
+        if (fixedPreview && svgNode) {
+            // Without a sensor heading, use the original field orientation
+            // and center the chosen dot in the visible area below the toolbar.
+            var previewCard = $(".dotnav-v1-map-card").get(0);
+            var previewCTM = svgNode.getScreenCTM();
+            if (!previewCard || !previewCTM) return;
+            var previewRect = previewCard.getBoundingClientRect();
+            var canvasRect = svgNode.getBoundingClientRect();
+            var previewLeft = Math.max(previewRect.left, canvasRect.left);
+            var previewRight = Math.min(previewRect.right, canvasRect.right);
+            var previewTop = Math.max(previewRect.top, canvasRect.top);
+            var previewBottom = Math.min(previewRect.bottom, canvasRect.bottom);
+            var previewControls = $(".dotnav-v1-zoom-toggle").get(0);
+            if (previewControls) previewTop = Math.max(
+                previewTop, previewControls.getBoundingClientRect().bottom + 8
+            );
+            if (previewRight <= previewLeft || previewBottom <= previewTop) return;
+            var previewPoint = svgNode.createSVGPoint();
+            previewPoint.x = (previewLeft + previewRight) / 2;
+            previewPoint.y = (previewTop + previewBottom) / 2;
+            previewPoint = previewPoint.matrixTransform(previewCTM.inverse());
+            screenX = previewPoint.x;
+            screenY = previewPoint.y;
+        } else if (isLandscapeNavigationView() && svgNode && containerNode) {
             /*
              * Landscape:
              * use ONE visual anchor for NORMAL / 4 YL / 2 YL.
@@ -2714,7 +2829,7 @@ $(document).ready(function() {
             }
         }
 
-        var rotationDegrees = -(fieldHeading + 90);
+        var rotationDegrees = fixedPreview ? 0 : -(fieldHeading + 90);
         var rotationRadians = rotationDegrees * Math.PI / 180;
         var cosValue = Math.cos(rotationRadians);
         var sinValue = Math.sin(rotationRadians);
@@ -2757,15 +2872,13 @@ $(document).ready(function() {
     }
 
     function resetHeadingUpView() {
-        if (zoomMode === "static") { applyStaticView(); return; }
-        $(".js-grapher-draw-target svg")
-            .children("g")
-            .not(".dotnav-nearby-labels")
-            .attr("transform", null);
-
-        clearNearbyDotLabels();
         var svg = $(".js-grapher-draw-target svg");
-        drawYardLabels(svg, getFieldGeometry(svg));
+        if (zoomMode !== "static" && svg.find(".selected-dot-highlight").length) {
+            applyHeadingUpView(null, true);
+        } else {
+            // With no selected dot, show the complete field in every mode.
+            applyStaticView();
+        }
     }
 
     /* ------------------------------------------------------------
@@ -2879,6 +2992,7 @@ $(document).ready(function() {
              */
             if (zoomMode === "static") applyStaticView();
             else if (lastFieldHeading !== null) applyHeadingUpView(lastFieldHeading);
+            else resetHeadingUpView();
         }, 140);
     });
 
